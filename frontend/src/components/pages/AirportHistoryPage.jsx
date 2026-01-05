@@ -1,8 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Plane, Calendar, Ruler, Mountain } from 'lucide-react';
-import { airportHistory } from '../../data/mock';
+import { pagesApi, timelineApi } from '../../services/api';
 
 export const AirportHistoryPage = () => {
+  const [pageContent, setPageContent] = useState(null);
+  const [timeline, setTimeline] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const specs = {
+    icao: "SBCX",
+    iata: "CXJ",
+    elevation: "2.472 pés (754 m)",
+    runway: "1.950 m x 45 m",
+    location: "Caxias do Sul, RS - Brasil"
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [pageRes, timelineRes] = await Promise.all([
+          pagesApi.getPage('airport-history'),
+          timelineApi.getAirport()
+        ]);
+        setPageContent(pageRes.data);
+        setTimeline(timelineRes.data);
+      } catch (error) {
+        console.error('Error loading airport history:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const content = pageContent || {
+    title: "História do Aeroporto CXJ",
+    subtitle: "Aeroporto Hugo Cantergiani - O portal aéreo da Serra Gaúcha",
+    content: "O Aeroporto Hugo Cantergiani, conhecido pelo código IATA CXJ, é o principal aeroporto de Caxias do Sul e da região da Serra Gaúcha."
+  };
+
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
@@ -14,10 +50,10 @@ export const AirportHistoryPage = () => {
               <span className="text-sky-300 text-sm font-medium">SBCX / CXJ</span>
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-              {airportHistory.title}
+              {content.title}
             </h1>
             <p className="text-xl text-gray-300">
-              {airportHistory.subtitle}
+              {content.subtitle}
             </p>
           </div>
         </div>
@@ -28,10 +64,10 @@ export const AirportHistoryPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
-              { label: 'Código ICAO', value: airportHistory.specs.icao, icon: Plane },
-              { label: 'Código IATA', value: airportHistory.specs.iata, icon: Plane },
-              { label: 'Elevação', value: airportHistory.specs.elevation, icon: Mountain },
-              { label: 'Pista', value: airportHistory.specs.runway, icon: Ruler },
+              { label: 'Código ICAO', value: specs.icao, icon: Plane },
+              { label: 'Código IATA', value: specs.iata, icon: Plane },
+              { label: 'Elevação', value: specs.elevation, icon: Mountain },
+              { label: 'Pista', value: specs.runway, icon: Ruler },
               { label: 'Localização', value: 'Caxias do Sul, RS', icon: MapPin },
             ].map((spec, index) => (
               <div key={index} className="bg-[#0a1929] rounded-xl p-4 border border-[#1a3a5c] text-center">
@@ -52,7 +88,7 @@ export const AirportHistoryPage = () => {
             <div>
               <h2 className="text-2xl font-bold text-white mb-6">Sobre o Aeroporto</h2>
               <div className="space-y-4 text-gray-300 leading-relaxed">
-                {airportHistory.content.split('\n').map((paragraph, index) => (
+                {content.content?.split('\n').map((paragraph, index) => (
                   paragraph.trim() && <p key={index}>{paragraph.trim()}</p>
                 ))}
               </div>
@@ -65,11 +101,11 @@ export const AirportHistoryPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-gray-400 text-sm">Pista Principal</p>
-                    <p className="text-white font-medium">{airportHistory.specs.runway}</p>
+                    <p className="text-white font-medium">{specs.runway}</p>
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm">Elevação</p>
-                    <p className="text-white font-medium">{airportHistory.specs.elevation}</p>
+                    <p className="text-white font-medium">{specs.elevation}</p>
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm">Orientação</p>
@@ -89,18 +125,24 @@ export const AirportHistoryPage = () => {
                 <Calendar className="text-sky-400" />
                 Linha do Tempo
               </h2>
-              <div className="space-y-8">
-                {airportHistory.timeline.map((item, index) => (
-                  <div key={index} className="timeline-item">
-                    <div className="bg-[#102a43] rounded-xl p-6 border border-[#1a3a5c] hover:border-sky-500/30 transition-colors">
-                      <span className="inline-block bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-sm font-semibold mb-3">
-                        {item.year}
-                      </span>
-                      <p className="text-gray-200">{item.event}</p>
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="w-8 h-8 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mx-auto" />
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {timeline.map((item, index) => (
+                    <div key={item.item_id || index} className="timeline-item">
+                      <div className="bg-[#102a43] rounded-xl p-6 border border-[#1a3a5c] hover:border-sky-500/30 transition-colors">
+                        <span className="inline-block bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-sm font-semibold mb-3">
+                          {item.year}
+                        </span>
+                        <p className="text-gray-200">{item.description}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

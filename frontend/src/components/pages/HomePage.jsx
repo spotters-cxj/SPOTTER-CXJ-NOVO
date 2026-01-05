@@ -2,31 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Plane, Camera, Users, Calendar, ArrowRight, ExternalLink } from 'lucide-react';
 import { siteConfig } from '../../data/mock';
-import { pagesApi, settingsApi, galleryApi } from '../../services/api';
+import { pagesApi, settingsApi, galleryApi, statsApi } from '../../services/api';
 import { Button } from '../ui/button';
 
 export const HomePage = () => {
   const [pageContent, setPageContent] = useState(null);
   const [settings, setSettings] = useState(null);
   const [photos, setPhotos] = useState([]);
-  const [stats] = useState({
-    members: "50+",
-    photos: "5.000+",
-    events: "30+",
-    years: "8+"
-  });
+  const [stats, setStats] = useState({ members: "50+", photos: "5.000+", events: "30+", years: "8+" });
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [pageRes, settingsRes, photosRes] = await Promise.all([
+        const [pageRes, settingsRes, photosRes, statsRes] = await Promise.all([
           pagesApi.getPage('home'),
           settingsApi.get(),
-          galleryApi.list({})
+          galleryApi.list({}),
+          statsApi.get()
         ]);
         setPageContent(pageRes.data);
         setSettings(settingsRes.data);
         setPhotos(photosRes.data.slice(0, 3));
+        setStats(statsRes.data);
       } catch (error) {
         console.error('Error loading home data:', error);
       }

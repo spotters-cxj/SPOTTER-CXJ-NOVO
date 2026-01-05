@@ -1,8 +1,40 @@
-import React from 'react';
-import { Camera, Users, Award, Calendar, Star, Heart } from 'lucide-react';
-import { spottersHistory, siteConfig } from '../../data/mock';
+import React, { useState, useEffect } from 'react';
+import { Camera, Users, Award, Heart } from 'lucide-react';
+import { pagesApi, timelineApi, statsApi } from '../../services/api';
+import { siteConfig } from '../../data/mock';
 
 export const SpottersHistoryPage = () => {
+  const [pageContent, setPageContent] = useState(null);
+  const [milestones, setMilestones] = useState([]);
+  const [stats, setStats] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [pageRes, milestonesRes, statsRes] = await Promise.all([
+          pagesApi.getPage('spotters-history'),
+          timelineApi.getSpotters(),
+          statsApi.get()
+        ]);
+        setPageContent(pageRes.data);
+        setMilestones(milestonesRes.data);
+        setStats(statsRes.data);
+      } catch (error) {
+        console.error('Error loading spotters history:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const content = pageContent || {
+    title: "História dos Spotters CXJ",
+    subtitle: "Nossa jornada no mundo da aviação",
+    content: "O grupo Spotters CXJ nasceu da paixão compartilhada por um pequeno grupo de amigos que frequentavam o Aeroporto Hugo Cantergiani para fotografar aeronaves."
+  };
+
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
@@ -15,10 +47,10 @@ export const SpottersHistoryPage = () => {
                 <span className="text-sky-300 text-sm font-medium">Nossa História</span>
               </div>
               <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-                {spottersHistory.title}
+                {content.title}
               </h1>
               <p className="text-xl text-gray-300">
-                {spottersHistory.subtitle}
+                {content.subtitle}
               </p>
             </div>
             <div className="flex justify-center">
@@ -38,7 +70,7 @@ export const SpottersHistoryPage = () => {
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2 className="text-3xl font-bold text-white mb-6">Como Tudo Começou</h2>
             <div className="space-y-4 text-gray-300 leading-relaxed text-lg">
-              {spottersHistory.content.split('\n').map((paragraph, index) => (
+              {content.content?.split('\n').map((paragraph, index) => (
                 paragraph.trim() && <p key={index}>{paragraph.trim()}</p>
               ))}
             </div>
@@ -85,25 +117,31 @@ export const SpottersHistoryPage = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {spottersHistory.milestones.map((milestone, index) => (
-              <div
-                key={index}
-                className="bg-[#0a1929] rounded-xl p-6 border border-[#1a3a5c] hover:border-sky-500/30 transition-all hover-lift"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 bg-sky-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Award className="w-7 h-7 text-sky-400" />
-                  </div>
-                  <div>
-                    <span className="text-sky-400 font-bold text-lg">{milestone.year}</span>
-                    <h3 className="text-white font-semibold text-lg mt-1 mb-2">{milestone.title}</h3>
-                    <p className="text-gray-400 text-sm">{milestone.description}</p>
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mx-auto" />
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {milestones.map((milestone, index) => (
+                <div
+                  key={milestone.item_id || index}
+                  className="bg-[#0a1929] rounded-xl p-6 border border-[#1a3a5c] hover:border-sky-500/30 transition-all hover-lift"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 bg-sky-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Award className="w-7 h-7 text-sky-400" />
+                    </div>
+                    <div>
+                      <span className="text-sky-400 font-bold text-lg">{milestone.year}</span>
+                      <h3 className="text-white font-semibold text-lg mt-1 mb-2">{milestone.title}</h3>
+                      <p className="text-gray-400 text-sm">{milestone.description}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
