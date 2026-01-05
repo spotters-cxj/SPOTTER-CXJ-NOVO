@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Users, Check, X, Trash2, Shield, Camera, Settings, RefreshCw, Plus, Edit, Save, Image, FileText, UserCheck, UserX, Crown } from 'lucide-react';
+import { Users, Check, X, Trash2, Shield, Camera, Settings, RefreshCw, Plus, Edit, Save, Image, FileText, UserCheck, UserX, Crown, Clock, BarChart3, Calendar } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { adminApi, leadersApi, pagesApi, settingsApi, memoriesApi, galleryApi } from '../../services/api';
+import { adminApi, leadersApi, pagesApi, settingsApi, memoriesApi, galleryApi, timelineApi, statsApi } from '../../services/api';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { toast } from 'sonner';
 
 export const AdminPage = () => {
@@ -17,22 +17,31 @@ export const AdminPage = () => {
   const [photos, setPhotos] = useState([]);
   const [memories, setMemories] = useState([]);
   const [settings, setSettings] = useState({});
-  const [pages, setPages] = useState({});
+  const [stats, setStats] = useState({});
+  const [airportTimeline, setAirportTimeline] = useState([]);
+  const [spottersMilestones, setSpottersMilestones] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Modal states
   const [showLeaderModal, setShowLeaderModal] = useState(false);
   const [showMemoryModal, setShowMemoryModal] = useState(false);
   const [showPageModal, setShowPageModal] = useState(false);
+  const [showTimelineModal, setShowTimelineModal] = useState(false);
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [editingLeader, setEditingLeader] = useState(null);
   const [editingMemory, setEditingMemory] = useState(null);
   const [editingPage, setEditingPage] = useState(null);
+  const [editingTimeline, setEditingTimeline] = useState(null);
+  const [editingMilestone, setEditingMilestone] = useState(null);
 
   // Form states
   const [leaderForm, setLeaderForm] = useState({ name: '', role: '', instagram: '', photo_url: '', order: 0 });
   const [memoryForm, setMemoryForm] = useState({ title: '', content: '', image_url: '', layout: 'left', order: 0, highlight: false });
   const [pageForm, setPageForm] = useState({ title: '', subtitle: '', content: '' });
   const [settingsForm, setSettingsForm] = useState({});
+  const [statsForm, setStatsForm] = useState({ members: '', photos: '', events: '', years: '' });
+  const [timelineForm, setTimelineForm] = useState({ year: '', description: '', order: 0 });
+  const [milestoneForm, setMilestoneForm] = useState({ year: '', title: '', description: '', order: 0 });
 
   useEffect(() => {
     if (isAdmin) {
@@ -43,12 +52,15 @@ export const AdminPage = () => {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [usersRes, leadersRes, photosRes, memoriesRes, settingsRes] = await Promise.all([
+      const [usersRes, leadersRes, photosRes, memoriesRes, settingsRes, statsRes, airportRes, spottersRes] = await Promise.all([
         adminApi.getUsers(),
         leadersApi.list(),
         galleryApi.list({}),
         memoriesApi.list(),
-        settingsApi.get()
+        settingsApi.get(),
+        statsApi.get(),
+        timelineApi.getAirport(),
+        timelineApi.getSpotters()
       ]);
       setUsers(usersRes.data);
       setLeaders(leadersRes.data);
@@ -56,6 +68,10 @@ export const AdminPage = () => {
       setMemories(memoriesRes.data);
       setSettings(settingsRes.data);
       setSettingsForm(settingsRes.data);
+      setStats(statsRes.data);
+      setStatsForm(statsRes.data);
+      setAirportTimeline(airportRes.data);
+      setSpottersMilestones(spottersRes.data);
     } catch (error) {
       toast.error('Erro ao carregar dados');
     } finally {
@@ -63,7 +79,6 @@ export const AdminPage = () => {
     }
   };
 
-  // Redirect if not admin
   if (!user || !isAdmin) {
     return <Navigate to="/" replace />;
   }
@@ -107,6 +122,17 @@ export const AdminPage = () => {
       loadAllData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Erro ao atualizar função');
+    }
+  };
+
+  // Stats management
+  const handleSaveStats = async () => {
+    try {
+      await statsApi.update(statsForm);
+      toast.success('Estatísticas salvas');
+      loadAllData();
+    } catch (error) {
+      toast.error('Erro ao salvar estatísticas');
     }
   };
 
@@ -215,6 +241,66 @@ export const AdminPage = () => {
     }
   };
 
+  // Airport Timeline
+  const handleSaveTimeline = async () => {
+    try {
+      if (editingTimeline) {
+        await timelineApi.updateAirportItem(editingTimeline.item_id, timelineForm);
+        toast.success('Item atualizado');
+      } else {
+        await timelineApi.createAirportItem(timelineForm);
+        toast.success('Item adicionado');
+      }
+      setShowTimelineModal(false);
+      setEditingTimeline(null);
+      setTimelineForm({ year: '', description: '', order: 0 });
+      loadAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erro ao salvar item');
+    }
+  };
+
+  const handleDeleteTimeline = async (itemId) => {
+    if (!window.confirm('Excluir este item?')) return;
+    try {
+      await timelineApi.deleteAirportItem(itemId);
+      toast.success('Item excluído');
+      loadAllData();
+    } catch (error) {
+      toast.error('Erro ao excluir item');
+    }
+  };
+
+  // Spotters Milestones
+  const handleSaveMilestone = async () => {
+    try {
+      if (editingMilestone) {
+        await timelineApi.updateSpottersItem(editingMilestone.item_id, milestoneForm);
+        toast.success('Marco atualizado');
+      } else {
+        await timelineApi.createSpottersItem(milestoneForm);
+        toast.success('Marco adicionado');
+      }
+      setShowMilestoneModal(false);
+      setEditingMilestone(null);
+      setMilestoneForm({ year: '', title: '', description: '', order: 0 });
+      loadAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erro ao salvar marco');
+    }
+  };
+
+  const handleDeleteMilestone = async (itemId) => {
+    if (!window.confirm('Excluir este marco?')) return;
+    try {
+      await timelineApi.deleteSpottersItem(itemId);
+      toast.success('Marco excluído');
+      loadAllData();
+    } catch (error) {
+      toast.error('Erro ao excluir marco');
+    }
+  };
+
   const pendingUsers = users.filter(u => !u.approved && u.role !== 'admin_principal');
   const approvedUsers = users.filter(u => u.approved);
 
@@ -248,8 +334,14 @@ export const AdminPage = () => {
       {/* Main Content */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Tabs defaultValue="users" className="space-y-8">
-            <TabsList className="bg-[#102a43] border border-[#1a3a5c] flex-wrap">
+          <Tabs defaultValue="stats" className="space-y-8">
+            <TabsList className="bg-[#102a43] border border-[#1a3a5c] flex-wrap h-auto p-1 gap-1">
+              <TabsTrigger value="stats" className="data-[state=active]:bg-sky-600">
+                <BarChart3 size={16} className="mr-2" />Estatísticas
+              </TabsTrigger>
+              <TabsTrigger value="timeline" className="data-[state=active]:bg-sky-600">
+                <Clock size={16} className="mr-2" />Linhas do Tempo
+              </TabsTrigger>
               <TabsTrigger value="users" className="data-[state=active]:bg-sky-600">
                 <Users size={16} className="mr-2" />Usuários
               </TabsTrigger>
@@ -270,9 +362,137 @@ export const AdminPage = () => {
               </TabsTrigger>
             </TabsList>
 
+            {/* Stats Tab */}
+            <TabsContent value="stats">
+              <div className="card-navy p-6">
+                <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                  <BarChart3 size={20} className="text-sky-400" />
+                  Estatísticas do Site
+                </h2>
+                <p className="text-gray-400 mb-6">Edite os números exibidos na página inicial e na página de informações.</p>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-gray-300 text-sm mb-2">Membros Ativos</label>
+                    <Input
+                      value={statsForm.members || ''}
+                      onChange={(e) => setStatsForm({...statsForm, members: e.target.value})}
+                      placeholder="ex: 50+"
+                      className="bg-[#102a43] border-[#1a3a5c] text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-300 text-sm mb-2">Fotos Registradas</label>
+                    <Input
+                      value={statsForm.photos || ''}
+                      onChange={(e) => setStatsForm({...statsForm, photos: e.target.value})}
+                      placeholder="ex: 5.000+"
+                      className="bg-[#102a43] border-[#1a3a5c] text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-300 text-sm mb-2">Eventos Realizados</label>
+                    <Input
+                      value={statsForm.events || ''}
+                      onChange={(e) => setStatsForm({...statsForm, events: e.target.value})}
+                      placeholder="ex: 30+"
+                      className="bg-[#102a43] border-[#1a3a5c] text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-300 text-sm mb-2">Anos de História</label>
+                    <Input
+                      value={statsForm.years || ''}
+                      onChange={(e) => setStatsForm({...statsForm, years: e.target.value})}
+                      placeholder="ex: 8+"
+                      className="bg-[#102a43] border-[#1a3a5c] text-white"
+                    />
+                  </div>
+                </div>
+                <Button onClick={handleSaveStats} className="mt-6 btn-accent">
+                  <Save size={16} className="mr-2" />Salvar Estatísticas
+                </Button>
+              </div>
+            </TabsContent>
+
+            {/* Timeline Tab */}
+            <TabsContent value="timeline" className="space-y-8">
+              {/* Airport Timeline - Admin Principal Only */}
+              <div className="card-navy p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                      <Calendar size={20} className="text-sky-400" />
+                      Linha do Tempo do Aeroporto
+                    </h2>
+                    {!isAdminPrincipal && (
+                      <p className="text-amber-400 text-sm mt-1">Somente Admin Principal pode editar</p>
+                    )}
+                  </div>
+                  {isAdminPrincipal && (
+                    <Button onClick={() => { setEditingTimeline(null); setTimelineForm({ year: '', description: '', order: 0 }); setShowTimelineModal(true); }} className="btn-accent">
+                      <Plus size={16} className="mr-2" />Adicionar
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-3">
+                  {airportTimeline.map((item, index) => (
+                    <div key={item.item_id || index} className="flex items-center justify-between bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]">
+                      <div className="flex items-center gap-4">
+                        <span className="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full text-sm font-semibold">{item.year}</span>
+                        <p className="text-gray-300">{item.description}</p>
+                      </div>
+                      {isAdminPrincipal && !item.item_id?.startsWith('default') && (
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="ghost" onClick={() => { setEditingTimeline(item); setTimelineForm(item); setShowTimelineModal(true); }} className="text-gray-400 hover:text-white">
+                            <Edit size={14} />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => handleDeleteTimeline(item.item_id)} className="text-red-400">
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Spotters Milestones */}
+              <div className="card-navy p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                    <Clock size={20} className="text-amber-400" />
+                    Marcos Importantes dos Spotters CXJ
+                  </h2>
+                  <Button onClick={() => { setEditingMilestone(null); setMilestoneForm({ year: '', title: '', description: '', order: 0 }); setShowMilestoneModal(true); }} className="btn-accent">
+                    <Plus size={16} className="mr-2" />Adicionar
+                  </Button>
+                </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {spottersMilestones.map((item, index) => (
+                    <div key={item.item_id || index} className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]">
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="bg-amber-500/20 text-amber-400 px-2 py-1 rounded text-sm font-bold">{item.year}</span>
+                        {!item.item_id?.startsWith('default') && (
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="ghost" onClick={() => { setEditingMilestone(item); setMilestoneForm(item); setShowMilestoneModal(true); }} className="text-gray-400 hover:text-white h-7 w-7 p-0">
+                              <Edit size={12} />
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => handleDeleteMilestone(item.item_id)} className="text-red-400 h-7 w-7 p-0">
+                              <Trash2 size={12} />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="text-white font-semibold mb-1">{item.title}</h3>
+                      <p className="text-gray-400 text-sm">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
             {/* Users Tab */}
             <TabsContent value="users" className="space-y-8">
-              {/* Pending */}
               <div className="card-navy p-6">
                 <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
                   <RefreshCw size={20} className="text-amber-400" />
@@ -305,7 +525,6 @@ export const AdminPage = () => {
                 )}
               </div>
 
-              {/* Approved Users */}
               <div className="card-navy p-6">
                 <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
                   <Check size={20} className="text-emerald-400" />
@@ -335,11 +554,7 @@ export const AdminPage = () => {
                             {u.role === 'admin_principal' ? (
                               <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">Admin Principal</span>
                             ) : isAdminPrincipal ? (
-                              <select
-                                value={u.role}
-                                onChange={(e) => handleChangeRole(u.user_id, e.target.value)}
-                                className="bg-[#102a43] border border-[#1a3a5c] rounded px-2 py-1 text-white text-sm"
-                              >
+                              <select value={u.role} onChange={(e) => handleChangeRole(u.user_id, e.target.value)} className="bg-[#102a43] border border-[#1a3a5c] rounded px-2 py-1 text-white text-sm">
                                 <option value="contributor">Contribuidor</option>
                                 <option value="admin_authorized">Admin Autorizado</option>
                               </select>
@@ -589,6 +804,41 @@ export const AdminPage = () => {
             <Textarea value={pageForm.content || ''} onChange={(e) => setPageForm({...pageForm, content: e.target.value})} placeholder="Conteúdo" className="bg-[#102a43] border-[#1a3a5c] text-white" rows={10} />
             <Button onClick={handleSavePage} className="w-full btn-accent">
               <Save size={16} className="mr-2" />Salvar Página
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Timeline Modal */}
+      <Dialog open={showTimelineModal} onOpenChange={setShowTimelineModal}>
+        <DialogContent className="bg-[#0a1929] border-[#1a3a5c] text-white">
+          <DialogHeader>
+            <DialogTitle>{editingTimeline ? 'Editar Item' : 'Adicionar Item'} - Linha do Tempo do Aeroporto</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input value={timelineForm.year} onChange={(e) => setTimelineForm({...timelineForm, year: e.target.value})} placeholder="Ano/Década (ex: 1990s) *" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+            <Textarea value={timelineForm.description} onChange={(e) => setTimelineForm({...timelineForm, description: e.target.value})} placeholder="Descrição do evento *" className="bg-[#102a43] border-[#1a3a5c] text-white" rows={3} />
+            <Input type="number" value={timelineForm.order} onChange={(e) => setTimelineForm({...timelineForm, order: parseInt(e.target.value) || 0})} placeholder="Ordem" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+            <Button onClick={handleSaveTimeline} className="w-full btn-accent">
+              <Save size={16} className="mr-2" />Salvar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Milestone Modal */}
+      <Dialog open={showMilestoneModal} onOpenChange={setShowMilestoneModal}>
+        <DialogContent className="bg-[#0a1929] border-[#1a3a5c] text-white">
+          <DialogHeader>
+            <DialogTitle>{editingMilestone ? 'Editar Marco' : 'Adicionar Marco'} - Spotters CXJ</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input value={milestoneForm.year} onChange={(e) => setMilestoneForm({...milestoneForm, year: e.target.value})} placeholder="Ano (ex: 2020) *" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+            <Input value={milestoneForm.title || ''} onChange={(e) => setMilestoneForm({...milestoneForm, title: e.target.value})} placeholder="Título *" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+            <Textarea value={milestoneForm.description} onChange={(e) => setMilestoneForm({...milestoneForm, description: e.target.value})} placeholder="Descrição *" className="bg-[#102a43] border-[#1a3a5c] text-white" rows={3} />
+            <Input type="number" value={milestoneForm.order} onChange={(e) => setMilestoneForm({...milestoneForm, order: parseInt(e.target.value) || 0})} placeholder="Ordem" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+            <Button onClick={handleSaveMilestone} className="w-full btn-accent">
+              <Save size={16} className="mr-2" />Salvar
             </Button>
           </div>
         </DialogContent>
