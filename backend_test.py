@@ -222,7 +222,7 @@ def main():
         ("PUT", "/admin/users/test123/role", "Update user role", {"role": "contributor"}),
         ("POST", "/leaders", "Create leader", {"name": "Test Leader", "role": "Test Role"}),
         ("PUT", "/settings", "Update settings", {"instagram_url": "https://test.com"}),
-        ("POST", "/gallery", "Upload photo", {"description": "Test photo", "aircraft_model": "Boeing 737", "aircraft_type": "Boeing", "date": "2024-01-01"})
+        # Note: POST /gallery requires multipart form data with file upload, so we'll test it separately
     ]
     
     for method, endpoint, description, *data in protected_endpoints:
