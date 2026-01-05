@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Instagram, Youtube, Plane, User, LogOut } from 'lucide-react';
+import { Menu, X, Instagram, Youtube, Plane, User, LogOut, Shield } from 'lucide-react';
 import { siteConfig } from '../../data/mock';
+import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
 
 const navLinks = [
@@ -13,10 +14,11 @@ const navLinks = [
   { path: '/informacoes', label: 'Informações' },
 ];
 
-export const Header = ({ user, onLogin, onLogout }) => {
+export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, login, logout, isAdmin } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -99,9 +101,10 @@ export const Header = ({ user, onLogin, onLogout }) => {
                   <span className="hidden sm:block text-sm text-gray-300">
                     {user.name}
                   </span>
-                  {user.role === 'admin' && (
+                  {isAdmin && (
                     <Link to="/admin">
                       <Button variant="outline" size="sm" className="border-sky-500/50 text-sky-400 hover:bg-sky-500/10">
+                        <Shield size={16} className="mr-1" />
                         Admin
                       </Button>
                     </Link>
@@ -109,7 +112,7 @@ export const Header = ({ user, onLogin, onLogout }) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={onLogout}
+                    onClick={logout}
                     className="text-gray-400 hover:text-white"
                   >
                     <LogOut size={18} />
@@ -117,7 +120,7 @@ export const Header = ({ user, onLogin, onLogout }) => {
                 </div>
               ) : (
                 <Button
-                  onClick={onLogin}
+                  onClick={login}
                   className="bg-sky-600 hover:bg-sky-500 text-white"
                   size="sm"
                 >
@@ -156,6 +159,11 @@ export const Header = ({ user, onLogin, onLogout }) => {
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link to="/admin" className="text-xl font-medium text-sky-400">
+                Painel Admin
+              </Link>
+            )}
           </nav>
           
           <div className="flex items-center gap-6 mt-8">
@@ -181,7 +189,7 @@ export const Header = ({ user, onLogin, onLogout }) => {
             <Button
               onClick={() => {
                 setIsMobileMenuOpen(false);
-                onLogin();
+                login();
               }}
               className="mt-8 bg-sky-600 hover:bg-sky-500 text-white"
             >

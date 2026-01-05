@@ -1,10 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Youtube, Mail, MapPin, Plane } from 'lucide-react';
-import { siteConfig, groupInfo } from '../../data/mock';
+import { Instagram, Youtube, MapPin, Plane } from 'lucide-react';
+import { siteConfig } from '../../data/mock';
+import { settingsApi } from '../../services/api';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [settings, setSettings] = useState(null);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await settingsApi.get();
+        setSettings(res.data);
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      }
+    };
+    loadSettings();
+  }, []);
 
   return (
     <footer className="bg-[#050d17] border-t border-[#1a2f45]">
@@ -20,12 +34,11 @@ export const Footer = () => {
               />
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Comunidade de entusiastas da aviação dedicada a registrar e documentar 
-              as operações aéreas no Aeroporto CXJ em Caxias do Sul.
+              {settings?.footer?.about_text || 'Comunidade de entusiastas da aviação dedicada a registrar e documentar as operações aéreas no Aeroporto CXJ em Caxias do Sul.'}
             </p>
             <div className="flex items-center gap-4">
               <a
-                href={groupInfo.contacts.instagramUrl}
+                href={settings?.instagram_url || 'https://instagram.com/spotterscxj'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-[#102a43] flex items-center justify-center text-gray-400 hover:text-pink-400 hover:bg-[#1a3a5c] transition-all"
@@ -34,20 +47,13 @@ export const Footer = () => {
                 <Instagram size={20} />
               </a>
               <a
-                href={groupInfo.contacts.youtubeUrl}
+                href={settings?.youtube_url || 'https://youtube.com/@spotterscxj'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-[#102a43] flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-[#1a3a5c] transition-all"
                 aria-label="YouTube"
               >
                 <Youtube size={20} />
-              </a>
-              <a
-                href={`mailto:${groupInfo.contacts.email}`}
-                className="w-10 h-10 rounded-full bg-[#102a43] flex items-center justify-center text-gray-400 hover:text-sky-400 hover:bg-[#1a3a5c] transition-all"
-                aria-label="Email"
-              >
-                <Mail size={20} />
               </a>
             </div>
           </div>
@@ -83,7 +89,7 @@ export const Footer = () => {
               </li>
               <li>
                 <Link to="/informacoes" className="text-gray-400 hover:text-sky-400 transition-colors text-sm">
-                  Informações do Grupo
+                  Liderança e Contatos
                 </Link>
               </li>
             </ul>
@@ -91,19 +97,19 @@ export const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-white font-semibold text-lg mb-6">Contato</h3>
+            <h3 className="text-white font-semibold text-lg mb-6">Redes Sociais</h3>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Instagram size={18} className="text-pink-400 mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-gray-300 text-sm font-medium">Instagram</p>
                   <a
-                    href={groupInfo.contacts.instagramUrl}
+                    href={settings?.instagram_url || 'https://instagram.com/spotterscxj'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-400 text-sm hover:text-pink-400 transition-colors"
                   >
-                    {groupInfo.contacts.instagram}
+                    {settings?.instagram_handle || '@spotterscxj'}
                   </a>
                 </div>
               </li>
@@ -112,12 +118,12 @@ export const Footer = () => {
                 <div>
                   <p className="text-gray-300 text-sm font-medium">YouTube</p>
                   <a
-                    href={groupInfo.contacts.youtubeUrl}
+                    href={settings?.youtube_url || 'https://youtube.com/@spotterscxj'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-400 text-sm hover:text-red-500 transition-colors"
                   >
-                    {groupInfo.contacts.youtube}
+                    {settings?.youtube_name || 'Spotters CXJ'}
                   </a>
                 </div>
               </li>
