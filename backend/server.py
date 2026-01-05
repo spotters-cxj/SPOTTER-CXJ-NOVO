@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 
 # Import routes
-from routes import auth, admin, pages, leaders, gallery, memories, settings, upload
+from routes import auth, admin, pages, leaders, gallery, memories, settings, upload, timeline, stats
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
