@@ -78,4 +78,22 @@ export const uploadApi = {
   },
 };
 
+// Timeline API
+export const timelineApi = {
+  getAirport: () => api.get('/timeline/airport'),
+  createAirportItem: (data) => api.post('/timeline/airport', data),
+  updateAirportItem: (itemId, data) => api.put(`/timeline/airport/${itemId}`, data),
+  deleteAirportItem: (itemId) => api.delete(`/timeline/airport/${itemId}`),
+  getSpotters: () => api.get('/timeline/spotters'),
+  createSpottersItem: (data) => api.post('/timeline/spotters', data),
+  updateSpottersItem: (itemId, data) => api.put(`/timeline/spotters/${itemId}`, data),
+  deleteSpottersItem: (itemId) => api.delete(`/timeline/spotters/${itemId}`),
+};
+
+// Stats API
+export const statsApi = {
+  get: () => api.get('/stats'),
+  update: (data) => api.put('/stats', data),
+};
+
 export default api;
