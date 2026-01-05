@@ -262,6 +262,33 @@ def main():
     else:
         result.failure("GET /api/pages/nonexistent", f"Expected 404, got: {response.get('status_code', 'Error')}")
     
+    # Test gallery upload endpoint separately (requires multipart form data)
+    print("\n📤 TESTING GALLERY UPLOAD (Multipart Form)")
+    print("-" * 40)
+    
+    try:
+        # Create a test file
+        test_file_content = b"fake image content"
+        files = {'file': ('test.jpg', test_file_content, 'image/jpeg')}
+        form_data = {
+            'description': 'Test photo',
+            'aircraft_model': 'Boeing 737',
+            'aircraft_type': 'Boeing',
+            'date': '2024-01-01'
+        }
+        
+        response = requests.post(f"{API_URL}/gallery", data=form_data, files=files, timeout=10)
+        
+        if response.status_code == 401:
+            result.success("POST /api/gallery (multipart)", "Correctly returned 401 Unauthorized")
+        elif response.status_code == 403:
+            result.success("POST /api/gallery (multipart)", "Correctly returned 403 Forbidden (user not approved)")
+        else:
+            result.failure("POST /api/gallery (multipart)", f"Expected 401/403, got: {response.status_code}")
+            
+    except Exception as e:
+        result.failure("POST /api/gallery (multipart)", f"Error testing multipart upload: {str(e)}")
+    
     # Final summary
     success = result.summary()
     return 0 if success else 1
