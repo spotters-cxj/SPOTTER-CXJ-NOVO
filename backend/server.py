@@ -31,6 +31,8 @@ api_router.include_router(gallery.router)
 api_router.include_router(memories.router)
 api_router.include_router(settings.router)
 api_router.include_router(upload.router)
+api_router.include_router(timeline.router)
+api_router.include_router(stats.router)
 
 # Root endpoint
 @api_router.get("/")
