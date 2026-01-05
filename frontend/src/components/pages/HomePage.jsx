@@ -1,0 +1,195 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { ChevronRight, Plane, Camera, Users, Calendar, ArrowRight } from 'lucide-react';
+import { homeContent, siteConfig, groupInfo, galleryPhotos } from '../../data/mock';
+import { Button } from '../ui/button';
+
+export const HomePage = () => {
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="hero-bg min-h-screen flex items-center justify-center relative pt-20">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-sky-500/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="text-center lg:text-left animate-slideUp">
+              <div className="inline-flex items-center gap-2 bg-sky-500/10 border border-sky-500/20 rounded-full px-4 py-2 mb-6">
+                <Plane size={16} className="text-sky-400" />
+                <span className="text-sky-300 text-sm font-medium">Aviação em Caxias do Sul</span>
+              </div>
+              
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                {homeContent.title.split('Spotters CXJ')[0]}
+                <span className="gradient-text">Spotters CXJ</span>
+              </h1>
+              
+              <p className="text-lg text-gray-300 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                {homeContent.subtitle}
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Link to="/galeria">
+                  <Button className="btn-accent w-full sm:w-auto">
+                    <Camera size={18} className="mr-2" />
+                    Ver Galeria
+                  </Button>
+                </Link>
+                <Link to="/historia-spotters">
+                  <Button variant="outline" className="w-full sm:w-auto border-gray-600 text-gray-300 hover:bg-white/5">
+                    Nossa História
+                    <ChevronRight size={18} className="ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            
+            {/* Right Content - Logo */}
+            <div className="flex justify-center lg:justify-end animate-fadeIn">
+              <div className="relative">
+                <div className="absolute inset-0 bg-sky-500/20 blur-3xl rounded-full" />
+                <img
+                  src={siteConfig.logoMain}
+                  alt="Spotters CXJ"
+                  className="relative w-80 h-80 lg:w-96 lg:h-96 object-contain rounded-2xl animate-float"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 border-2 border-gray-500 rounded-full flex justify-center pt-2">
+            <div className="w-1.5 h-3 bg-sky-400 rounded-full" />
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-24 bg-[#0a1929]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+                Sobre o <span className="text-sky-400">Spotters CXJ</span>
+              </h2>
+              <div className="space-y-4 text-gray-300 leading-relaxed">
+                {homeContent.description.split('\n').map((paragraph, index) => (
+                  paragraph.trim() && <p key={index}>{paragraph.trim()}</p>
+                ))}
+              </div>
+            </div>
+            
+            <div className="card-navy p-8">
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                <Camera className="text-sky-400" />
+                Nossos Objetivos
+              </h3>
+              <ul className="space-y-4">
+                {homeContent.objectives.map((objective, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <span className="w-6 h-6 bg-sky-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <ChevronRight size={14} className="text-sky-400" />
+                    </span>
+                    <span className="text-gray-300">{objective}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 bg-[#102a43]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { value: groupInfo.stats.members, label: 'Membros Ativos', icon: Users },
+              { value: groupInfo.stats.photos, label: 'Fotos Registradas', icon: Camera },
+              { value: groupInfo.stats.events, label: 'Eventos Realizados', icon: Calendar },
+              { value: groupInfo.stats.years, label: 'Anos de História', icon: Plane },
+            ].map((stat, index) => (
+              <div key={index} className="stat-card hover-lift">
+                <stat.icon className="w-8 h-8 text-sky-400 mx-auto mb-3" />
+                <div className="stat-number">{stat.value}</div>
+                <div className="text-gray-400 text-sm mt-2">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Preview */}
+      <section className="py-24 bg-[#0a1929]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                Galeria de <span className="text-sky-400">Fotos</span>
+              </h2>
+              <p className="text-gray-400">Os melhores registros da nossa comunidade</p>
+            </div>
+            <Link to="/galeria">
+              <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-white/5">
+                Ver Todas
+                <ArrowRight size={16} className="ml-2" />
+              </Button>
+            </Link>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {galleryPhotos.slice(0, 3).map((photo) => (
+              <div key={photo.id} className="photo-card group">
+                <img src={photo.url} alt={photo.description} />
+                <div className="photo-overlay">
+                  <h3 className="text-white font-semibold mb-1">{photo.aircraft}</h3>
+                  <p className="text-gray-300 text-sm">{photo.description}</p>
+                  <p className="text-sky-400 text-xs mt-2">Por {photo.author}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-24 bg-gradient-to-b from-[#102a43] to-[#0a1929]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-block mb-6">
+            <img
+              src={siteConfig.logoSecondary}
+              alt="Spotters CXJ"
+              className="h-20 w-20 mx-auto rounded-xl bg-black/50 p-2"
+            />
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+            Faça Parte da Nossa Comunidade
+          </h2>
+          <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
+            Junte-se aos entusiastas da aviação em Caxias do Sul. Compartilhe suas fotos, 
+            participe dos nossos eventos e faça parte da história do spotting na Serra Gaúcha.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href={siteConfig.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-accent inline-flex items-center justify-center gap-2"
+            >
+              Siga no Instagram
+            </a>
+            <Link to="/informacoes" className="btn-primary inline-flex items-center justify-center">
+              Conheça o Grupo
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
