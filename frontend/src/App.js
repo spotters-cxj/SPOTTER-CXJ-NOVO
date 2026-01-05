@@ -1,51 +1,54 @@
-import { useEffect } from "react";
-import "@/App.css";
+import React, { useState } from "react";
+import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import { Header } from "./components/layout/Header";
+import { Footer } from "./components/layout/Footer";
+import { HomePage } from "./components/pages/HomePage";
+import { AirportHistoryPage } from "./components/pages/AirportHistoryPage";
+import { SpottersHistoryPage } from "./components/pages/SpottersHistoryPage";
+import { MemoriesPage } from "./components/pages/MemoriesPage";
+import { GalleryPage } from "./components/pages/GalleryPage";
+import { GroupInfoPage } from "./components/pages/GroupInfoPage";
+import { AdminPage } from "./components/pages/AdminPage";
+import { Toaster } from "./components/ui/sonner";
 
 function App() {
+  // Mock user state - will be replaced with real auth
+  const [user, setUser] = useState(null);
+
+  const handleLogin = () => {
+    // Mock login - will be replaced with Google Auth
+    setUser({
+      id: "1",
+      name: "Admin",
+      email: "admin@spotterscxj.com",
+      role: "admin",
+      approved: true,
+    });
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
   return (
     <div className="App">
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
+        <Header user={user} onLogin={handleLogin} onLogout={handleLogout} />
+        <main>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/historia-aeroporto" element={<AirportHistoryPage />} />
+            <Route path="/historia-spotters" element={<SpottersHistoryPage />} />
+            <Route path="/recordacoes" element={<MemoriesPage />} />
+            <Route path="/galeria" element={<GalleryPage user={user} />} />
+            <Route path="/informacoes" element={<GroupInfoPage />} />
+            <Route path="/admin" element={<AdminPage user={user} />} />
+          </Routes>
+        </main>
+        <Footer />
+        <Toaster />
       </BrowserRouter>
     </div>
   );
