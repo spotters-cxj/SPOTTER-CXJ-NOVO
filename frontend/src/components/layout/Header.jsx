@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Instagram, Youtube, User, LogOut, Shield, Camera, Upload, Trophy, Users, Bell, Newspaper } from 'lucide-react';
+import { Menu, X, Instagram, Youtube, User, LogOut, Shield, Camera, Upload, Trophy, Users, Bell, Newspaper, Search, Sparkles } from 'lucide-react';
 import { siteConfig } from '../../data/mock';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
@@ -12,8 +12,7 @@ const navLinks = [
   { path: '/galeria', label: 'Galeria' },
   { path: '/ranking', label: 'Ranking' },
   { path: '/membros', label: 'Membros' },
-  { path: '/historia-aeroporto', label: 'Aeroporto' },
-  { path: '/informacoes', label: 'Sobre' },
+  { path: '/buscar', label: 'Buscar', icon: Search },
 ];
 
 const HIERARCHY_LEVELS = {
@@ -51,6 +50,15 @@ export const Header = () => {
     setIsMobileMenuOpen(false);
   }, [location]);
 
+  // Ensure YouTube URL is valid
+  const youtubeUrl = siteConfig.youtube?.startsWith('http') 
+    ? siteConfig.youtube 
+    : `https://youtube.com/${siteConfig.youtube || '@spotterscxj'}`;
+
+  const instagramUrl = siteConfig.instagramUrl?.startsWith('http')
+    ? siteConfig.instagramUrl
+    : `https://instagram.com/${(siteConfig.instagram || 'spotterscxj').replace('@', '')}`;
+
   return (
     <>
       <header
@@ -81,13 +89,23 @@ export const Header = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`nav-link px-3 py-2 text-sm font-medium ${
+                  className={`nav-link px-3 py-2 text-sm font-medium flex items-center gap-1 ${
                     location.pathname === link.path ? 'active' : ''
                   }`}
                 >
+                  {link.icon && <link.icon size={14} />}
                   {link.label}
                 </Link>
               ))}
+              
+              {/* VIP Link - Golden and prominent */}
+              <Link
+                to="/vip"
+                className="ml-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 text-black font-bold text-sm flex items-center gap-1 hover:shadow-[0_0_20px_rgba(251,191,36,0.5)] transition-all animate-pulse-slow"
+              >
+                <Sparkles size={14} />
+                Seja VIP
+              </Link>
             </nav>
 
             {/* Right side - Social + Auth */}
@@ -128,7 +146,7 @@ export const Header = () => {
               {/* Social Links */}
               <div className="hidden md:flex items-center gap-1">
                 <a
-                  href={siteConfig.instagramUrl}
+                  href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 text-gray-400 hover:text-pink-400 transition-colors"
@@ -137,7 +155,7 @@ export const Header = () => {
                   <Instagram size={18} />
                 </a>
                 <a
-                  href={siteConfig.youtube}
+                  href={youtubeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 text-gray-400 hover:text-red-500 transition-colors"
@@ -150,7 +168,7 @@ export const Header = () => {
               {/* Auth Button */}
               {user ? (
                 <div className="flex items-center gap-2">
-                  <Link to="/perfil" className="hidden sm:flex items-center gap-2">
+                  <Link to={`/perfil/${user.user_id}`} className="hidden sm:flex items-center gap-2">
                     <img
                       src={user.picture || siteConfig.logoRound}
                       alt={user.name}
@@ -218,6 +236,15 @@ export const Header = () => {
               </Link>
             ))}
             
+            {/* VIP Link Mobile */}
+            <Link
+              to="/vip"
+              className="px-6 py-2 rounded-lg bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 text-black font-bold text-xl flex items-center gap-2"
+            >
+              <Sparkles size={20} />
+              Seja VIP
+            </Link>
+            
             {user && (
               <>
                 <Link to="/upload" className="text-xl font-medium text-gray-300 hover:text-white">
@@ -240,7 +267,7 @@ export const Header = () => {
           
           <div className="flex items-center gap-6 mt-8">
             <a
-              href={siteConfig.instagramUrl}
+              href={instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-400 hover:text-pink-400 transition-colors"
@@ -248,7 +275,7 @@ export const Header = () => {
               <Instagram size={28} />
             </a>
             <a
-              href={siteConfig.youtube}
+              href={youtubeUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-400 hover:text-red-500 transition-colors"
