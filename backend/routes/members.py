@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from datetime import datetime, timezone
 from models import HIERARCHY_LEVELS, get_highest_role_level
+from routes.logs import create_audit_log, get_client_ip
 import uuid
 
 router = APIRouter(prefix="/members", tags=["members"])
