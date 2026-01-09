@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 
 # Import routes
-from routes import auth, photos, evaluation, members, news, notifications, ranking
+from routes import auth, photos, evaluation, members, news, notifications, ranking, admin
 from routes import pages, leaders, settings, timeline, stats, gallery, memories, upload
 
 ROOT_DIR = Path(__file__).parent
