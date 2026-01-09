@@ -231,7 +231,7 @@ export const Header = () => {
               </>
             )}
             
-            {isAdmin && (
+            {isGestao && (
               <Link to="/admin" className="text-xl font-medium text-sky-400">
                 Painel Admin
               </Link>
