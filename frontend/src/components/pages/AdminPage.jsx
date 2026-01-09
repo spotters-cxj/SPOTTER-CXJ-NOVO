@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Users, Check, X, Trash2, Shield, Camera, Settings, RefreshCw, Plus, Edit, Save, Image, FileText, UserCheck, UserX, Crown, Clock, BarChart3, Calendar } from 'lucide-react';
+import { Users, Check, X, Trash2, Shield, Camera, Settings, RefreshCw, Plus, Edit, Save, Image, FileText, UserCheck, UserX, Crown, Clock, BarChart3, Calendar, History, Search, Filter } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { adminApi, leadersApi, pagesApi, settingsApi, memoriesApi, galleryApi, timelineApi, statsApi } from '../../services/api';
+import { adminApi, leadersApi, pagesApi, settingsApi, memoriesApi, galleryApi, timelineApi, statsApi, logsApi } from '../../services/api';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
