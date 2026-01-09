@@ -1,55 +1,66 @@
 import React from 'react';
 import { Trophy, Medal, Award } from 'lucide-react';
+import { TagBadgeList } from './TagBadge';
 
 export const Podium = ({ winners = [] }) => {
-  // Reorder: [2nd, 1st, 3rd]
-  const ordered = [
-    winners[1] || null,
-    winners[0] || null,
-    winners[2] || null
-  ];
+  if (winners.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        <Trophy size={48} className="mx-auto mb-4 opacity-50" />
+        <p>Nenhum ranking disponível ainda</p>
+      </div>
+    );
+  }
 
-  const positions = [
-    { place: 2, icon: Medal, color: 'silver', label: '2º Lugar' },
-    { place: 1, icon: Trophy, color: 'gold', label: '1º Lugar' },
-    { place: 3, icon: Award, color: 'bronze', label: '3º Lugar' }
-  ];
+  const podiumOrder = [1, 0, 2]; // 2nd, 1st, 3rd
+  const places = ['first', 'second', 'third'];
+  const icons = [Trophy, Medal, Award];
+  const heights = [160, 120, 80];
 
   return (
     <div className="podium">
-      {ordered.map((winner, index) => {
-        const pos = positions[index];
-        const Icon = pos.icon;
-        const placeClass = index === 1 ? 'first' : index === 0 ? 'second' : 'third';
+      {podiumOrder.map((index, displayIndex) => {
+        const winner = winners[index];
+        if (!winner) return null;
+
+        const placeClass = places[index];
+        const Icon = icons[index];
+        const height = heights[index];
 
         return (
-          <div key={pos.place} className={`podium-place ${placeClass}`}>
-            {winner && (
-              <div className="flex flex-col items-center mb-4">
+          <div key={index} className={`podium-place ${placeClass}`}>
+            <div className="mb-4">
+              <div className="relative">
                 <img
-                  src={winner.photo || 'https://via.placeholder.com/80'}
+                  src={winner.photo || '/logo-spotters-round.png'}
                   alt={winner.name}
-                  className="avatar avatar-lg mb-2"
-                  style={{
-                    borderColor: pos.color === 'gold' ? '#ffd700' 
-                      : pos.color === 'silver' ? '#c0c0c0' 
-                      : '#cd7f32'
-                  }}
+                  className="w-16 h-16 rounded-full object-cover border-3 border-white/20 mx-auto"
                 />
-                <span className="text-white font-semibold text-sm">{winner.name}</span>
-                <span className="text-gray-400 text-xs">⭐ {winner.rating?.toFixed(1)}</span>
-                {winner.timeOnPodium && (
-                  <span className="text-gray-500 text-xs mt-1">{winner.timeOnPodium}</span>
-                )}
+                <div className={`absolute -top-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center 
+                  ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-amber-700'}`}>
+                  <span className="text-white font-bold text-sm">{index + 1}</span>
+                </div>
               </div>
-            )}
-            <div className="podium-block">
-              <Icon size={32} />
+              <h4 className="text-white font-semibold mt-2 text-sm">{winner.name}</h4>
+              <p className="text-yellow-400 text-sm">⭐ {winner.rating?.toFixed(1) || '0.0'}</p>
+              <p className="text-gray-500 text-xs">{winner.total_photos || 0} fotos</p>
+              {winner.tags && (
+                <div className="mt-2">
+                  <TagBadgeList tags={winner.tags} size="small" maxShow={1} />
+                </div>
+              )}
             </div>
-            <span className="text-gray-400 text-sm mt-2">{pos.label}</span>
+            <div 
+              className="podium-block"
+              style={{ height: `${height}px` }}
+            >
+              <Icon size={32} className="opacity-70" />
+            </div>
           </div>
         );
       })}
     </div>
   );
 };
+
+export default Podium;

@@ -1,50 +1,59 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Star } from 'lucide-react';
 
-export const StarRating = ({ rating = 0, maxRating = 5, onRate, readonly = false, size = 20 }) => {
-  const [hoverRating, setHoverRating] = React.useState(0);
+export const StarRating = ({ 
+  rating = 0, 
+  maxStars = 5, 
+  editable = false, 
+  onChange = null,
+  size = 'default' 
+}) => {
+  const [hoverRating, setHoverRating] = useState(0);
 
-  const handleClick = (index) => {
-    if (!readonly && onRate) {
-      onRate(index + 1);
+  const sizeMap = {
+    small: 14,
+    default: 20,
+    large: 28
+  };
+  const starSize = sizeMap[size] || 20;
+
+  const handleClick = (value) => {
+    if (editable && onChange) {
+      onChange(value);
     }
   };
-
-  const handleMouseEnter = (index) => {
-    if (!readonly) {
-      setHoverRating(index + 1);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setHoverRating(0);
-  };
-
-  const displayRating = hoverRating || rating;
 
   return (
-    <div className="star-rating" onMouseLeave={handleMouseLeave}>
-      {Array.from({ length: maxRating }, (_, index) => (
-        <Star
-          key={index}
-          size={size}
-          className={`star ${index < displayRating ? 'filled' : ''} ${readonly ? '' : 'cursor-pointer'}`}
-          fill={index < displayRating ? '#ffd700' : 'none'}
-          onClick={() => handleClick(index)}
-          onMouseEnter={() => handleMouseEnter(index)}
-        />
-      ))}
+    <div className="star-rating">
+      {[...Array(maxStars)].map((_, i) => {
+        const value = i + 1;
+        const filled = value <= (hoverRating || rating);
+        
+        return (
+          <Star
+            key={i}
+            size={starSize}
+            className={`star ${filled ? 'filled' : ''} ${editable ? 'cursor-pointer' : ''}`}
+            fill={filled ? '#ffd700' : 'none'}
+            onClick={() => handleClick(value)}
+            onMouseEnter={() => editable && setHoverRating(value)}
+            onMouseLeave={() => editable && setHoverRating(0)}
+          />
+        );
+      })}
     </div>
   );
 };
 
-export const RatingDisplay = ({ rating, count, size = 16 }) => {
+export const StarRatingDisplay = ({ rating, count, size = 'default' }) => {
   return (
     <div className="flex items-center gap-2">
-      <StarRating rating={Math.round(rating)} readonly size={size} />
-      <span className="text-sm text-gray-400">
-        {rating.toFixed(1)} {count && `(${count})`}
+      <StarRating rating={Math.round(rating)} size={size} />
+      <span className="text-gray-400 text-sm">
+        {rating?.toFixed(1)} {count && `(${count})`}
       </span>
     </div>
   );
 };
+
+export default StarRating;

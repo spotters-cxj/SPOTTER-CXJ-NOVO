@@ -1,102 +1,78 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Calendar, MapPin } from 'lucide-react';
+import { newsApi } from '../../services/api';
 
-export const NewsCarousel = ({ news = [] }) => {
-  const [currentIndex, setCurrentIndex] = React.useState(0);
-  const itemsPerPage = 3;
-  const totalPages = Math.ceil(news.length / itemsPerPage);
+export const NewsCarousel = () => {
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
-    if (news.length === 0) return;
-    
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % totalPages);
-    }, 5000);
+  useEffect(() => {
+    loadNews();
+  }, []);
 
-    return () => clearInterval(interval);
-  }, [news.length, totalPages]);
+  const loadNews = async () => {
+    try {
+      const response = await newsApi.list(10);
+      setNews(response.data || []);
+    } catch (error) {
+      console.error('Error loading news:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const visibleNews = news.slice(
-    currentIndex * itemsPerPage,
-    currentIndex * itemsPerPage + itemsPerPage
-  );
-
-  if (news.length === 0) return null;
-
-  return (
-    <div className="relative">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {visibleNews.map((item) => (
-          <div
-            key={item.id}
-            className="glass-card glass-card-hover overflow-hidden cursor-pointer"
-          >
-            {item.image && (
-              <div className="aspect-video">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            <div className="p-4">
-              <span className="text-xs text-gray-500">
-                {new Date(item.date).toLocaleDateString('pt-BR')}
-              </span>
-              <h3 className="text-white font-semibold mt-1 line-clamp-2">
-                {item.title}
-              </h3>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-6">
-          <button
-            onClick={() => setCurrentIndex((prev) => (prev - 1 + totalPages) % totalPages)}
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentIndex(i)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                i === currentIndex ? 'bg-sky-400' : 'bg-white/20'
-              }`}
-            />
-          ))}
-          <button
-            onClick={() => setCurrentIndex((prev) => (prev + 1) % totalPages)}
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export const NewsTicker = ({ news = [] }) => {
-  if (news.length === 0) return null;
+  if (loading || news.length === 0) {
+    return null;
+  }
 
   // Duplicate for seamless loop
   const duplicatedNews = [...news, ...news];
 
   return (
-    <div className="news-ticker bg-white/5 py-3 border-y border-white/10">
-      <div className="news-ticker-content">
-        {duplicatedNews.map((item, index) => (
-          <span key={index} className="mx-8 text-gray-300 whitespace-nowrap">
-            <span className="text-sky-400 font-semibold">•</span>
-            <span className="ml-2">{item.title}</span>
-          </span>
-        ))}
+    <section className="py-8 bg-gradient-to-r from-black via-gray-900 to-black overflow-hidden border-t border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-4 mb-4">
+        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+          <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+          Últimas Notícias
+        </h3>
       </div>
-    </div>
+      
+      <div className="news-ticker">
+        <div className="news-ticker-content">
+          {duplicatedNews.map((item, index) => (
+            <div
+              key={`${item.news_id}-${index}`}
+              className="inline-flex items-center mx-4 min-w-[350px] max-w-[400px] bg-white/5 backdrop-blur rounded-lg overflow-hidden border border-white/10 hover:border-sky-500/30 transition-colors cursor-pointer"
+            >
+              {item.image && (
+                <img
+                  src={item.image.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${item.image}` : item.image}
+                  alt={item.title}
+                  className="w-24 h-20 object-cover flex-shrink-0"
+                />
+              )}
+              <div className="p-3 flex-1 min-w-0">
+                <h4 className="text-white font-semibold text-sm line-clamp-1">{item.title}</h4>
+                <p className="text-gray-400 text-xs mt-1 line-clamp-2">{item.content?.substring(0, 80)}...</p>
+                <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <Calendar size={10} />
+                    {new Date(item.created_at).toLocaleDateString('pt-BR')}
+                  </span>
+                  {item.location && (
+                    <span className="flex items-center gap-1">
+                      <MapPin size={10} />
+                      {item.location}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };
+
+export default NewsCarousel;
