@@ -3,8 +3,9 @@
 export const siteConfig = {
   name: "Spotters CXJ",
   tagline: "Registrando a aviação em Caxias do Sul",
-  logoMain: "https://customer-assets.emergentagent.com/job_e962b36b-c540-44a9-aaec-65346f6fe250/artifacts/j82ijto8_LOGO%20SPOTTERCXJ.jpg",
-  logoSecondary: "https://customer-assets.emergentagent.com/job_e962b36b-c540-44a9-aaec-65346f6fe250/artifacts/y59qvget_LOGO%20SPOTTERCXJ%20II.jpg",
+  logoMain: "/logo-spotters-main.jpg",
+  logoSecondary: "/logo-spotters-round.png",
+  logoRound: "/logo-spotters-round.png",
   instagram: "@spotterscxj",
   youtube: "https://youtube.com/@spotterscxj",
   instagramUrl: "https://instagram.com/spotterscxj",
