@@ -53,6 +53,20 @@ export const galleryApi = {
   getByRegistration: (registration) => api.get(`/gallery/by-registration/${registration}`),
 };
 
+// Photos API (for full photo functionality)
+export const photosApi = {
+  list: (params) => api.get('/photos', { params }),
+  get: (photoId) => api.get(`/photos/${photoId}`),
+  getMy: () => api.get('/photos/my'),
+  getQueue: () => api.get('/photos/queue'),
+  upload: (formData) => api.post('/photos', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  rate: (photoId, rating) => api.post(`/photos/${photoId}/rate`, { rating }),
+  comment: (photoId, content) => api.post(`/photos/${photoId}/comment`, { content }),
+  delete: (photoId) => api.delete(`/photos/${photoId}`),
+};
+
 // Memories API
 export const memoriesApi = {
   list: () => api.get('/memories'),
@@ -94,6 +108,50 @@ export const timelineApi = {
 export const statsApi = {
   get: () => api.get('/stats'),
   update: (data) => api.put('/stats', data),
+};
+
+// News API
+export const newsApi = {
+  list: (limit = 20) => api.get('/news', { params: { limit } }),
+  get: (newsId) => api.get(`/news/${newsId}`),
+  create: (data) => api.post('/news', data),
+  update: (newsId, data) => api.put(`/news/${newsId}`, data),
+  delete: (newsId) => api.delete(`/news/${newsId}`),
+};
+
+// Members API
+export const membersApi = {
+  list: (tag = null) => api.get('/members', { params: tag ? { tag } : {} }),
+  getHierarchy: () => api.get('/members/hierarchy'),
+  get: (userId) => api.get(`/members/${userId}`),
+  updateTags: (userId, tags) => api.put(`/members/${userId}/tags`, { tags }),
+  approve: (userId, approved) => api.put(`/members/${userId}/approve`, { approved }),
+  delete: (userId) => api.delete(`/members/${userId}`),
+};
+
+// Evaluation API
+export const evaluationApi = {
+  getQueue: () => api.get('/evaluation/queue'),
+  getPhoto: (photoId) => api.get(`/evaluation/${photoId}`),
+  submit: (photoId, criteria, comment) => api.post(`/evaluation/${photoId}`, { criteria, comment }),
+  getHistory: (photoId) => api.get(`/evaluation/history/${photoId}`),
+  getEvaluatorHistory: (evaluatorId) => api.get(`/evaluation/evaluator/${evaluatorId}/history`),
+};
+
+// Ranking API
+export const rankingApi = {
+  getPhotos: (limit = 20) => api.get('/ranking', { params: { limit } }),
+  getTop3: () => api.get('/ranking/top3'),
+  getUsers: (limit = 20) => api.get('/ranking/users', { params: { limit } }),
+  getPodium: () => api.get('/ranking/podium'),
+};
+
+// Notifications API
+export const notificationsApi = {
+  list: (unreadOnly = false) => api.get('/notifications', { params: { unread_only: unreadOnly } }),
+  getCount: () => api.get('/notifications/count'),
+  markRead: (notificationId) => api.put(`/notifications/${notificationId}/read`),
+  markAllRead: () => api.put('/notifications/read-all'),
 };
 
 export default api;
