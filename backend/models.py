@@ -246,3 +246,66 @@ class PageContentUpdate(BaseModel):
     subtitle: Optional[str] = None
     content: Optional[str] = None
     sections: Optional[List[dict]] = None
+
+# Leader Models
+class LeaderBase(BaseModel):
+    name: str
+    role: str
+    instagram: Optional[str] = None
+    photo_url: Optional[str] = None
+    order: int = 0
+
+class Leader(LeaderBase):
+    leader_id: str = Field(default_factory=lambda: f"leader_{uuid.uuid4().hex[:8]}")
+    created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
+
+class LeaderCreate(LeaderBase):
+    pass
+
+class LeaderUpdate(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    instagram: Optional[str] = None
+    photo_url: Optional[str] = None
+    order: Optional[int] = None
+
+# Memory Models
+class MemoryBase(BaseModel):
+    title: str
+    content: str
+    image_url: Optional[str] = None
+    layout: str = "left"  # left, right, center
+    order: int = 0
+    highlight: bool = False
+
+class Memory(MemoryBase):
+    memory_id: str = Field(default_factory=lambda: f"memory_{uuid.uuid4().hex[:8]}")
+    created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
+
+class MemoryCreate(MemoryBase):
+    pass
+
+class MemoryUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    image_url: Optional[str] = None
+    layout: Optional[str] = None
+    order: Optional[int] = None
+    highlight: Optional[bool] = None
+
+# Site Settings Models
+class SiteSettings(BaseModel):
+    google_form_link: Optional[str] = None
+    instagram_url: str = "https://instagram.com/spotterscxj"
+    instagram_handle: str = "@spotterscxj"
+    youtube_url: str = "https://youtube.com/@spotterscxj"
+    youtube_name: str = "Spotters CXJ"
+    footer: Optional[str] = None
+
+class SiteSettingsUpdate(BaseModel):
+    google_form_link: Optional[str] = None
+    instagram_url: Optional[str] = None
+    instagram_handle: Optional[str] = None
+    youtube_url: Optional[str] = None
+    youtube_name: Optional[str] = None
+    footer: Optional[str] = None
