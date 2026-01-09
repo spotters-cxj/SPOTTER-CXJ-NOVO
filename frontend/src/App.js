@@ -18,6 +18,9 @@ import { MembersPage } from "./components/pages/MembersPage";
 import { RankingPage } from "./components/pages/RankingPage";
 import { EvaluationPage } from "./components/pages/EvaluationPage";
 import { UploadPage } from "./components/pages/UploadPage";
+import { ProfilePage } from "./components/pages/ProfilePage";
+import { VipPage } from "./components/pages/VipPage";
+import { SearchPage } from "./components/pages/SearchPage";
 import { AuthCallback } from "./components/auth/AuthCallback";
 import { Toaster } from "./components/ui/sonner";
 
@@ -37,6 +40,9 @@ function AppRouter() {
       <Route path="/galeria" element={<GalleryPage />} />
       <Route path="/ranking" element={<RankingPage />} />
       <Route path="/membros" element={<MembersPage />} />
+      <Route path="/buscar" element={<SearchPage />} />
+      <Route path="/perfil/:userId" element={<ProfilePage />} />
+      <Route path="/vip" element={<VipPage />} />
       <Route path="/historia-aeroporto" element={<AirportHistoryPage />} />
       <Route path="/historia-spotters" element={<SpottersHistoryPage />} />
       <Route path="/recordacoes" element={<MemoriesPage />} />
