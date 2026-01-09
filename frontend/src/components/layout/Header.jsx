@@ -160,7 +160,7 @@ export const Header = () => {
                       {user.name?.split(' ')[0]}
                     </span>
                   </Link>
-                  {isAdmin && (
+                  {isGestao && (
                     <Link to="/admin">
                       <Button variant="ghost" size="sm" className="text-sky-400 hover:text-sky-300">
                         <Shield size={16} />
