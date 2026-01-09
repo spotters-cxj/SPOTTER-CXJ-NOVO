@@ -380,6 +380,25 @@ def main():
     except Exception as e:
         result.failure("POST /api/gallery (multipart)", f"Error testing multipart upload: {str(e)}")
     
+    # 5. AUDIT LOGS ENDPOINTS TESTS (Should return 401/403 for unauthenticated users)
+    print("\n📋 TESTING AUDIT LOGS ENDPOINTS (Should return 401/403)")
+    print("-" * 40)
+    
+    audit_endpoints = [
+        ("GET", "/logs", "List audit logs"),
+        ("GET", "/logs/actions", "Get available action types"),
+        ("GET", "/logs/stats", "Get log statistics")
+    ]
+    
+    for method, endpoint, description in audit_endpoints:
+        response = test_endpoint(method, endpoint, expected_status=401, description=description)
+        if response.get("success"):
+            result.success(f"{method} {endpoint}", "Correctly returned 401 Unauthorized")
+        elif response.get("status_code") == 403:
+            result.success(f"{method} {endpoint}", "Correctly returned 403 Forbidden (requires gestao+ level)")
+        else:
+            result.failure(f"{method} {endpoint}", f"Expected 401/403, got: {response.get('status_code', 'Error')}")
+    
     # Final summary
     success = result.summary()
     return 0 if success else 1
