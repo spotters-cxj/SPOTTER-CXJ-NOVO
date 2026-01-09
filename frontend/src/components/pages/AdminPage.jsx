@@ -983,44 +983,82 @@ export const AdminPage = () => {
 
             {/* ==================== SETTINGS TAB ==================== */}
             <TabsContent value="settings">
-              <div className="card-navy p-6">
-                <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                  <Settings size={20} className="text-sky-400" />
-                  Links e Configurações
-                </h2>
-                <div className="space-y-6 max-w-2xl">
-                  <div>
-                    <label className="block text-gray-300 text-sm mb-2">Link do Google Forms (Faça Parte)</label>
-                    <Input value={settingsForm.google_form_link || ''} onChange={(e) => setSettingsForm({...settingsForm, google_form_link: e.target.value})} placeholder="https://forms.google.com/..." className="bg-[#102a43] border-[#1a3a5c] text-white" />
+              <div className="space-y-6">
+                {/* Social Links */}
+                <div className="card-navy p-6">
+                  <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                    <Settings size={20} className="text-sky-400" />
+                    Links e Redes Sociais
+                  </h2>
+                  <div className="space-y-4 max-w-2xl">
+                    <div>
+                      <label className="block text-gray-300 text-sm mb-2">Link do Google Forms (Faça Parte)</label>
+                      <Input value={settingsForm.google_form_link || ''} onChange={(e) => setSettingsForm({...settingsForm, google_form_link: e.target.value})} placeholder="https://forms.google.com/..." className="bg-[#102a43] border-[#1a3a5c] text-white" />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-gray-300 text-sm mb-2 flex items-center gap-2">
+                          <Instagram size={16} className="text-pink-400" />Instagram Handle
+                        </label>
+                        <Input value={settingsForm.instagram_handle || ''} onChange={(e) => setSettingsForm({...settingsForm, instagram_handle: e.target.value})} placeholder="@spotterscxj" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 text-sm mb-2">Instagram URL</label>
+                        <Input value={settingsForm.instagram_url || ''} onChange={(e) => setSettingsForm({...settingsForm, instagram_url: e.target.value})} placeholder="https://instagram.com/spotterscxj" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-gray-300 text-sm mb-2 flex items-center gap-2">
+                          <Youtube size={16} className="text-red-500" />YouTube Nome
+                        </label>
+                        <Input value={settingsForm.youtube_name || ''} onChange={(e) => setSettingsForm({...settingsForm, youtube_name: e.target.value})} placeholder="Spotters CXJ" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 text-sm mb-2">YouTube URL (completa)</label>
+                        <Input value={settingsForm.youtube_url || ''} onChange={(e) => setSettingsForm({...settingsForm, youtube_url: e.target.value})} placeholder="https://youtube.com/@spotterscxj" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-300 text-sm mb-2 flex items-center gap-2">
-                        <Instagram size={16} className="text-pink-400" />Instagram Handle
-                      </label>
-                      <Input value={settingsForm.instagram_handle || ''} onChange={(e) => setSettingsForm({...settingsForm, instagram_handle: e.target.value})} placeholder="@spotterscxj" className="bg-[#102a43] border-[#1a3a5c] text-white" />
-                    </div>
-                    <div>
-                      <label className="block text-gray-300 text-sm mb-2">Instagram URL</label>
-                      <Input value={settingsForm.instagram_url || ''} onChange={(e) => setSettingsForm({...settingsForm, instagram_url: e.target.value})} placeholder="https://instagram.com/spotterscxj" className="bg-[#102a43] border-[#1a3a5c] text-white" />
-                    </div>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-300 text-sm mb-2 flex items-center gap-2">
-                        <Youtube size={16} className="text-red-500" />YouTube Nome
-                      </label>
-                      <Input value={settingsForm.youtube_name || ''} onChange={(e) => setSettingsForm({...settingsForm, youtube_name: e.target.value})} placeholder="Spotters CXJ" className="bg-[#102a43] border-[#1a3a5c] text-white" />
-                    </div>
-                    <div>
-                      <label className="block text-gray-300 text-sm mb-2">YouTube URL</label>
-                      <Input value={settingsForm.youtube_url || ''} onChange={(e) => setSettingsForm({...settingsForm, youtube_url: e.target.value})} placeholder="https://youtube.com/@spotterscxj" className="bg-[#102a43] border-[#1a3a5c] text-white" />
-                    </div>
-                  </div>
-                  <Button onClick={handleSaveSettings} className="btn-accent">
-                    <Save size={16} className="mr-2" />Salvar Configurações
-                  </Button>
                 </div>
+
+                {/* Payment Settings */}
+                <div className="card-navy p-6">
+                  <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                    <CreditCard size={20} className="text-green-400" />
+                    Configurações de Pagamento
+                  </h2>
+                  <div className="space-y-4 max-w-2xl">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-gray-300 text-sm mb-2">Chave Pix</label>
+                        <Input value={settingsForm.pix_key || ''} onChange={(e) => setSettingsForm({...settingsForm, pix_key: e.target.value})} placeholder="email@exemplo.com ou CPF" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 text-sm mb-2">Nome do Titular</label>
+                        <Input value={settingsForm.pix_name || ''} onChange={(e) => setSettingsForm({...settingsForm, pix_name: e.target.value})} placeholder="Nome completo" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-gray-300 text-sm mb-2">Preço VIP Mensal</label>
+                        <Input value={settingsForm.vip_monthly_price || ''} onChange={(e) => setSettingsForm({...settingsForm, vip_monthly_price: e.target.value})} placeholder="R$ 15,00" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 text-sm mb-2">Preço VIP Permanente</label>
+                        <Input value={settingsForm.vip_permanent_price || ''} onChange={(e) => setSettingsForm({...settingsForm, vip_permanent_price: e.target.value})} placeholder="R$ 100,00" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 text-sm mb-2">Preço Foto Extra</label>
+                        <Input value={settingsForm.extra_photo_price || ''} onChange={(e) => setSettingsForm({...settingsForm, extra_photo_price: e.target.value})} placeholder="R$ 3,50" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Button onClick={handleSaveSettings} className="btn-accent">
+                  <Save size={16} className="mr-2" />Salvar Todas as Configurações
+                </Button>
               </div>
             </TabsContent>
 
