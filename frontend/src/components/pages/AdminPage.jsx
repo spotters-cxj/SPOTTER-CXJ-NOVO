@@ -406,6 +406,9 @@ export const AdminPage = () => {
               <TabsTrigger value="settings" className="data-[state=active]:bg-sky-600">
                 <Settings size={16} className="mr-2" />Configurações
               </TabsTrigger>
+              <TabsTrigger value="logs" className="data-[state=active]:bg-sky-600">
+                <History size={16} className="mr-2" />Logs
+              </TabsTrigger>
             </TabsList>
 
             {/* Stats Tab */}
