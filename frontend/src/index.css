@@ -249,11 +249,11 @@ html {
   color: white;
 }
 
-/* Glass morphism cards */
+/* Glass morphism cards - REDUCED TRANSPARENCY for stars visibility */
 .glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(10, 25, 41, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
 }
@@ -263,10 +263,24 @@ html {
 }
 
 .glass-card-hover:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(10, 25, 41, 0.85);
   border-color: rgba(56, 189, 248, 0.3);
   transform: translateY(-4px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* VIP Button - Neon outline style */
+.vip-btn {
+  background: transparent;
+  border: 2px solid #fbbf24;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5), inset 0 0 10px rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  transition: all 0.3s ease;
+}
+
+.vip-btn:hover {
+  background: rgba(251, 191, 36, 0.1);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.7), inset 0 0 20px rgba(251, 191, 36, 0.2);
 }
 
 /* Gradient text */
