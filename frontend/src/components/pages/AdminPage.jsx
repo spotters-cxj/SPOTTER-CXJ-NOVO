@@ -55,7 +55,7 @@ export const AdminPage = () => {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [usersRes, leadersRes, photosRes, memoriesRes, settingsRes, statsRes, airportRes, spottersRes] = await Promise.all([
+      const [usersRes, leadersRes, photosRes, memoriesRes, settingsRes, statsRes, airportRes, spottersRes, logsRes, logStatsRes] = await Promise.all([
         adminApi.getUsers(),
         leadersApi.list(),
         galleryApi.list({}),
@@ -63,7 +63,9 @@ export const AdminPage = () => {
         settingsApi.get(),
         statsApi.get(),
         timelineApi.getAirport(),
-        timelineApi.getSpotters()
+        timelineApi.getSpotters(),
+        logsApi.list({ limit: 50 }).catch(() => ({ data: { logs: [] } })),
+        logsApi.getStats().catch(() => ({ data: {} }))
       ]);
       setUsers(usersRes.data);
       setLeaders(leadersRes.data);
@@ -75,6 +77,8 @@ export const AdminPage = () => {
       setStatsForm(statsRes.data);
       setAirportTimeline(airportRes.data);
       setSpottersMilestones(spottersRes.data);
+      setAuditLogs(logsRes.data?.logs || []);
+      setLogStats(logStatsRes.data || {});
     } catch (error) {
       toast.error('Erro ao carregar dados');
     } finally {
