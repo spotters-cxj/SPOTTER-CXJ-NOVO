@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from datetime import datetime, timezone
 from models import HIERARCHY_LEVELS, get_highest_role_level
+from routes.logs import create_audit_log, get_client_ip
 import uuid
 
 router = APIRouter(prefix="/news", tags=["news"])
@@ -64,14 +65,33 @@ async def create_news(request: Request):
     
     await db.news.insert_one(news)
     
+    # Log the action
+    await create_audit_log(
+        db,
+        admin_id=user["user_id"],
+        admin_name=user["name"],
+        admin_email=user.get("email"),
+        action="create",
+        entity_type="news",
+        entity_id=news["news_id"],
+        entity_name=news["title"],
+        details=f"Notícia criada: {news['title']}",
+        ip_address=get_client_ip(request)
+    )
+    
     return {"news_id": news["news_id"], "message": "Notícia criada"}
 
 @router.put("/{news_id}")
 async def update_news(request: Request, news_id: str):
     """Update news article (gestao+)"""
-    await require_gestao(request)
+    user = await require_gestao(request)
     db = await get_db(request)
     body = await request.json()
+    
+    # Get current news
+    old_news = await db.news.find_one({"news_id": news_id}, {"_id": 0})
+    if not old_news:
+        raise HTTPException(status_code=404, detail="Notícia não encontrada")
     
     update_data = {}
     for field in ["title", "content", "location", "image", "references", "published"]:
@@ -80,17 +100,50 @@ async def update_news(request: Request, news_id: str):
     
     if update_data:
         await db.news.update_one({"news_id": news_id}, {"$set": update_data})
+        
+        # Log the action
+        await create_audit_log(
+            db,
+            admin_id=user["user_id"],
+            admin_name=user["name"],
+            admin_email=user.get("email"),
+            action="update",
+            entity_type="news",
+            entity_id=news_id,
+            entity_name=old_news.get("title"),
+            details=f"Notícia atualizada",
+            old_value={k: old_news.get(k) for k in update_data.keys()},
+            new_value=update_data,
+            ip_address=get_client_ip(request)
+        )
     
     return {"message": "Notícia atualizada"}
 
 @router.delete("/{news_id}")
 async def delete_news(request: Request, news_id: str):
     """Delete news article (gestao+)"""
-    await require_gestao(request)
+    user = await require_gestao(request)
     db = await get_db(request)
     
-    result = await db.news.delete_one({"news_id": news_id})
-    if result.deleted_count == 0:
+    # Get news before deleting
+    news = await db.news.find_one({"news_id": news_id}, {"_id": 0})
+    if not news:
         raise HTTPException(status_code=404, detail="Notícia não encontrada")
+    
+    await db.news.delete_one({"news_id": news_id})
+    
+    # Log the action
+    await create_audit_log(
+        db,
+        admin_id=user["user_id"],
+        admin_name=user["name"],
+        admin_email=user.get("email"),
+        action="delete",
+        entity_type="news",
+        entity_id=news_id,
+        entity_name=news.get("title"),
+        details=f"Notícia excluída: {news.get('title')}",
+        ip_address=get_client_ip(request)
+    )
     
     return {"message": "Notícia excluída"}
