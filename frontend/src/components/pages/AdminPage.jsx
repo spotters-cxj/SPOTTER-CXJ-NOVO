@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { toast } from 'sonner';
 
 export const AdminPage = () => {
-  const { user, isAdmin, isAdminPrincipal } = useAuth();
+  const { user, isAdmin, isAdminPrincipal, isGestao } = useAuth();
   const [users, setUsers] = useState([]);
   const [leaders, setLeaders] = useState([]);
   const [photos, setPhotos] = useState([]);
