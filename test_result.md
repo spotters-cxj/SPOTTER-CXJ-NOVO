@@ -261,6 +261,18 @@ backend:
           agent: "testing"
           comment: "All audit logs endpoints working correctly: GET /api/logs (list logs), GET /api/logs/actions (action types), GET /api/logs/stats (statistics). All endpoints properly require gestao+ level authentication and return 401 Unauthorized for unauthenticated requests with proper error messages."
 
+  - task: "Settings Payment Fields"
+    implemented: true
+    working: false
+    file: "routes/settings.py"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "Minor: GET /api/settings missing payment fields (pix_key, vip_monthly_price, vip_permanent_price) in DEFAULT_SETTINGS. These fields are defined in SiteSettings model but not included in default response. Core functionality works correctly."
+
 frontend:
   # Frontend testing not performed by testing agent as per instructions
 
