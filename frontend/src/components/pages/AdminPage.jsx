@@ -86,7 +86,7 @@ export const AdminPage = () => {
     }
   };
 
-  if (!user || !isAdmin) {
+  if (!user || !isGestao) {
     return <Navigate to="/" replace />;
   }
 
