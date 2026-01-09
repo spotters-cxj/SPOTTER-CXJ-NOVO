@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from 'react';
 
 export const AnimatedBackground = () => {
+  const [stars, setStars] = useState([]);
   const [particles, setParticles] = useState([]);
 
   useEffect(() => {
+    // Create stars
+    const newStars = Array.from({ length: 100 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      size: Math.random() * 2 + 1,
+      delay: Math.random() * 5,
+      duration: 2 + Math.random() * 3
+    }));
+    setStars(newStars);
+
     // Create particles
     const newParticles = Array.from({ length: 30 }, (_, i) => ({
       id: i,
@@ -15,10 +27,33 @@ export const AnimatedBackground = () => {
   }, []);
 
   return (
-    <>
-      {/* Animated gradient background */}
-      <div className="animated-bg" />
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+      {/* Base gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a1929] to-black" />
       
+      {/* Radial gradients for depth */}
+      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-sky-500/5 rounded-full blur-[100px]" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[100px]" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-sky-500/3 to-transparent rounded-full" />
+      
+      {/* Animated Stars */}
+      <div className="stars-container">
+        {stars.map((star) => (
+          <div
+            key={star.id}
+            className="star"
+            style={{
+              left: `${star.left}%`,
+              top: `${star.top}%`,
+              width: `${star.size}px`,
+              height: `${star.size}px`,
+              animationDelay: `${star.delay}s`,
+              animationDuration: `${star.duration}s`
+            }}
+          />
+        ))}
+      </div>
+
       {/* Flying airplane with smoke trail */}
       <div className="flying-airplane">
         <svg className="airplane-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -48,6 +83,15 @@ export const AnimatedBackground = () => {
           />
         ))}
       </div>
-    </>
+
+      {/* Grid pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.02]" style={{
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+        backgroundSize: '50px 50px'
+      }} />
+    </div>
   );
 };
+
+export default AnimatedBackground;
