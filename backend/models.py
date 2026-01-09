@@ -308,4 +308,32 @@ class SiteSettingsUpdate(BaseModel):
     instagram_handle: Optional[str] = None
     youtube_url: Optional[str] = None
     youtube_name: Optional[str] = None
+
+# Audit Log Models
+class AuditLogAction(str, Enum):
+    CREATE = "create"
+    UPDATE = "update"
+    DELETE = "delete"
+    APPROVE = "approve"
+    REJECT = "reject"
+    TAG_CHANGE = "tag_change"
+    SETTINGS_CHANGE = "settings_change"
+    LOGIN = "login"
+    LOGOUT = "logout"
+
+class AuditLog(BaseModel):
+    log_id: str = Field(default_factory=lambda: f"log_{uuid.uuid4().hex[:12]}")
+    admin_id: str
+    admin_name: str
+    admin_email: Optional[str] = None
+    action: str
+    entity_type: str  # user, photo, news, settings, etc
+    entity_id: Optional[str] = None
+    entity_name: Optional[str] = None
+    details: Optional[str] = None
+    old_value: Optional[dict] = None
+    new_value: Optional[dict] = None
+    ip_address: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
+
     footer: Optional[str] = None
