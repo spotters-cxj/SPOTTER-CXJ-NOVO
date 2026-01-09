@@ -2,60 +2,68 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from datetime import datetime, timezone, timedelta
 import httpx
 import uuid
-from models import SessionRequest, User, SessionResponse
+from models import User, Notification, NotificationType
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-# REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
 
 async def get_db(request: Request):
     return request.app.state.db
 
+async def create_notification(db, user_id: str, notif_type: str, message: str, data: dict = None):
+    """Helper to create notifications"""
+    notification = {
+        "notification_id": f"notif_{uuid.uuid4().hex[:8]}",
+        "user_id": user_id,
+        "type": notif_type,
+        "message": message,
+        "data": data or {},
+        "read": False,
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.notifications.insert_one(notification)
+    return notification
+
 @router.post("/session")
-async def create_session(request: Request, response: Response, session_req: SessionRequest):
+async def create_session(request: Request, response: Response):
     """Exchange session_id from Emergent Auth for user data and create session"""
     db = await get_db(request)
+    body = await request.json()
+    session_id = body.get("session_id")
     
-    # Get user data from Emergent Auth
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id required")
+    
     async with httpx.AsyncClient() as client:
         try:
             auth_response = await client.get(
                 "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
-                headers={"X-Session-ID": session_req.session_id}
+                headers={"X-Session-ID": session_id}
             )
             if auth_response.status_code != 200:
                 raise HTTPException(status_code=401, detail="Invalid session ID")
-            
             auth_data = auth_response.json()
         except Exception as e:
             raise HTTPException(status_code=401, detail=f"Auth error: {str(e)}")
     
-    # Check if user exists
     existing_user = await db.users.find_one({"email": auth_data["email"]}, {"_id": 0})
     
     if existing_user:
         user_id = existing_user["user_id"]
-        # Update user info
         await db.users.update_one(
             {"user_id": user_id},
-            {"$set": {
-                "name": auth_data["name"],
-                "picture": auth_data.get("picture")
-            }}
+            {"$set": {"name": auth_data["name"], "picture": auth_data.get("picture")}}
         )
-        role = existing_user.get("role", "contributor")
+        tags = existing_user.get("tags", ["membro"])
         approved = existing_user.get("approved", False)
     else:
-        # Create new user
         user_id = f"user_{uuid.uuid4().hex[:12]}"
-        
-        # First user becomes admin_principal
         user_count = await db.users.count_documents({})
+        
         if user_count == 0:
-            role = "admin_principal"
+            tags = ["lider", "admin"]
             approved = True
         else:
-            role = "contributor"
+            tags = ["membro"]
             approved = False
         
         new_user = {
@@ -63,51 +71,141 @@ async def create_session(request: Request, response: Response, session_req: Sess
             "email": auth_data["email"],
             "name": auth_data["name"],
             "picture": auth_data.get("picture"),
-            "role": role,
+            "tags": tags,
             "approved": approved,
+            "is_vip": False,
+            "photos_this_week": 0,
             "created_at": datetime.now(timezone.utc)
         }
         await db.users.insert_one(new_user)
+        
+        # Welcome notification
+        await create_notification(
+            db, user_id, "tag_assigned",
+            f"🎉 Bem-vindo ao Spotters CXJ! Você recebeu a tag: MEMBRO"
+        )
     
-    # Create session
     session_token = f"session_{uuid.uuid4().hex}"
-    session_data = {
+    await db.user_sessions.insert_one({
         "user_id": user_id,
         "session_token": session_token,
         "expires_at": datetime.now(timezone.utc) + timedelta(days=7),
         "created_at": datetime.now(timezone.utc)
-    }
-    await db.user_sessions.insert_one(session_data)
+    })
     
-    # Set cookie
     response.set_cookie(
-        key="session_token",
-        value=session_token,
-        httponly=True,
-        secure=True,
-        samesite="none",
-        max_age=7 * 24 * 60 * 60,
-        path="/"
+        key="session_token", value=session_token, httponly=True,
+        secure=True, samesite="none", max_age=7*24*60*60, path="/"
     )
     
-    # Get user to return
     user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    return {
+        "user_id": user["user_id"],
+        "email": user["email"],
+        "name": user["name"],
+        "picture": user.get("picture"),
+        "tags": user.get("tags", ["membro"]),
+        "approved": user.get("approved", False),
+        "is_vip": user.get("is_vip", False)
+    }
+
+@router.post("/register")
+async def register_email(request: Request):
+    """Register with email/password"""
+    db = await get_db(request)
+    body = await request.json()
     
-    return SessionResponse(
-        user_id=user["user_id"],
-        email=user["email"],
-        name=user["name"],
-        picture=user.get("picture"),
-        role=user.get("role", "contributor"),
-        approved=user.get("approved", False)
+    email = body.get("email")
+    password = body.get("password")
+    name = body.get("name")
+    
+    if not email or not password or not name:
+        raise HTTPException(status_code=400, detail="email, password and name required")
+    
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email já cadastrado")
+    
+    import hashlib
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    
+    user_id = f"user_{uuid.uuid4().hex[:12]}"
+    user_count = await db.users.count_documents({})
+    
+    if user_count == 0:
+        tags = ["lider", "admin"]
+        approved = True
+    else:
+        tags = ["membro"]
+        approved = False
+    
+    new_user = {
+        "user_id": user_id,
+        "email": email,
+        "password_hash": password_hash,
+        "name": name,
+        "tags": tags,
+        "approved": approved,
+        "is_vip": False,
+        "photos_this_week": 0,
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.users.insert_one(new_user)
+    
+    await create_notification(
+        db, user_id, "tag_assigned",
+        f"🎉 Bem-vindo ao Spotters CXJ! Você recebeu a tag: MEMBRO"
     )
+    
+    return {"message": "Usuário cadastrado com sucesso", "user_id": user_id}
+
+@router.post("/login")
+async def login_email(request: Request, response: Response):
+    """Login with email/password"""
+    db = await get_db(request)
+    body = await request.json()
+    
+    email = body.get("email")
+    password = body.get("password")
+    
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="email and password required")
+    
+    import hashlib
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    
+    user = await db.users.find_one({"email": email, "password_hash": password_hash}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="Email ou senha inválidos")
+    
+    session_token = f"session_{uuid.uuid4().hex}"
+    await db.user_sessions.insert_one({
+        "user_id": user["user_id"],
+        "session_token": session_token,
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=7),
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    response.set_cookie(
+        key="session_token", value=session_token, httponly=True,
+        secure=True, samesite="none", max_age=7*24*60*60, path="/"
+    )
+    
+    return {
+        "user_id": user["user_id"],
+        "email": user["email"],
+        "name": user["name"],
+        "picture": user.get("picture"),
+        "tags": user.get("tags", ["membro"]),
+        "approved": user.get("approved", False),
+        "is_vip": user.get("is_vip", False)
+    }
 
 @router.get("/me")
 async def get_current_user(request: Request):
     """Get current authenticated user"""
     db = await get_db(request)
     
-    # Get session token from cookie or header
     session_token = request.cookies.get("session_token")
     if not session_token:
         auth_header = request.headers.get("Authorization")
@@ -117,12 +215,10 @@ async def get_current_user(request: Request):
     if not session_token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
-    # Find session
     session = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
     if not session:
         raise HTTPException(status_code=401, detail="Session not found")
     
-    # Check expiry
     expires_at = session["expires_at"]
     if isinstance(expires_at, str):
         expires_at = datetime.fromisoformat(expires_at)
@@ -131,28 +227,38 @@ async def get_current_user(request: Request):
     if expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=401, detail="Session expired")
     
-    # Get user
     user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     
-    return SessionResponse(
-        user_id=user["user_id"],
-        email=user["email"],
-        name=user["name"],
-        picture=user.get("picture"),
-        role=user.get("role", "contributor"),
-        approved=user.get("approved", False)
-    )
+    # Get unread notifications count
+    unread_count = await db.notifications.count_documents({
+        "user_id": user["user_id"],
+        "read": False
+    })
+    
+    return {
+        "user_id": user["user_id"],
+        "email": user["email"],
+        "name": user["name"],
+        "picture": user.get("picture"),
+        "tags": user.get("tags", ["membro"]),
+        "approved": user.get("approved", False),
+        "is_vip": user.get("is_vip", False),
+        "instagram": user.get("instagram"),
+        "jetphotos": user.get("jetphotos"),
+        "bio": user.get("bio"),
+        "photos_this_week": user.get("photos_this_week", 0),
+        "subscription_type": user.get("subscription_type"),
+        "unread_notifications": unread_count
+    }
 
 @router.post("/logout")
 async def logout(request: Request, response: Response):
     """Logout and clear session"""
     db = await get_db(request)
-    
     session_token = request.cookies.get("session_token")
     if session_token:
         await db.user_sessions.delete_one({"session_token": session_token})
-    
     response.delete_cookie(key="session_token", path="/")
     return {"message": "Logged out successfully"}
