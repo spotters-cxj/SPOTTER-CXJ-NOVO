@@ -24,7 +24,13 @@ DEFAULT_SETTINGS = {
     "footer": {
         "about_text": "Comunidade de entusiastas da aviação dedicada a registrar e documentar as operações aéreas no Aeroporto CXJ em Caxias do Sul.",
         "links": []
-    }
+    },
+    # Payment settings
+    "pix_key": "",
+    "pix_name": "",
+    "vip_monthly_price": "R$ 15,00",
+    "vip_permanent_price": "R$ 100,00",
+    "extra_photo_price": "R$ 3,50"
 }
 
 @router.get("")
