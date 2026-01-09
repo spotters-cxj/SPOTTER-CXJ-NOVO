@@ -20,6 +20,9 @@ export const AdminPage = () => {
   const [stats, setStats] = useState({});
   const [airportTimeline, setAirportTimeline] = useState([]);
   const [spottersMilestones, setSpottersMilestones] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [logStats, setLogStats] = useState({});
+  const [logFilters, setLogFilters] = useState({ action: '', entity_type: '', admin_id: '' });
   const [loading, setLoading] = useState(true);
 
   // Modal states
