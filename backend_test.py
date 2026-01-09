@@ -182,6 +182,97 @@ def main():
     else:
         result.failure("GET /api/pages/home", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
     
+    # Test news endpoint
+    response = test_endpoint("GET", "/news", description="News list")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, list):
+            result.success("GET /api/news", f"Returned {len(data)} news articles")
+        else:
+            result.failure("GET /api/news", f"Expected array, got: {type(data)}")
+    else:
+        result.failure("GET /api/news", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test members endpoint
+    response = test_endpoint("GET", "/members", description="Members list")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, list):
+            result.success("GET /api/members", f"Returned {len(data)} members")
+        else:
+            result.failure("GET /api/members", f"Expected array, got: {type(data)}")
+    else:
+        result.failure("GET /api/members", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test members hierarchy endpoint
+    response = test_endpoint("GET", "/members/hierarchy", description="Members hierarchy")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, dict):
+            expected_keys = ["lideres", "admins", "gestao", "produtores", "avaliadores", "colaboradores", "membros"]
+            has_expected = all(key in data for key in expected_keys)
+            if has_expected:
+                result.success("GET /api/members/hierarchy", f"Returned hierarchy with all expected levels")
+            else:
+                result.failure("GET /api/members/hierarchy", f"Missing expected hierarchy levels. Got: {list(data.keys())}")
+        else:
+            result.failure("GET /api/members/hierarchy", f"Expected object, got: {type(data)}")
+    else:
+        result.failure("GET /api/members/hierarchy", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test ranking endpoint
+    response = test_endpoint("GET", "/ranking", description="Photo ranking")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, list):
+            result.success("GET /api/ranking", f"Returned {len(data)} ranked photos")
+        else:
+            result.failure("GET /api/ranking", f"Expected array, got: {type(data)}")
+    else:
+        result.failure("GET /api/ranking", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test user ranking endpoint
+    response = test_endpoint("GET", "/ranking/users", description="User ranking")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, list):
+            result.success("GET /api/ranking/users", f"Returned {len(data)} ranked users")
+        else:
+            result.failure("GET /api/ranking/users", f"Expected array, got: {type(data)}")
+    else:
+        result.failure("GET /api/ranking/users", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test podium endpoint
+    response = test_endpoint("GET", "/ranking/podium", description="Top 3 users podium")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, dict) and "winners" in data:
+            winners = data["winners"]
+            if isinstance(winners, list):
+                result.success("GET /api/ranking/podium", f"Returned podium with {len(winners)} winners")
+            else:
+                result.failure("GET /api/ranking/podium", f"Winners should be array, got: {type(winners)}")
+        else:
+            result.failure("GET /api/ranking/podium", f"Expected object with 'winners' key, got: {data}")
+    else:
+        result.failure("GET /api/ranking/podium", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test photos queue endpoint
+    response = test_endpoint("GET", "/photos/queue", description="Photos queue status")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, dict):
+            expected_keys = ["current", "max", "is_full"]
+            has_expected = all(key in data for key in expected_keys)
+            if has_expected:
+                result.success("GET /api/photos/queue", f"Queue status: {data.get('current', 0)}/{data.get('max', 0)}")
+            else:
+                result.failure("GET /api/photos/queue", f"Missing expected keys. Got: {list(data.keys())}")
+        else:
+            result.failure("GET /api/photos/queue", f"Expected object, got: {type(data)}")
+    else:
+        result.failure("GET /api/photos/queue", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
     # 2. AUTH FLOW TESTS
     print("\n🔐 TESTING AUTH FLOW")
     print("-" * 40)
