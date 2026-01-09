@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the Spotters CXJ backend API endpoints including public endpoints, auth flow, and protected endpoints"
+user_problem_statement: "Implementação completa do site Spotters CXJ com design melhorado, sistema de avaliação, ranking, membros, notícias e upload de fotos"
 
 backend:
   - task: "API Root Endpoint"
