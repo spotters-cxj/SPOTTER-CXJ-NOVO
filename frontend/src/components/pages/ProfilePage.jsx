@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Instagram, ExternalLink, Camera, Star, Calendar, ArrowLeft, MapPin } from 'lucide-react';
-import { membersApi, photosApi } from '../../services/api';
+import { Instagram, ExternalLink, Camera, Star, Calendar, ArrowLeft, MapPin, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { membersApi, photosApi, evaluationApi } from '../../services/api';
 import { TagBadge, TagBadgeList } from '../ui/TagBadge';
 import { Button } from '../ui/button';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const ProfilePage = () => {
   const { userId } = useParams();
+  const { user: currentUser } = useAuth();
   const [profile, setProfile] = useState(null);
   const [photos, setPhotos] = useState([]);
+  const [evaluationHistory, setEvaluationHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('photos');
+
+  const isOwnProfile = currentUser?.user_id === userId;
+  const isEvaluator = profile?.tags?.some(t => ['avaliador', 'gestao', 'admin', 'lider'].includes(t));
 
   useEffect(() => {
     if (userId) {
@@ -20,12 +27,30 @@ export const ProfilePage = () => {
   const loadProfile = async () => {
     try {
       setLoading(true);
-      const [profileRes, photosRes] = await Promise.all([
-        membersApi.get(userId),
-        photosApi.list({ author_id: userId, status: 'approved' }).catch(() => ({ data: [] }))
+      const [profileRes] = await Promise.all([
+        membersApi.get(userId)
       ]);
       setProfile(profileRes.data);
-      setPhotos(photosRes.data || []);
+
+      // Load photos by this user
+      try {
+        const photosRes = await photosApi.list({ author_id: userId, status: 'approved' });
+        setPhotos(photosRes.data || []);
+      } catch (e) {
+        console.error('Error loading photos:', e);
+        setPhotos([]);
+      }
+
+      // Load evaluation history if evaluator
+      if (profileRes.data?.tags?.some(t => ['avaliador', 'gestao', 'admin', 'lider'].includes(t))) {
+        try {
+          const historyRes = await evaluationApi.getEvaluatorHistory(userId);
+          setEvaluationHistory(historyRes.data || []);
+        } catch (e) {
+          console.error('Error loading evaluation history:', e);
+          setEvaluationHistory([]);
+        }
+      }
     } catch (error) {
       console.error('Error loading profile:', error);
     } finally {
@@ -109,29 +134,32 @@ export const ProfilePage = () => {
                 <p className="text-gray-300 mb-6 max-w-xl">{profile.bio}</p>
               )}
 
-              {/* Social Links */}
+              {/* Social Links - PROMINENT */}
               <div className="flex flex-wrap justify-center md:justify-start gap-4">
                 {profile.instagram && (
                   <a
                     href={`https://instagram.com/${profile.instagram.replace('@', '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg text-white font-medium hover:opacity-90 transition-opacity shadow-lg"
                   >
-                    <Instagram size={18} />
-                    {profile.instagram}
+                    <Instagram size={20} />
+                    <span>{profile.instagram}</span>
                   </a>
                 )}
                 {profile.jetphotos && (
                   <a
-                    href={profile.jetphotos}
+                    href={profile.jetphotos.startsWith('http') ? profile.jetphotos : `https://${profile.jetphotos}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-sky-500 to-blue-500 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 rounded-lg text-white font-medium hover:opacity-90 transition-opacity shadow-lg"
                   >
-                    <ExternalLink size={18} />
-                    JetPhotos
+                    <ExternalLink size={20} />
+                    <span>JetPhotos</span>
                   </a>
+                )}
+                {!profile.instagram && !profile.jetphotos && (
+                  <p className="text-gray-500 italic">Nenhuma rede social configurada</p>
                 )}
               </div>
             </div>
@@ -153,43 +181,152 @@ export const ProfilePage = () => {
                 </div>
                 <div className="text-gray-400 text-sm">Média</div>
               </div>
+              {isEvaluator && (
+                <div className="glass-card p-4 col-span-2">
+                  <CheckCircle className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-white">{evaluationHistory.length}</div>
+                  <div className="text-gray-400 text-sm">Avaliações</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Photos Gallery */}
-        <div className="glass-card p-6">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <Camera className="text-sky-400" />
-            Fotos Publicadas ({photos.length})
-          </h2>
+        {/* Tabs for Photos and Evaluation History */}
+        {isEvaluator && (
+          <div className="flex gap-2 mb-6">
+            <button
+              onClick={() => setActiveTab('photos')}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                activeTab === 'photos' 
+                  ? 'bg-sky-500 text-white' 
+                  : 'bg-white/5 text-gray-400 hover:bg-white/10'
+              }`}
+            >
+              <Camera size={16} className="inline mr-2" />
+              Fotos Publicadas
+            </button>
+            <button
+              onClick={() => setActiveTab('evaluations')}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                activeTab === 'evaluations' 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-white/5 text-gray-400 hover:bg-white/10'
+              }`}
+            >
+              <CheckCircle size={16} className="inline mr-2" />
+              Histórico de Avaliações
+            </button>
+          </div>
+        )}
 
-          {photos.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <Camera size={48} className="mx-auto mb-4 opacity-50" />
-              <p>Nenhuma foto publicada ainda</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {photos.map((photo) => (
-                <div key={photo.photo_id} className="group relative overflow-hidden rounded-lg">
-                  <img
-                    src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url}
-                    alt={photo.title}
-                    className="w-full h-32 object-cover transition-transform group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
-                    <h4 className="text-white text-sm font-medium line-clamp-1">{photo.title}</h4>
-                    <p className="text-gray-300 text-xs">{photo.aircraft_model}</p>
-                    {photo.public_rating > 0 && (
-                      <p className="text-yellow-400 text-xs mt-1">⭐ {photo.public_rating?.toFixed(1)}</p>
-                    )}
+        {/* Photos Gallery Tab */}
+        {activeTab === 'photos' && (
+          <div className="glass-card p-6">
+            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <Camera className="text-sky-400" />
+              Fotos Publicadas por {profile.name?.split(' ')[0]} ({photos.length})
+            </h2>
+
+            {photos.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <Camera size={48} className="mx-auto mb-4 opacity-50" />
+                <p>Nenhuma foto publicada ainda</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {photos.map((photo) => (
+                  <div key={photo.photo_id} className="group relative overflow-hidden rounded-lg">
+                    <img
+                      src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url}
+                      alt={photo.title}
+                      className="w-full h-32 object-cover transition-transform group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                      <h4 className="text-white text-sm font-medium line-clamp-1">{photo.title}</h4>
+                      <p className="text-gray-300 text-xs">{photo.aircraft_model}</p>
+                      {photo.public_rating > 0 && (
+                        <p className="text-yellow-400 text-xs mt-1">⭐ {photo.public_rating?.toFixed(1)}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Evaluation History Tab (only for evaluators) */}
+        {activeTab === 'evaluations' && isEvaluator && (
+          <div className="glass-card p-6">
+            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <CheckCircle className="text-green-400" />
+              Histórico de Avaliações ({evaluationHistory.length})
+            </h2>
+
+            {evaluationHistory.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <CheckCircle size={48} className="mx-auto mb-4 opacity-50" />
+                <p>Nenhuma avaliação registrada ainda</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {evaluationHistory.map((evaluation, index) => (
+                  <div 
+                    key={evaluation.evaluation_id || index} 
+                    className={`p-4 rounded-lg border ${
+                      evaluation.result === 'approved' 
+                        ? 'bg-green-500/10 border-green-500/30' 
+                        : evaluation.result === 'rejected'
+                        ? 'bg-red-500/10 border-red-500/30'
+                        : 'bg-yellow-500/10 border-yellow-500/30'
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* Photo thumbnail */}
+                      {evaluation.photo_url && (
+                        <img
+                          src={evaluation.photo_url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${evaluation.photo_url}` : evaluation.photo_url}
+                          alt={evaluation.photo_title}
+                          className="w-20 h-16 object-cover rounded"
+                        />
+                      )}
+                      
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          {evaluation.result === 'approved' ? (
+                            <CheckCircle size={18} className="text-green-400" />
+                          ) : evaluation.result === 'rejected' ? (
+                            <XCircle size={18} className="text-red-400" />
+                          ) : (
+                            <Clock size={18} className="text-yellow-400" />
+                          )}
+                          <span className={`font-medium ${
+                            evaluation.result === 'approved' ? 'text-green-400' :
+                            evaluation.result === 'rejected' ? 'text-red-400' :
+                            'text-yellow-400'
+                          }`}>
+                            {evaluation.result === 'approved' ? 'Aprovada' :
+                             evaluation.result === 'rejected' ? 'Recusada' : 'Pendente'}
+                          </span>
+                        </div>
+                        <p className="text-white font-medium">{evaluation.photo_title || 'Foto sem título'}</p>
+                        <p className="text-gray-400 text-sm">{evaluation.photo_author}</p>
+                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                          <span>Nota: ⭐ {evaluation.score?.toFixed(1) || '0.0'}</span>
+                          <span>{new Date(evaluation.evaluated_at).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        {evaluation.comment && (
+                          <p className="text-gray-400 text-sm mt-2 italic">"{evaluation.comment}"</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
