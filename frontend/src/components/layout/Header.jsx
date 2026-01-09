@@ -236,10 +236,10 @@ export const Header = () => {
               </Link>
             ))}
             
-            {/* VIP Link Mobile */}
+            {/* VIP Link Mobile - Neon outline */}
             <Link
               to="/vip"
-              className="px-6 py-2 rounded-lg bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 text-black font-bold text-xl flex items-center gap-2"
+              className="px-6 py-2 rounded-lg vip-btn font-bold text-xl flex items-center gap-2"
             >
               <Sparkles size={20} />
               Seja VIP
