@@ -30,7 +30,7 @@ export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { user, login, logout, isAdmin } = useAuth();
+  const { user, login, logout, isAdmin, isGestao } = useAuth();
 
   const getUserLevel = () => {
     if (!user?.tags) return 0;
