@@ -249,6 +249,18 @@ backend:
           agent: "testing"
           comment: "CORS middleware properly configured to allow all origins, methods, and headers for development"
 
+  - task: "Audit Logs System"
+    implemented: true
+    working: true
+    file: "routes/logs.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "All audit logs endpoints working correctly: GET /api/logs (list logs), GET /api/logs/actions (action types), GET /api/logs/stats (statistics). All endpoints properly require gestao+ level authentication and return 401 Unauthorized for unauthenticated requests with proper error messages."
+
 frontend:
   # Frontend testing not performed by testing agent as per instructions
 
