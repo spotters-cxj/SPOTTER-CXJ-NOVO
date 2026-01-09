@@ -174,6 +174,22 @@ async def update_member_tags(request: Request, user_id: str):
             {"tags": new_added}
         )
     
+    # Log the action
+    await create_audit_log(
+        db,
+        admin_id=admin["user_id"],
+        admin_name=admin["name"],
+        admin_email=admin.get("email"),
+        action="tag_change",
+        entity_type="user",
+        entity_id=user_id,
+        entity_name=target_user.get("name"),
+        details=f"Tags alteradas de {old_tags} para {new_tags}",
+        old_value={"tags": old_tags},
+        new_value={"tags": new_tags},
+        ip_address=get_client_ip(request)
+    )
+    
     return {"message": "Tags atualizadas", "tags": new_tags}
 
 @router.put("/{user_id}/approve")
