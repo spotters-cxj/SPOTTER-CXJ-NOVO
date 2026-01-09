@@ -301,6 +301,12 @@ class SiteSettings(BaseModel):
     youtube_url: str = "https://youtube.com/@spotterscxj"
     youtube_name: str = "Spotters CXJ"
     footer: Optional[str] = None
+    # VIP and Payment settings
+    pix_key: Optional[str] = None
+    pix_name: Optional[str] = None
+    vip_monthly_price: str = "R$ 15,00"
+    vip_permanent_price: str = "R$ 100,00"
+    extra_photo_price: str = "R$ 3,50"
 
 class SiteSettingsUpdate(BaseModel):
     google_form_link: Optional[str] = None
@@ -308,6 +314,12 @@ class SiteSettingsUpdate(BaseModel):
     instagram_handle: Optional[str] = None
     youtube_url: Optional[str] = None
     youtube_name: Optional[str] = None
+    footer: Optional[str] = None
+    pix_key: Optional[str] = None
+    pix_name: Optional[str] = None
+    vip_monthly_price: Optional[str] = None
+    vip_permanent_price: Optional[str] = None
+    extra_photo_price: Optional[str] = None
 
 # Audit Log Models
 class AuditLogAction(str, Enum):
