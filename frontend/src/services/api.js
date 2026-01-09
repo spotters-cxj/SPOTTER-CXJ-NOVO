@@ -154,4 +154,11 @@ export const notificationsApi = {
   markAllRead: () => api.put('/notifications/read-all'),
 };
 
+// Audit Logs API
+export const logsApi = {
+  list: (params) => api.get('/logs', { params }),
+  getActions: () => api.get('/logs/actions'),
+  getStats: () => api.get('/logs/stats'),
+};
+
 export default api;
