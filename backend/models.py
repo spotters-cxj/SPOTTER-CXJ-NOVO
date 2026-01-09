@@ -347,5 +347,3 @@ class AuditLog(BaseModel):
     new_value: Optional[dict] = None
     ip_address: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
-
-    footer: Optional[str] = None
