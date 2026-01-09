@@ -3,6 +3,17 @@ import { authApi } from '../services/api';
 
 const AuthContext = createContext(null);
 
+// Hierarchy levels for permission checking
+const HIERARCHY_LEVELS = {
+  lider: 7,
+  admin: 6,
+  gestao: 5,
+  produtor: 4,
+  avaliador: 3,
+  colaborador: 2,
+  membro: 1
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -57,8 +68,39 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const isAdmin = user?.role === 'admin_principal' || user?.role === 'admin_authorized';
-  const isAdminPrincipal = user?.role === 'admin_principal';
+  // Get highest role level from user tags
+  const getUserLevel = useCallback(() => {
+    if (!user?.tags || user.tags.length === 0) return 0;
+    return Math.max(...user.tags.map(tag => HIERARCHY_LEVELS[tag] || 0));
+  }, [user]);
+
+  // Check permissions based on tags
+  const userLevel = getUserLevel();
+  
+  // Admin = admin tag or higher (admin, lider)
+  const isAdmin = userLevel >= HIERARCHY_LEVELS.admin;
+  
+  // Admin Principal = lider tag
+  const isAdminPrincipal = user?.tags?.includes('lider');
+  
+  // Gestao = gestao tag or higher
+  const isGestao = userLevel >= HIERARCHY_LEVELS.gestao;
+  
+  // Avaliador = avaliador tag or higher
+  const isAvaliador = userLevel >= HIERARCHY_LEVELS.avaliador;
+  
+  // Colaborador = colaborador tag or higher, or VIP
+  const isColaborador = userLevel >= HIERARCHY_LEVELS.colaborador || user?.is_vip;
+
+  // Helper function to check if user has specific tag
+  const hasTag = useCallback((tag) => {
+    return user?.tags?.includes(tag) || false;
+  }, [user]);
+
+  // Helper function to check if user level is at least the specified level
+  const hasMinLevel = useCallback((minLevel) => {
+    return userLevel >= (HIERARCHY_LEVELS[minLevel] || 0);
+  }, [userLevel]);
 
   const value = {
     user,
@@ -69,6 +111,13 @@ export const AuthProvider = ({ children }) => {
     checkAuth,
     isAdmin,
     isAdminPrincipal,
+    isGestao,
+    isAvaliador,
+    isColaborador,
+    userLevel,
+    hasTag,
+    hasMinLevel,
+    HIERARCHY_LEVELS,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
