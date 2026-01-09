@@ -311,6 +311,45 @@ export const AdminPage = () => {
   const pendingUsers = users.filter(u => !u.approved && u.role !== 'admin_principal');
   const approvedUsers = users.filter(u => u.approved);
 
+  // Load filtered logs
+  const loadFilteredLogs = async () => {
+    try {
+      const params = { limit: 100 };
+      if (logFilters.action) params.action = logFilters.action;
+      if (logFilters.entity_type) params.entity_type = logFilters.entity_type;
+      if (logFilters.admin_id) params.admin_id = logFilters.admin_id;
+      
+      const res = await logsApi.list(params);
+      setAuditLogs(res.data?.logs || []);
+    } catch (error) {
+      toast.error('Erro ao carregar logs');
+    }
+  };
+
+  // Action type labels
+  const actionLabels = {
+    create: { label: 'Criação', color: 'bg-green-500/20 text-green-400' },
+    update: { label: 'Atualização', color: 'bg-blue-500/20 text-blue-400' },
+    delete: { label: 'Exclusão', color: 'bg-red-500/20 text-red-400' },
+    approve: { label: 'Aprovação', color: 'bg-emerald-500/20 text-emerald-400' },
+    reject: { label: 'Rejeição', color: 'bg-orange-500/20 text-orange-400' },
+    tag_change: { label: 'Alteração Tag', color: 'bg-purple-500/20 text-purple-400' },
+    settings_change: { label: 'Config.', color: 'bg-yellow-500/20 text-yellow-400' },
+    login: { label: 'Login', color: 'bg-sky-500/20 text-sky-400' },
+    logout: { label: 'Logout', color: 'bg-gray-500/20 text-gray-400' }
+  };
+
+  const entityLabels = {
+    user: 'Usuário',
+    photo: 'Foto',
+    news: 'Notícia',
+    leader: 'Líder',
+    memory: 'Recordação',
+    settings: 'Configurações',
+    page: 'Página',
+    evaluation: 'Avaliação'
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen pt-20 bg-[#0a1929] flex items-center justify-center">
