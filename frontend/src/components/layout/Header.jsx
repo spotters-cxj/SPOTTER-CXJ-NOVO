@@ -98,10 +98,10 @@ export const Header = () => {
                 </Link>
               ))}
               
-              {/* VIP Link - Golden and prominent */}
+              {/* VIP Link - Neon outline golden */}
               <Link
                 to="/vip"
-                className="ml-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 text-black font-bold text-sm flex items-center gap-1 hover:shadow-[0_0_20px_rgba(251,191,36,0.5)] transition-all animate-pulse-slow"
+                className="ml-2 px-4 py-1.5 rounded-lg vip-btn font-bold text-sm flex items-center gap-1"
               >
                 <Sparkles size={14} />
                 Seja VIP
