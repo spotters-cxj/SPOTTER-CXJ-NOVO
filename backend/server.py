@@ -37,6 +37,7 @@ api_router.include_router(stats.router)
 api_router.include_router(gallery.router)
 api_router.include_router(memories.router)
 api_router.include_router(upload.router)
+api_router.include_router(logs.router)
 
 @api_router.get("/")
 async def root():
