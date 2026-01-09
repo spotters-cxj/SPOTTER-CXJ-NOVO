@@ -231,3 +231,18 @@ class RankingEntry(BaseModel):
     total_votes_received: int = 0
     podium_time: Optional[str] = None
     position: int = 0
+
+
+# Page Content Models
+class PageContent(BaseModel):
+    slug: str
+    title: str
+    subtitle: Optional[str] = None
+    content: Optional[str] = None
+    sections: Optional[List[dict]] = []
+
+class PageContentUpdate(BaseModel):
+    title: Optional[str] = None
+    subtitle: Optional[str] = None
+    content: Optional[str] = None
+    sections: Optional[List[dict]] = None
