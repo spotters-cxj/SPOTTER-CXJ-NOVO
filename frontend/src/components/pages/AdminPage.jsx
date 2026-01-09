@@ -791,6 +791,185 @@ export const AdminPage = () => {
                 </div>
               </div>
             </TabsContent>
+
+            {/* Audit Logs Tab */}
+            <TabsContent value="logs">
+              <div className="space-y-6">
+                {/* Log Stats */}
+                <div className="grid md:grid-cols-4 gap-4">
+                  <div className="card-navy p-4">
+                    <div className="text-gray-400 text-sm">Total de Ações</div>
+                    <div className="text-2xl font-bold text-white">{logStats.total || 0}</div>
+                  </div>
+                  <div className="card-navy p-4">
+                    <div className="text-gray-400 text-sm">Últimas 24h</div>
+                    <div className="text-2xl font-bold text-sky-400">{logStats.recent_24h || 0}</div>
+                  </div>
+                  <div className="card-navy p-4">
+                    <div className="text-gray-400 text-sm">Admins Ativos</div>
+                    <div className="text-2xl font-bold text-purple-400">{logStats.by_admin?.length || 0}</div>
+                  </div>
+                  <div className="card-navy p-4">
+                    <div className="text-gray-400 text-sm">Ação Mais Comum</div>
+                    <div className="text-lg font-bold text-amber-400">
+                      {logStats.by_action?.[0] ? actionLabels[logStats.by_action[0].action]?.label || logStats.by_action[0].action : '-'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filters */}
+                <div className="card-navy p-4">
+                  <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                    <Filter size={18} />
+                    Filtros
+                  </h3>
+                  <div className="grid md:grid-cols-4 gap-4">
+                    <select
+                      value={logFilters.action}
+                      onChange={(e) => setLogFilters({...logFilters, action: e.target.value})}
+                      className="bg-[#102a43] border border-[#1a3a5c] rounded-lg px-3 py-2 text-white"
+                    >
+                      <option value="">Todas as Ações</option>
+                      <option value="create">Criação</option>
+                      <option value="update">Atualização</option>
+                      <option value="delete">Exclusão</option>
+                      <option value="approve">Aprovação</option>
+                      <option value="reject">Rejeição</option>
+                      <option value="tag_change">Alteração de Tag</option>
+                    </select>
+                    <select
+                      value={logFilters.entity_type}
+                      onChange={(e) => setLogFilters({...logFilters, entity_type: e.target.value})}
+                      className="bg-[#102a43] border border-[#1a3a5c] rounded-lg px-3 py-2 text-white"
+                    >
+                      <option value="">Todas as Entidades</option>
+                      <option value="user">Usuário</option>
+                      <option value="photo">Foto</option>
+                      <option value="news">Notícia</option>
+                      <option value="settings">Configurações</option>
+                    </select>
+                    <Input
+                      value={logFilters.admin_id}
+                      onChange={(e) => setLogFilters({...logFilters, admin_id: e.target.value})}
+                      placeholder="ID do Admin"
+                      className="bg-[#102a43] border-[#1a3a5c] text-white"
+                    />
+                    <Button onClick={loadFilteredLogs} className="btn-accent">
+                      <Search size={16} className="mr-2" />
+                      Filtrar
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Logs Table */}
+                <div className="card-navy overflow-hidden">
+                  <div className="p-4 border-b border-[#1a3a5c] flex items-center justify-between">
+                    <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                      <History size={20} className="text-sky-400" />
+                      Histórico de Ações
+                    </h2>
+                    <Button onClick={loadAllData} variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                      <RefreshCw size={16} className="mr-1" />
+                      Atualizar
+                    </Button>
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-[#102a43]">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Data/Hora</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Admin</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Ação</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Entidade</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Detalhes</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase hidden lg:table-cell">IP</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#1a3a5c]">
+                        {auditLogs.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="px-4 py-12 text-center text-gray-400">
+                              <History size={48} className="mx-auto mb-4 opacity-50" />
+                              <p>Nenhum log registrado ainda</p>
+                            </td>
+                          </tr>
+                        ) : (
+                          auditLogs.map((log) => (
+                            <tr key={log.log_id} className="hover:bg-[#102a43]/50 transition-colors">
+                              <td className="px-4 py-3 text-sm">
+                                <div className="text-white">
+                                  {new Date(log.created_at).toLocaleDateString('pt-BR')}
+                                </div>
+                                <div className="text-gray-500 text-xs">
+                                  {new Date(log.created_at).toLocaleTimeString('pt-BR')}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-sky-500/20 rounded-full flex items-center justify-center">
+                                    <span className="text-sky-400 text-xs font-bold">
+                                      {log.admin_name?.charAt(0)?.toUpperCase() || '?'}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <div className="text-white text-sm font-medium">{log.admin_name}</div>
+                                    <div className="text-gray-500 text-xs">{log.admin_email}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${actionLabels[log.action]?.color || 'bg-gray-500/20 text-gray-400'}`}>
+                                  {actionLabels[log.action]?.label || log.action}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="text-gray-300 text-sm">
+                                  {entityLabels[log.entity_type] || log.entity_type}
+                                </div>
+                                <div className="text-gray-500 text-xs">{log.entity_name}</div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="text-gray-400 text-sm max-w-xs truncate" title={log.details}>
+                                  {log.details || '-'}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-gray-500 text-xs hidden lg:table-cell">
+                                {log.ip_address || '-'}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Admin Activity Summary */}
+                {logStats.by_admin?.length > 0 && (
+                  <div className="card-navy p-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Atividade por Administrador</h3>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {logStats.by_admin.map((admin, index) => (
+                        <div key={index} className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-sky-500/20 rounded-full flex items-center justify-center">
+                              <span className="text-sky-400 font-bold">
+                                {admin.admin_name?.charAt(0)?.toUpperCase() || '?'}
+                              </span>
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-white font-medium">{admin.admin_name}</div>
+                              <div className="text-gray-500 text-sm">{admin.count} ações</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
       </section>
