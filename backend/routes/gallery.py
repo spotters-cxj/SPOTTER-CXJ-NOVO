@@ -17,33 +17,61 @@ async def get_db(request: Request):
 async def require_approved_user(request: Request):
     from routes.auth import get_current_user
     user = await get_current_user(request)
-    if not user.approved:
+    if not user.get("approved"):
         raise HTTPException(status_code=403, detail="User not approved to upload photos")
     return user
 
 async def require_admin(request: Request):
     from routes.auth import get_current_user
+    from models import HIERARCHY_LEVELS, get_highest_role_level
     user = await get_current_user(request)
-    if user.role not in ["admin_principal", "admin_authorized"]:
+    user_level = get_highest_role_level(user.get("tags", []))
+    if user_level < HIERARCHY_LEVELS["admin"]:
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
 
 @router.get("")
 async def list_photos(request: Request, aircraft_type: Optional[str] = None, 
-                      registration: Optional[str] = None, author: Optional[str] = None):
-    """List photos with optional filters (public)"""
+                      registration: Optional[str] = None, author: Optional[str] = None,
+                      author_id: Optional[str] = None):
+    """List photos with optional filters (public) - from both gallery and approved photos"""
     db = await get_db(request)
     
-    query = {"approved": True}
-    if aircraft_type:
-        query["aircraft_type"] = aircraft_type
-    if registration:
-        query["registration"] = {"$regex": registration, "$options": "i"}
-    if author:
-        query["author_name"] = {"$regex": author, "$options": "i"}
+    # Query for gallery collection (legacy)
+    gallery_query = {"approved": True}
     
-    photos = await db.gallery.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
-    return photos
+    # Query for photos collection (new system - approved photos)
+    photos_query = {"status": "approved"}
+    
+    if aircraft_type:
+        gallery_query["aircraft_type"] = aircraft_type
+        photos_query["aircraft_type"] = aircraft_type
+    if registration:
+        gallery_query["registration"] = {"$regex": registration, "$options": "i"}
+        photos_query["registration"] = {"$regex": registration, "$options": "i"}
+    if author:
+        gallery_query["author_name"] = {"$regex": author, "$options": "i"}
+        photos_query["author_name"] = {"$regex": author, "$options": "i"}
+    if author_id:
+        gallery_query["author_id"] = author_id
+        photos_query["author_id"] = author_id
+    
+    # Get photos from both collections
+    gallery_photos = await db.gallery.find(gallery_query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    approved_photos = await db.photos.find(photos_query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    
+    # Merge and deduplicate by photo_id
+    all_photos = {}
+    for photo in gallery_photos:
+        all_photos[photo.get("photo_id", str(uuid.uuid4()))] = photo
+    for photo in approved_photos:
+        if photo.get("photo_id") not in all_photos:
+            all_photos[photo["photo_id"]] = photo
+    
+    # Sort by created_at descending
+    sorted_photos = sorted(all_photos.values(), key=lambda x: x.get("created_at", datetime.min), reverse=True)
+    
+    return sorted_photos
 
 @router.get("/types")
 async def get_aircraft_types():
@@ -55,7 +83,13 @@ async def get_photo(request: Request, photo_id: str):
     """Get single photo details (public)"""
     db = await get_db(request)
     
+    # Try gallery first
     photo = await db.gallery.find_one({"photo_id": photo_id}, {"_id": 0})
+    
+    # If not found, try photos collection
+    if not photo:
+        photo = await db.photos.find_one({"photo_id": photo_id, "status": "approved"}, {"_id": 0})
+    
     if not photo:
         raise HTTPException(status_code=404, detail="Photo not found")
     
@@ -83,7 +117,7 @@ async def upload_photo(
     # Check limit: 5 photos per author per registration
     if registration:
         count = await db.gallery.count_documents({
-            "author_id": user.user_id,
+            "author_id": user.get("user_id"),
             "registration": registration
         })
         if count >= 5:
@@ -115,8 +149,8 @@ async def upload_photo(
         "registration": registration,
         "airline": airline,
         "date": date,
-        "author_id": user.user_id,
-        "author_name": user.name,
+        "author_id": user.get("user_id"),
+        "author_name": user.get("name"),
         "approved": True,
         "created_at": datetime.now(timezone.utc)
     }
@@ -129,16 +163,26 @@ async def upload_photo(
 async def delete_photo(request: Request, photo_id: str):
     """Delete photo (admin or photo author)"""
     from routes.auth import get_current_user
+    from models import HIERARCHY_LEVELS, get_highest_role_level
     user = await get_current_user(request)
     db = await get_db(request)
     
+    # Try to find in gallery first
     photo = await db.gallery.find_one({"photo_id": photo_id}, {"_id": 0})
+    collection = "gallery"
+    
+    # If not found, try photos
+    if not photo:
+        photo = await db.photos.find_one({"photo_id": photo_id}, {"_id": 0})
+        collection = "photos"
+    
     if not photo:
         raise HTTPException(status_code=404, detail="Photo not found")
     
     # Check permission: admin or author
-    is_admin = user.role in ["admin_principal", "admin_authorized"]
-    is_author = photo.get("author_id") == user.user_id
+    user_level = get_highest_role_level(user.get("tags", []))
+    is_admin = user_level >= HIERARCHY_LEVELS["admin"]
+    is_author = photo.get("author_id") == user.get("user_id")
     
     if not is_admin and not is_author:
         raise HTTPException(status_code=403, detail="Not authorized to delete this photo")
@@ -151,7 +195,11 @@ async def delete_photo(request: Request, photo_id: str):
     except:
         pass  # File might not exist
     
-    await db.gallery.delete_one({"photo_id": photo_id})
+    if collection == "gallery":
+        await db.gallery.delete_one({"photo_id": photo_id})
+    else:
+        await db.photos.delete_one({"photo_id": photo_id})
+    
     return {"message": "Photo deleted"}
 
 @router.get("/by-registration/{registration}")
@@ -159,9 +207,21 @@ async def get_photos_by_registration(request: Request, registration: str):
     """Get all photos for a specific registration/prefix"""
     db = await get_db(request)
     
-    photos = await db.gallery.find(
+    # Get from both collections
+    gallery_photos = await db.gallery.find(
         {"registration": registration, "approved": True},
         {"_id": 0}
     ).sort("created_at", -1).to_list(100)
     
-    return photos
+    approved_photos = await db.photos.find(
+        {"registration": registration, "status": "approved"},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    # Merge
+    all_photos = {p["photo_id"]: p for p in gallery_photos}
+    for p in approved_photos:
+        if p["photo_id"] not in all_photos:
+            all_photos[p["photo_id"]] = p
+    
+    return list(all_photos.values())
