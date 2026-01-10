@@ -269,18 +269,19 @@ html {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
-/* VIP Button - Neon outline style */
+/* VIP Button - Neon outline style - Modern thin border */
 .vip-btn {
   background: transparent;
-  border: 2px solid #fbbf24;
-  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5), inset 0 0 10px rgba(251, 191, 36, 0.1);
+  border: 1px solid #fbbf24;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.6), 0 0 5px rgba(251, 191, 36, 0.4) inset;
   color: #fbbf24;
   transition: all 0.3s ease;
 }
 
 .vip-btn:hover {
-  background: rgba(251, 191, 36, 0.1);
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.7), inset 0 0 20px rgba(251, 191, 36, 0.2);
+  background: rgba(251, 191, 36, 0.05);
+  box-shadow: 0 0 25px rgba(251, 191, 36, 0.8), 0 0 10px rgba(251, 191, 36, 0.5) inset;
+  border-color: #fcd34d;
 }
 
 /* Gradient text */
