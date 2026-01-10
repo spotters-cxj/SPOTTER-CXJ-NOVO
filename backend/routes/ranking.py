@@ -68,7 +68,7 @@ async def get_user_ranking(request: Request, limit: int = 20):
     """Get user ranking by total approved photos and average rating"""
     db = await get_db(request)
     
-    # Aggregate user stats
+    # Aggregate user stats with $lookup to get user data in one query
     pipeline = [
         {"$match": {"status": "approved"}},
         {
@@ -97,21 +97,29 @@ async def get_user_ranking(request: Request, limit: int = 20):
             }
         },
         {"$sort": {"average_rating": -1, "total_photos": -1}},
-        {"$limit": limit}
+        {"$limit": limit},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "user_id",
+                "foreignField": "user_id",
+                "as": "user_data"
+            }
+        },
+        {
+            "$addFields": {
+                "picture": {"$arrayElemAt": ["$user_data.picture", 0]},
+                "tags": {"$arrayElemAt": ["$user_data.tags", 0]}
+            }
+        },
+        {"$project": {"user_data": 0}}
     ]
     
     rankings = await db.photos.aggregate(pipeline).to_list(limit)
     
-    # Enrich with user data
+    # Add position and round average rating
     for i, entry in enumerate(rankings):
         entry["position"] = i + 1
-        user = await db.users.find_one(
-            {"user_id": entry["user_id"]},
-            {"_id": 0, "picture": 1, "tags": 1}
-        )
-        if user:
-            entry["picture"] = user.get("picture")
-            entry["tags"] = user.get("tags", [])
         entry["average_rating"] = round(entry.get("average_rating", 0), 2)
     
     return rankings
