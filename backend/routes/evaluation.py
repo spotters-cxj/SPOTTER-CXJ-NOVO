@@ -50,11 +50,12 @@ async def get_evaluation_queue(request: Request):
         {"_id": 0}
     ).sort([("priority", -1), ("queue_position", 1)]).to_list(50)
     
-    # Filter out already evaluated by this user
-    evaluated_ids = set()
-    user_evals = await db.evaluations.find({"evaluator_id": user["user_id"]}).to_list(1000)
-    for ev in user_evals:
-        evaluated_ids.add(ev["photo_id"])
+    # Filter out already evaluated by this user using projection for efficiency
+    user_evals = await db.evaluations.find(
+        {"evaluator_id": user["user_id"]},
+        {"photo_id": 1, "_id": 0}
+    ).to_list(1000)
+    evaluated_ids = {ev["photo_id"] for ev in user_evals}
     
     photos = [p for p in photos if p["photo_id"] not in evaluated_ids]
     
