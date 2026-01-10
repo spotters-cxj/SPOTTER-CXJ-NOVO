@@ -69,9 +69,10 @@ export const HomePage = () => {
                 <span className="text-spotters-hero">
                   <span className="text-outlined-wine">Spotters CXJ</span>
                   <Plane 
-                    className="airplane-crossing text-[#722f37]" 
-                    size={32}
-                    strokeWidth={2.5}
+                    className="airplane-crossing" 
+                    size={48}
+                    strokeWidth={3}
+                    style={{ color: '#8B2635' }}
                   />
                 </span>
               </h1>
