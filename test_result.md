@@ -340,10 +340,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Deployment Optimizations - N+1 Query Fix (Ranking Top3)"
-    - "Deployment Optimizations - N+1 Query Fix (User Ranking)"
-    - "Deployment Optimizations - Query Projection (Evaluations)"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
