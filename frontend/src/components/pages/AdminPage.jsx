@@ -281,11 +281,15 @@ export const AdminPage = () => {
   // ========== SETTINGS ==========
   const handleSaveSettings = async () => {
     try {
-      await settingsApi.update(settingsForm);
+      console.log('Saving settings:', settingsForm);
+      const response = await settingsApi.update(settingsForm);
+      console.log('Settings saved successfully:', response);
       toast.success('Configurações salvas');
       loadAllData();
     } catch (error) {
-      toast.error('Erro ao salvar configurações');
+      console.error('Error saving settings:', error);
+      console.error('Error response:', error.response?.data);
+      toast.error(error.response?.data?.detail || 'Erro ao salvar configurações');
     }
   };
 
