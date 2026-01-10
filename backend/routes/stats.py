@@ -10,9 +10,11 @@ async def get_db(request: Request):
 
 async def require_admin(request: Request):
     from routes.auth import get_current_user
+    from models import HIERARCHY_LEVELS, get_highest_role_level
     user = await get_current_user(request)
-    if user.role not in ["admin_principal", "admin_authorized"]:
-        raise HTTPException(status_code=403, detail="Admin access required")
+    user_level = get_highest_role_level(user.get("tags", []))
+    if user_level < HIERARCHY_LEVELS["gestao"]:
+        raise HTTPException(status_code=403, detail="Gestao access required")
     return user
 
 # Stats Model
