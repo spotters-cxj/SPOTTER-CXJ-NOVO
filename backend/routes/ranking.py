@@ -29,20 +29,38 @@ async def get_top3(request: Request):
     """Get TOP 3 photos for podium"""
     db = await get_db(request)
     
-    photos = await db.photos.find(
-        {"status": "approved", "public_rating": {"$gt": 0}},
-        {"_id": 0}
-    ).sort("public_rating", -1).limit(3).to_list(3)
+    # Use aggregation with $lookup to join photos and users in one query
+    pipeline = [
+        {"$match": {"status": "approved", "public_rating": {"$gt": 0}}},
+        {"$sort": {"public_rating": -1}},
+        {"$limit": 3},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "author_id",
+                "foreignField": "user_id",
+                "as": "author_data"
+            }
+        },
+        {
+            "$addFields": {
+                "author": {
+                    "$cond": [
+                        {"$gt": [{"$size": "$author_data"}, 0]},
+                        {
+                            "name": {"$arrayElemAt": ["$author_data.name", 0]},
+                            "picture": {"$arrayElemAt": ["$author_data.picture", 0]},
+                            "tags": {"$arrayElemAt": ["$author_data.tags", 0]}
+                        },
+                        None
+                    ]
+                }
+            }
+        },
+        {"$project": {"_id": 0, "author_data": 0}}
+    ]
     
-    # Get author info for each
-    for photo in photos:
-        author = await db.users.find_one(
-            {"user_id": photo["author_id"]},
-            {"_id": 0, "name": 1, "picture": 1, "tags": 1}
-        )
-        if author:
-            photo["author"] = author
-    
+    photos = await db.photos.aggregate(pipeline).to_list(3)
     return photos
 
 @router.get("/users")
