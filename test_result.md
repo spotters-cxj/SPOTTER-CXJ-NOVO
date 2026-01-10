@@ -331,7 +331,10 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Deployment Optimizations - N+1 Query Fix (Ranking Top3)"
+    - "Deployment Optimizations - N+1 Query Fix (User Ranking)"
+    - "Deployment Optimizations - Query Projection (Evaluations)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -345,3 +348,5 @@ agent_communication:
       message: "Audit logs system testing completed successfully. All 3 audit log endpoints tested: GET /api/logs (list logs), GET /api/logs/actions (action types), GET /api/logs/stats (statistics). All endpoints properly require gestao+ level authentication and return 401 Unauthorized for unauthenticated requests with proper error messages. Updated backend_test.py to include audit logs testing. Total test suite now includes 29 test cases, all passing."
     - agent: "testing"
       message: "Review request testing completed. All 4 specified endpoints working correctly: GET /api/gallery (returns photos from both collections), GET /api/members (lists members), GET /api/members/hierarchy (returns proper hierarchy structure), GET /api/photos/queue (returns queue status). Minor issue found: GET /api/settings missing payment fields (pix_key, vip_monthly_price, vip_permanent_price) in DEFAULT_SETTINGS - these are defined in SiteSettings model but not included in default response. All core functionality working as expected."
+    - agent: "main"
+      message: "DEPLOYMENT PREPARATION COMPLETED: Fixed all 4 critical blockers identified by deployment_agent. (1) Fixed .gitignore to allow .env files in repository. (2) Fixed malformed -e flags in .gitignore. (3) Optimized ranking.py get_top3 endpoint - eliminated N+1 query using $lookup aggregation. (4) Optimized ranking.py get_user_ranking endpoint - eliminated N+1 query using $lookup in pipeline. (5) Bonus: Optimized evaluation.py query with projection. All services running. Need to test optimized endpoints before final deployment."
