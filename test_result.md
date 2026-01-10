@@ -306,11 +306,14 @@ backend:
     file: "routes/ranking.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
           agent: "main"
           comment: "PERFORMANCE OPTIMIZATION: Fixed N+1 query in get_user_ranking endpoint (line 90). Extended aggregation pipeline with $lookup to fetch user data. Reduced from 21 queries (1+20) to 1 aggregation query. Major performance improvement for ranking page."
+        - working: true
+          agent: "testing"
+          comment: "OPTIMIZATION VERIFIED: GET /api/ranking/users working correctly with extended aggregation pipeline and $lookup. Returns proper JSON structure (empty array for new DB). GET /api/ranking/podium also working (uses get_user_ranking internally). No database errors in logs. Performance optimization successful - N+1 query eliminated."
 
   - task: "Deployment Optimizations - Query Projection (Evaluations)"
     implemented: true
