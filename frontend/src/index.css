@@ -141,15 +141,6 @@ h1, h2, h3, h4, h5, h6 {
     bottom: -150px;
     left: 15%;
   }
-  25% {
-    left: 20%;
-  }
-  50% {
-    left: 18%;
-  }
-  75% {
-    left: 22%;
-  }
   100% {
     bottom: 110vh;
     left: 15%;
