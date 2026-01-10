@@ -251,9 +251,9 @@ html {
 
 /* Glass morphism cards - REDUCED TRANSPARENCY for stars visibility */
 .glass-card {
-  background: rgba(10, 25, 41, 0.75);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(10, 25, 41, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
 }
