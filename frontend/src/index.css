@@ -350,21 +350,23 @@ html {
 .airplane-crossing {
   position: absolute;
   top: 50%;
-  right: -10px;
-  transform: translateY(-50%) rotate(-15deg);
+  right: 15%;
+  transform: translateY(-50%) rotate(-25deg);
   z-index: 10;
-  animation: planeCross 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 8px rgba(114, 47, 55, 0.8));
+  animation: planeCross 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(114, 47, 55, 0.9));
 }
 
 @keyframes planeCross {
   0%, 100% {
-    right: -10px;
+    right: 15%;
     opacity: 1;
+    transform: translateY(-50%) rotate(-25deg) scale(1);
   }
   50% {
-    right: 20px;
-    opacity: 0.7;
+    right: 25%;
+    opacity: 0.8;
+    transform: translateY(-50%) rotate(-20deg) scale(1.1);
   }
 }
 
