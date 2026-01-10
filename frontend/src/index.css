@@ -263,7 +263,7 @@ html {
 }
 
 .glass-card-hover:hover {
-  background: rgba(10, 25, 41, 0.85);
+  background: rgba(10, 25, 41, 0.55);
   border-color: rgba(56, 189, 248, 0.3);
   transform: translateY(-4px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
