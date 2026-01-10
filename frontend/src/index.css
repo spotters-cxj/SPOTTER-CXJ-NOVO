@@ -333,13 +333,18 @@ html {
   background-clip: text;
 }
 
-/* Outlined text with wine border - for Spotters CXJ */
+/* Outlined text with wine border and white fill - for Spotters CXJ */
 .text-outlined-wine {
-  color: transparent;
-  -webkit-text-stroke: 2px #722f37;
-  text-stroke: 2px #722f37;
+  color: white;
+  -webkit-text-stroke: 3px #8B2635;
+  text-stroke: 3px #8B2635;
   font-weight: 900;
   letter-spacing: 0.02em;
+  text-shadow: 
+    0 0 20px rgba(139, 38, 53, 0.8),
+    0 0 40px rgba(139, 38, 53, 0.6),
+    0 0 60px rgba(139, 38, 53, 0.4);
+  filter: drop-shadow(0 0 15px rgba(139, 38, 53, 0.9));
 }
 
 .text-spotters-hero {
@@ -354,7 +359,13 @@ html {
   transform: translateY(-50%) rotate(-25deg);
   z-index: 10;
   animation: planeCross 4s ease-in-out infinite;
-  filter: drop-shadow(0 0 10px rgba(114, 47, 55, 0.9));
+  color: white;
+  filter: 
+    drop-shadow(0 0 15px rgba(139, 38, 53, 0.9))
+    drop-shadow(0 0 25px rgba(139, 38, 53, 0.7))
+    drop-shadow(0 0 35px rgba(139, 38, 53, 0.5));
+  stroke: #8B2635;
+  stroke-width: 2px;
 }
 
 @keyframes planeCross {
@@ -362,11 +373,19 @@ html {
     right: 15%;
     opacity: 1;
     transform: translateY(-50%) rotate(-25deg) scale(1);
+    filter: 
+      drop-shadow(0 0 15px rgba(139, 38, 53, 0.9))
+      drop-shadow(0 0 25px rgba(139, 38, 53, 0.7))
+      drop-shadow(0 0 35px rgba(139, 38, 53, 0.5));
   }
   50% {
     right: 25%;
-    opacity: 0.8;
+    opacity: 0.9;
     transform: translateY(-50%) rotate(-20deg) scale(1.1);
+    filter: 
+      drop-shadow(0 0 20px rgba(139, 38, 53, 1))
+      drop-shadow(0 0 35px rgba(139, 38, 53, 0.8))
+      drop-shadow(0 0 50px rgba(139, 38, 53, 0.6));
   }
 }
 
