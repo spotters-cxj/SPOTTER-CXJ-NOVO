@@ -240,11 +240,15 @@ export const AdminPage = () => {
   // ========== STATS ==========
   const handleSaveStats = async () => {
     try {
-      await statsApi.update(statsForm);
+      console.log('Saving stats:', statsForm);
+      const response = await statsApi.update(statsForm);
+      console.log('Stats saved successfully:', response);
       toast.success('Estatísticas salvas');
       loadAllData();
     } catch (error) {
-      toast.error('Erro ao salvar estatísticas');
+      console.error('Error saving stats:', error);
+      console.error('Error response:', error.response?.data);
+      toast.error(error.response?.data?.detail || 'Erro ao salvar estatísticas');
     }
   };
 
