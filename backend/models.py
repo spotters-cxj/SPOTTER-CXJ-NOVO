@@ -300,7 +300,7 @@ class SiteSettings(BaseModel):
     instagram_handle: str = "@spotterscxj"
     youtube_url: str = "https://youtube.com/@spotterscxj"
     youtube_name: str = "Spotters CXJ"
-    footer: Optional[str] = None
+    footer: Optional[dict] = None
     # VIP and Payment settings
     pix_key: Optional[str] = None
     pix_name: Optional[str] = None
@@ -314,7 +314,7 @@ class SiteSettingsUpdate(BaseModel):
     instagram_handle: Optional[str] = None
     youtube_url: Optional[str] = None
     youtube_name: Optional[str] = None
-    footer: Optional[str] = None
+    footer: Optional[dict] = None
     pix_key: Optional[str] = None
     pix_name: Optional[str] = None
     vip_monthly_price: Optional[str] = None
