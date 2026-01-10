@@ -64,8 +64,16 @@ export const HomePage = () => {
               </div>
               
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                {content.title?.split('Spotters CXJ')[0]}
-                <span className="gradient-text">Spotters CXJ</span>
+                Bem-vindo ao
+                <br />
+                <span className="text-spotters-hero">
+                  <span className="text-outlined-wine">Spotters CXJ</span>
+                  <Plane 
+                    className="airplane-crossing text-[#722f37]" 
+                    size={32}
+                    strokeWidth={2.5}
+                  />
+                </span>
               </h1>
               
               <p className="text-lg text-gray-300 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
