@@ -226,18 +226,36 @@ async def get_evaluation_history(request: Request, photo_id: str):
 
 @router.get("/evaluator/{evaluator_id}/history")
 async def get_evaluator_history(request: Request, evaluator_id: str):
-    """Get all evaluations by an evaluator (gestao+ for antifraude)"""
+    """Get all evaluations by an evaluator (own history or gestao+ for antifraude)"""
     user = await get_current_user(request)
     user_level = get_highest_role_level(user.get("tags", []))
     
-    if user_level < HIERARCHY_LEVELS["gestao"]:
-        raise HTTPException(status_code=403, detail="Acesso restrito à gestão")
+    # Allow own history or gestao+ can view any evaluator
+    if user["user_id"] != evaluator_id and user_level < HIERARCHY_LEVELS["gestao"]:
+        raise HTTPException(status_code=403, detail="Acesso restrito")
     
     db = await get_db(request)
     evaluations = await db.evaluations.find(
         {"evaluator_id": evaluator_id}, 
         {"_id": 0}
     ).sort("created_at", -1).to_list(500)
+    
+    # Enrich evaluations with photo data
+    enriched_evaluations = []
+    for evaluation in evaluations:
+        photo = await db.photos.find_one({"photo_id": evaluation["photo_id"]}, {"_id": 0})
+        enriched_evaluation = {
+            "evaluation_id": evaluation["evaluation_id"],
+            "photo_id": evaluation["photo_id"],
+            "photo_title": photo.get("title") if photo else "Foto removida",
+            "photo_author": photo.get("author_name") if photo else "Desconhecido",
+            "photo_url": photo.get("url") if photo else None,
+            "result": photo.get("status") if photo else "unknown",
+            "score": evaluation["final_score"],
+            "comment": evaluation.get("comment"),
+            "evaluated_at": evaluation["created_at"]
+        }
+        enriched_evaluations.append(enriched_evaluation)
     
     # Calculate statistics
     if evaluations:
@@ -250,12 +268,7 @@ async def get_evaluator_history(request: Request, evaluator_id: str):
         avg_score = 0
         score_distribution = {}
     
-    return {
-        "evaluations": evaluations,
-        "total": len(evaluations),
-        "average_score": round(avg_score, 2),
-        "score_distribution": score_distribution
-    }
+    return enriched_evaluations
 
 
 @router.get("/evaluator/{evaluator_id}/history")
