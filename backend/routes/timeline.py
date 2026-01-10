@@ -11,16 +11,20 @@ async def get_db(request: Request):
 
 async def require_admin(request: Request):
     from routes.auth import get_current_user
+    from models import HIERARCHY_LEVELS, get_highest_role_level
     user = await get_current_user(request)
-    if user.role not in ["admin_principal", "admin_authorized"]:
-        raise HTTPException(status_code=403, detail="Admin access required")
+    user_level = get_highest_role_level(user.get("tags", []))
+    if user_level < HIERARCHY_LEVELS["gestao"]:
+        raise HTTPException(status_code=403, detail="Gestao access required")
     return user
 
 async def require_admin_principal(request: Request):
     from routes.auth import get_current_user
+    from models import HIERARCHY_LEVELS, get_highest_role_level
     user = await get_current_user(request)
-    if user.role != "admin_principal":
-        raise HTTPException(status_code=403, detail="Admin principal access required")
+    user_level = get_highest_role_level(user.get("tags", []))
+    if user_level < HIERARCHY_LEVELS["lider"]:
+        raise HTTPException(status_code=403, detail="Lider access required")
     return user
 
 # Timeline Models
