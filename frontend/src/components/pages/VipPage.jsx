@@ -118,7 +118,7 @@ export const VipPage = () => {
             <div
               key={index}
               className={`relative glass-card overflow-hidden ${
-                plan.highlight ? 'border-2 border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.2)]' : ''
+                plan.highlight ? 'border border-amber-500/60 shadow-[0_0_25px_rgba(251,191,36,0.5)]' : ''
               }`}
             >
               {plan.highlight && (
