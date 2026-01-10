@@ -273,6 +273,54 @@ backend:
           agent: "testing"
           comment: "Minor: GET /api/settings missing payment fields (pix_key, vip_monthly_price, vip_permanent_price) in DEFAULT_SETTINGS. These fields are defined in SiteSettings model but not included in default response. Core functionality works correctly."
 
+  - task: "Deployment Optimizations - .gitignore Fix"
+    implemented: true
+    working: true
+    file: ".gitignore"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "CRITICAL BLOCKER FIXED: Removed lines 80-95 from .gitignore that were blocking .env files and contained malformed -e flags. .env files now properly tracked in repository for deployment. Fixed by deployment_agent analysis."
+
+  - task: "Deployment Optimizations - N+1 Query Fix (Ranking Top3)"
+    implemented: true
+    working: true
+    file: "routes/ranking.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "PERFORMANCE OPTIMIZATION: Fixed N+1 query in get_top3 endpoint (line 38). Replaced loop-based author fetching with MongoDB $lookup aggregation. Reduced from 4 queries (1+3) to 1 aggregation query. This significantly improves performance under load."
+
+  - task: "Deployment Optimizations - N+1 Query Fix (User Ranking)"
+    implemented: true
+    working: true
+    file: "routes/ranking.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "PERFORMANCE OPTIMIZATION: Fixed N+1 query in get_user_ranking endpoint (line 90). Extended aggregation pipeline with $lookup to fetch user data. Reduced from 21 queries (1+20) to 1 aggregation query. Major performance improvement for ranking page."
+
+  - task: "Deployment Optimizations - Query Projection (Evaluations)"
+    implemented: true
+    working: true
+    file: "routes/evaluation.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "PERFORMANCE OPTIMIZATION: Optimized evaluation query (line 55) to use projection, fetching only photo_id field instead of full documents. Reduces memory usage and improves query performance."
+
 frontend:
   # Frontend testing not performed by testing agent as per instructions
 
