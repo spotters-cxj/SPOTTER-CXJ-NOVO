@@ -333,6 +333,41 @@ html {
   background-clip: text;
 }
 
+/* Outlined text with wine border - for Spotters CXJ */
+.text-outlined-wine {
+  color: transparent;
+  -webkit-text-stroke: 2px #722f37;
+  text-stroke: 2px #722f37;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.text-spotters-hero {
+  position: relative;
+  display: inline-block;
+}
+
+.airplane-crossing {
+  position: absolute;
+  top: 50%;
+  right: -10px;
+  transform: translateY(-50%) rotate(-15deg);
+  z-index: 10;
+  animation: planeCross 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(114, 47, 55, 0.8));
+}
+
+@keyframes planeCross {
+  0%, 100% {
+    right: -10px;
+    opacity: 1;
+  }
+  50% {
+    right: 20px;
+    opacity: 0.7;
+  }
+}
+
 .gradient-text-gold {
   background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
   -webkit-background-clip: text;
