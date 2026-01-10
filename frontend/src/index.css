@@ -333,11 +333,12 @@ html {
   background-clip: text;
 }
 
-/* Outlined text with wine border - hollow/transparent fill */
+/* Outlined text with wine border and white fill - clean without inner strokes */
 .text-outlined-wine {
-  color: transparent;
+  color: white;
   -webkit-text-stroke: 3px #8B2635;
   text-stroke: 3px #8B2635;
+  paint-order: stroke fill;
   font-weight: 900;
   letter-spacing: 0.02em;
 }
