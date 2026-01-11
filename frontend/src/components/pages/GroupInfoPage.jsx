@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Instagram, Youtube, ExternalLink, MapPin, Users, Camera, Calendar } from 'lucide-react';
-import { leadersApi, settingsApi, statsApi } from '../../services/api';
+import { leadersApi, settingsApi, statsApi, pagesApi } from '../../services/api';
 import { siteConfig } from '../../data/mock';
 import { Button } from '../ui/button';
 
@@ -8,24 +8,33 @@ export const GroupInfoPage = () => {
   const [leaders, setLeaders] = useState([]);
   const [settings, setSettings] = useState(null);
   const [stats, setStats] = useState({ members: "50+", photos: "5.000+", events: "30+", years: "8+" });
+  const [pageContent, setPageContent] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [leadersRes, settingsRes, statsRes] = await Promise.all([
+        const [leadersRes, settingsRes, statsRes, pageRes] = await Promise.all([
           leadersApi.list(),
           settingsApi.get(),
-          statsApi.get()
+          statsApi.get(),
+          pagesApi.getPage('group-info')
         ]);
         setLeaders(leadersRes.data);
         setSettings(settingsRes.data);
         setStats(statsRes.data);
+        setPageContent(pageRes.data);
       } catch (error) {
         console.error('Error loading group info:', error);
       }
     };
     loadData();
   }, []);
+
+  const content = pageContent || {
+    title: "Sobre o Spotters CXJ",
+    subtitle: "Conheça nossa comunidade",
+    content: "O Spotters CXJ é uma comunidade de entusiastas da aviação dedicados a documentar e compartilhar a paixão por aeronaves."
+  };
 
   return (
     <div className="min-h-screen pt-20">
