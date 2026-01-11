@@ -59,11 +59,13 @@ async def create_session(request: Request, response: Response):
         user_id = f"user_{uuid.uuid4().hex[:12]}"
         user_count = await db.users.count_documents({})
         
+        # Primeiro usuário é líder e admin
         if user_count == 0:
             tags = ["lider", "admin"]
             approved = True
         else:
-            tags = ["membro"]
+            # Novos usuários começam como VISITANTE
+            tags = ["visitante"]
             approved = False
         
         new_user = {
@@ -82,7 +84,7 @@ async def create_session(request: Request, response: Response):
         # Welcome notification
         await create_notification(
             db, user_id, "tag_assigned",
-            f"🎉 Bem-vindo ao Spotters CXJ! Você recebeu a tag: MEMBRO"
+            f"👋 Bem-vindo ao Spotters CXJ! Você está como VISITANTE. Aguarde aprovação de um administrador para se tornar Spotter CXJ."
         )
     
     session_token = f"session_{uuid.uuid4().hex}"
