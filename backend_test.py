@@ -399,6 +399,144 @@ def main():
         else:
             result.failure(f"{method} {endpoint}", f"Expected 401/403, got: {response.get('status_code', 'Error')}")
     
+    # 6. NEW AIRCRAFT API ENDPOINTS (ANAC) - PUBLIC ENDPOINTS
+    print("\n✈️ TESTING AIRCRAFT API ENDPOINTS (ANAC)")
+    print("-" * 40)
+    
+    # Test aircraft types
+    response = test_endpoint("GET", "/aircraft/types", description="Aircraft types list")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, dict) and "types" in data:
+            result.success("GET /api/aircraft/types", f"Returned {len(data['types'])} aircraft types")
+        else:
+            result.failure("GET /api/aircraft/types", f"Unexpected response format: {data}")
+    else:
+        result.failure("GET /api/aircraft/types", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test aircraft operators
+    response = test_endpoint("GET", "/aircraft/operators", description="Aircraft operators list")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, dict) and "operators" in data:
+            result.success("GET /api/aircraft/operators", f"Returned {len(data['operators'])} operators")
+        else:
+            result.failure("GET /api/aircraft/operators", f"Unexpected response format: {data}")
+    else:
+        result.failure("GET /api/aircraft/operators", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test aircraft lookup - LATAM
+    response = test_endpoint("GET", "/aircraft/lookup?registration=PR-XAA", description="LATAM aircraft lookup")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, dict) and "found" in data:
+            if data["found"]:
+                result.success("GET /api/aircraft/lookup (PR-XAA)", f"Found LATAM aircraft: {data.get('operator', 'N/A')}")
+            else:
+                result.success("GET /api/aircraft/lookup (PR-XAA)", "Registration not found in database (expected for test data)")
+        else:
+            result.failure("GET /api/aircraft/lookup (PR-XAA)", f"Unexpected response format: {data}")
+    else:
+        result.failure("GET /api/aircraft/lookup (PR-XAA)", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test aircraft lookup - GOL
+    response = test_endpoint("GET", "/aircraft/lookup?registration=PR-GOL", description="GOL aircraft lookup")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, dict) and "found" in data:
+            if data["found"]:
+                result.success("GET /api/aircraft/lookup (PR-GOL)", f"Found GOL aircraft: {data.get('operator', 'N/A')}")
+            else:
+                result.success("GET /api/aircraft/lookup (PR-GOL)", "Registration not found in database (expected for test data)")
+        else:
+            result.failure("GET /api/aircraft/lookup (PR-GOL)", f"Unexpected response format: {data}")
+    else:
+        result.failure("GET /api/aircraft/lookup (PR-GOL)", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test aircraft validation
+    response = test_endpoint("GET", "/aircraft/validate?registration=PR-ABC", description="Aircraft registration validation")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, dict) and "valid" in data:
+            result.success("GET /api/aircraft/validate (PR-ABC)", f"Validation result: {data.get('valid', False)}")
+        else:
+            result.failure("GET /api/aircraft/validate (PR-ABC)", f"Unexpected response format: {data}")
+    else:
+        result.failure("GET /api/aircraft/validate (PR-ABC)", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test aircraft models
+    response = test_endpoint("GET", "/aircraft/models", description="Aircraft models list")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, dict) and ("models_by_type" in data or "models" in data):
+            result.success("GET /api/aircraft/models", "Returned aircraft models successfully")
+        else:
+            result.failure("GET /api/aircraft/models", f"Unexpected response format: {data}")
+    else:
+        result.failure("GET /api/aircraft/models", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # 7. NEW EVALUATION LOGS ENDPOINTS (Should return 401 without auth)
+    print("\n📊 TESTING EVALUATION LOGS ENDPOINTS (Should return 401)")
+    print("-" * 40)
+    
+    evaluation_log_endpoints = [
+        ("GET", "/logs/evaluations", "List evaluation logs"),
+        ("GET", "/logs/evaluations/stats", "Evaluation statistics"),
+        ("GET", "/logs/security", "Security logs")
+    ]
+    
+    for method, endpoint, description in evaluation_log_endpoints:
+        response = test_endpoint(method, endpoint, expected_status=401, description=description)
+        if response.get("success"):
+            result.success(f"{method} {endpoint}", "Correctly returned 401 Unauthorized")
+        elif response.get("status_code") == 403:
+            result.success(f"{method} {endpoint}", "Correctly returned 403 Forbidden (requires gestao+ level)")
+        else:
+            result.failure(f"{method} {endpoint}", f"Expected 401/403, got: {response.get('status_code', 'Error')}")
+    
+    # 8. PHOTO EDITING ENDPOINTS (Should return 401 without auth)
+    print("\n📝 TESTING PHOTO EDITING ENDPOINTS (Should return 401)")
+    print("-" * 40)
+    
+    # Test photo edit endpoint
+    response = test_endpoint("PUT", "/photos/test123/edit", expected_status=401, 
+                           data={"title": "Test Edit"}, description="Edit photo")
+    if response.get("success"):
+        result.success("PUT /api/photos/{photo_id}/edit", "Correctly returned 401 Unauthorized")
+    else:
+        result.failure("PUT /api/photos/{photo_id}/edit", f"Expected 401, got: {response.get('status_code', 'Error')}")
+    
+    # Test photo edit history endpoint
+    response = test_endpoint("GET", "/photos/test123/edit-history", expected_status=401, description="Photo edit history")
+    if response.get("success"):
+        result.success("GET /api/photos/{photo_id}/edit-history", "Correctly returned 401 Unauthorized")
+    else:
+        result.failure("GET /api/photos/{photo_id}/edit-history", f"Expected 401, got: {response.get('status_code', 'Error')}")
+    
+    # 9. EVALUATION SYSTEM ENDPOINTS (Should return 401/403 without AVALIADOR tag)
+    print("\n⭐ TESTING EVALUATION SYSTEM ENDPOINTS (Should return 401/403)")
+    print("-" * 40)
+    
+    # Test evaluation queue endpoint
+    response = test_endpoint("GET", "/evaluation/queue", expected_status=401, description="Evaluation queue")
+    if response.get("success"):
+        result.success("GET /api/evaluation/queue", "Correctly returned 401 Unauthorized (requires AVALIADOR tag)")
+    elif response.get("status_code") == 403:
+        result.success("GET /api/evaluation/queue", "Correctly returned 403 Forbidden (requires AVALIADOR tag)")
+    else:
+        result.failure("GET /api/evaluation/queue", f"Expected 401/403, got: {response.get('status_code', 'Error')}")
+    
+    # Test evaluation submission endpoint
+    response = test_endpoint("POST", "/evaluation/test123", expected_status=401,
+                           data={"criteria": {"technical_quality": 4, "composition": 3, "moment_angle": 4, "editing": 3, "spotter_criteria": 4}},
+                           description="Submit evaluation")
+    if response.get("success"):
+        result.success("POST /api/evaluation/{photo_id}", "Correctly returned 401 Unauthorized (requires AVALIADOR tag)")
+    elif response.get("status_code") == 403:
+        result.success("POST /api/evaluation/{photo_id}", "Correctly returned 403 Forbidden (requires AVALIADOR tag)")
+    else:
+        result.failure("POST /api/evaluation/{photo_id}", f"Expected 401/403, got: {response.get('status_code', 'Error')}")
+    
     # Final summary
     success = result.summary()
     return 0 if success else 1
