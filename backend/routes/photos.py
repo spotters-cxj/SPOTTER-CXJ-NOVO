@@ -80,12 +80,12 @@ async def upload_photo(
     aircraft_model: str = Form(...),
     aircraft_type: str = Form(...),
     registration: Optional[str] = Form(None),
-    airline: Optional[str] = Form(None),
-    location: Optional[str] = Form(None),
+    airline: str = Form(...),
+    location: str = Form(...),
     photo_date: str = Form(...),
     file: UploadFile = File(...)
 ):
-    """Upload a new photo"""
+    """Upload a new photo - airline and location are now required"""
     user = await get_current_user(request)
     db = await get_db(request)
     
