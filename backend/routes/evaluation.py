@@ -180,65 +180,54 @@ async def submit_evaluation(request: Request, photo_id: str):
 
 async def check_photo_approval(db, photo_id: str):
     """Check if photo should be approved or rejected based on evaluations"""
-    # Get all users with AVALIADOR tag (SOMENTE avaliadores contam)
-    total_evaluators = await db.users.count_documents({
-        "tags": "avaliador"  # SOMENTE a tag avaliador
-    })
-    
-    if total_evaluators == 0:
-        return
+    # NOVA REGRA: Apenas 1 avaliador é necessário para aprovar
     
     # Get evaluations for this photo
     evaluations = await db.evaluations.find({"photo_id": photo_id}).to_list(1000)
     
-    # Need at least 50% of evaluators
-    min_evaluations = max(1, int(total_evaluators * MIN_EVALUATORS_PERCENT))
-    
-    if len(evaluations) < min_evaluations:
+    # Need at least 1 evaluation
+    if len(evaluations) < 1:
         return  # Not enough evaluations yet
     
-    # Check approval: >50% gave >3
-    scores_above_3 = sum(1 for e in evaluations if e["final_score"] > MIN_APPROVAL_SCORE)
-    approval_rate = scores_above_3 / len(evaluations)
-    
-    # Calculate final rating
-    final_rating = sum(e["final_score"] for e in evaluations) / len(evaluations)
+    # Get the first (and only required) evaluation
+    first_eval = evaluations[0]
+    final_score = first_eval["final_score"]
     
     photo = await db.photos.find_one({"photo_id": photo_id}, {"_id": 0})
     
-    if approval_rate > 0.5:
-        # APPROVED
+    if final_score >= MIN_APPROVAL_SCORE:
+        # APPROVED - score >= 3.0
         await db.photos.update_one(
             {"photo_id": photo_id},
             {
                 "$set": {
                     "status": "approved",
-                    "final_rating": round(final_rating, 2),
+                    "final_rating": round(final_score, 2),
                     "approved_at": datetime.now(timezone.utc)
                 }
             }
         )
         await create_notification(
             db, photo["author_id"], "photo_approved",
-            f"🎉 Sua foto '{photo['title']}' foi APROVADA!\nNota final: ⭐ {final_rating:.1f}\nEla já está publicada no site.",
-            {"photo_id": photo_id, "rating": round(final_rating, 2)}
+            f"🎉 Sua foto '{photo['title']}' foi APROVADA!\nNota final: ⭐ {final_score:.1f}\nEla já está publicada no site.",
+            {"photo_id": photo_id, "rating": round(final_score, 2)}
         )
     else:
-        # REJECTED
+        # REJECTED - score < 3.0
         await db.photos.update_one(
             {"photo_id": photo_id},
             {
                 "$set": {
                     "status": "rejected",
-                    "final_rating": round(final_rating, 2),
+                    "final_rating": round(final_score, 2),
                     "rejected_at": datetime.now(timezone.utc)
                 }
             }
         )
         await create_notification(
             db, photo["author_id"], "photo_rejected",
-            f"❌ Sua foto '{photo['title']}' não foi aprovada desta vez.\nNota final: ⭐ {final_rating:.1f}\nVocê pode reenviar após ajustes.",
-            {"photo_id": photo_id, "rating": round(final_rating, 2)}
+            f"❌ Sua foto '{photo['title']}' não foi aprovada desta vez.\nNota final: ⭐ {final_score:.1f}\nVocê pode reenviar após ajustes.",
+            {"photo_id": photo_id, "rating": round(final_score, 2)}
         )
 
 @router.get("/history/{photo_id}")
