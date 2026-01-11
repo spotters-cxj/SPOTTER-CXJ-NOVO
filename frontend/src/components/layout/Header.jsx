@@ -110,17 +110,17 @@ export const Header = () => {
               </Link>
             </nav>
 
-            {/* Right side - Social + Auth */}
-            <div className="flex items-center gap-3">
-              {/* User Actions */}
+            {/* Right side - Social + Auth + Mobile Menu */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {/* User Actions - Desktop only */}
               {user && (
-                <>
+                <div className="hidden lg:flex items-center gap-2">
                   {/* Upload Button */}
                   <Link to="/upload">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="hidden sm:flex text-gray-400 hover:text-sky-400"
+                      className="text-gray-400 hover:text-sky-400"
                     >
                       <Upload size={18} />
                     </Button>
@@ -132,7 +132,7 @@ export const Header = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="hidden sm:flex text-gray-400 hover:text-green-400"
+                        className="text-gray-400 hover:text-green-400"
                         title="Avaliar Fotos"
                       >
                         <Camera size={18} />
@@ -142,11 +142,11 @@ export const Header = () => {
 
                   {/* Notifications */}
                   <NotificationBell />
-                </>
+                </div>
               )}
 
-              {/* Social Links */}
-              <div className="hidden md:flex items-center gap-1">
+              {/* Social Links - Desktop only */}
+              <div className="hidden lg:flex items-center gap-1">
                 <a
                   href={instagramUrl}
                   target="_blank"
@@ -167,10 +167,10 @@ export const Header = () => {
                 </a>
               </div>
 
-              {/* Auth Button */}
+              {/* Auth Button - Desktop only */}
               {user ? (
-                <div className="flex items-center gap-2">
-                  <Link to={`/perfil/${user.user_id}`} className="hidden sm:flex items-center gap-2">
+                <div className="hidden lg:flex items-center gap-2">
+                  <Link to={`/perfil/${user.user_id}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                     <img
                       src={user.picture || siteConfig.logoRound}
                       alt={user.name}
@@ -199,7 +199,7 @@ export const Header = () => {
               ) : (
                 <Button
                   onClick={login}
-                  className="bg-sky-600 hover:bg-sky-500 text-white"
+                  className="hidden lg:flex bg-sky-600 hover:bg-sky-500 text-white"
                   size="sm"
                 >
                   <User size={16} className="mr-2" />
