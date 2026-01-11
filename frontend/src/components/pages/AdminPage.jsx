@@ -646,6 +646,9 @@ export const AdminPage = () => {
               <TabsTrigger value="pages" className="data-[state=active]:bg-sky-600">
                 <FileText size={16} className="mr-2" />Textos
               </TabsTrigger>
+              <TabsTrigger value="credits" className="data-[state=active]:bg-sky-600">
+                <Award size={16} className="mr-2" />Créditos
+              </TabsTrigger>
               <TabsTrigger value="photos" className="data-[state=active]:bg-sky-600">
                 <Camera size={16} className="mr-2" />Galeria
               </TabsTrigger>
