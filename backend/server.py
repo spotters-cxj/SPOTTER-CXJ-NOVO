@@ -10,7 +10,7 @@ from pathlib import Path
 # Import routes
 from routes import auth, photos, evaluation, members, news, notifications, ranking, admin, logs
 from routes import pages, leaders, settings, timeline, stats, gallery, memories, upload
-from routes import aircraft
+from routes import aircraft, backup
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
