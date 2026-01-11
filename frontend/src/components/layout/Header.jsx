@@ -71,22 +71,22 @@ export const Header = () => {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-20 gap-4">
             {/* Logo - Round */}
-            <Link to="/" className="flex items-center gap-3 group">
+            <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
               <img
                 src={siteConfig.logoRound}
                 alt="Spotters CXJ"
                 className="h-12 w-12 rounded-full object-cover border-2 border-sky-500/30 transition-transform group-hover:scale-105"
               />
-              <div className="hidden sm:block">
+              <div className="hidden sm:block whitespace-nowrap">
                 <span className="text-xl font-bold text-white tracking-wider">SPOTTERS</span>
                 <span className="text-xl font-bold text-sky-400 ml-1">CXJ</span>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
