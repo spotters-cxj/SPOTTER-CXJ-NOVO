@@ -218,84 +218,158 @@ export const Header = () => {
         </div>
       </header>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Modern & Beautiful */}
       {isMobileMenuOpen && (
-        <div className="mobile-menu lg:hidden">
-          <nav className="flex flex-col items-center gap-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-xl font-medium transition-colors ${
-                  location.pathname === link.path
-                    ? 'text-sky-400'
-                    : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            
-            {/* VIP Link Mobile - Neon outline */}
-            <Link
-              to="/vip"
-              className="px-6 py-2 rounded-lg vip-btn font-bold text-xl flex items-center gap-2"
-            >
-              <Sparkles size={20} />
-              Seja VIP
-            </Link>
-            
-            {user && (
-              <>
-                <Link to="/upload" className="text-xl font-medium text-gray-300 hover:text-white">
-                  Enviar Foto
-                </Link>
-                {canEvaluate && (
-                  <Link to="/avaliacao" className="text-xl font-medium text-green-400">
-                    Avaliar Fotos
-                  </Link>
-                )}
-              </>
-            )}
-            
-            {isGestao && (
-              <Link to="/admin" className="text-xl font-medium text-sky-400">
-                Painel Admin
-              </Link>
-            )}
-          </nav>
+        <div className="fixed inset-0 z-40 lg:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
           
-          <div className="flex items-center gap-6 mt-8">
-            <a
-              href={instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-pink-400 transition-colors"
-            >
-              <Instagram size={28} />
-            </a>
-            <a
-              href={youtubeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-red-500 transition-colors"
-            >
-              <Youtube size={28} />
-            </a>
-          </div>
+          {/* Menu Content */}
+          <div className="absolute right-0 top-20 bottom-0 w-80 bg-gradient-to-br from-[#0a1929] via-[#102a43] to-[#0a1929] border-l border-white/10 shadow-2xl overflow-y-auto">
+            <div className="p-6">
+              {/* User Section */}
+              {user && (
+                <div className="mb-8 glass-card p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <img
+                      src={user.picture || '/logo-spotters-round.png'}
+                      alt={user.name}
+                      className="w-12 h-12 rounded-full border-2 border-sky-500/50"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold truncate">{user.name}</p>
+                      <p className="text-gray-400 text-xs truncate">{user.email}</p>
+                    </div>
+                  </div>
+                  <Link
+                    to={`/perfil/${user.user_id}`}
+                    className="block w-full text-center py-2 bg-sky-600 hover:bg-sky-500 rounded-lg text-white text-sm font-medium transition-colors"
+                  >
+                    Ver Perfil
+                  </Link>
+                </div>
+              )}
 
-          {!user && (
-            <Button
-              onClick={() => {
-                setIsMobileMenuOpen(false);
-                login();
-              }}
-              className="mt-8 bg-sky-600 hover:bg-sky-500 text-white"
-            >
-              <User size={18} className="mr-2" />
-              Entrar com Google
-            </Button>
-          )}
+              {/* Navigation Links */}
+              <nav className="space-y-2 mb-6">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                      location.pathname === link.path
+                        ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/50'
+                        : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    {link.icon ? (
+                      <link.icon size={20} />
+                    ) : (
+                      <Camera size={20} className="opacity-50" />
+                    )}
+                    <span className="font-medium">{link.label}</span>
+                  </Link>
+                ))}
+                
+                {/* VIP Button */}
+                <Link
+                  to="/vip"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-bold shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 transition-all"
+                >
+                  <Sparkles size={20} />
+                  <span>Seja VIP</span>
+                </Link>
+              </nav>
+
+              {/* User Actions */}
+              {user && (
+                <div className="space-y-2 mb-6 pt-6 border-t border-white/10">
+                  <Link
+                    to="/upload"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/5 hover:text-white transition-all"
+                  >
+                    <Upload size={20} />
+                    <span className="font-medium">Enviar Foto</span>
+                  </Link>
+                  
+                  {canEvaluate && (
+                    <Link
+                      to="/avaliacao"
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-green-400 hover:bg-green-500/10 transition-all"
+                    >
+                      <Trophy size={20} />
+                      <span className="font-medium">Avaliar Fotos</span>
+                    </Link>
+                  )}
+                  
+                  {isGestao && (
+                    <Link
+                      to="/admin"
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-amber-400 hover:bg-amber-500/10 transition-all"
+                    >
+                      <Shield size={20} />
+                      <span className="font-medium">Painel Admin</span>
+                    </Link>
+                  )}
+                </div>
+              )}
+
+              {/* Social Links */}
+              <div className="mb-6 pt-6 border-t border-white/10">
+                <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-3">
+                  Redes Sociais
+                </p>
+                <div className="flex gap-3">
+                  <a
+                    href={instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white font-medium hover:shadow-lg hover:shadow-pink-500/30 transition-all"
+                  >
+                    <Instagram size={20} />
+                    <span className="text-sm">Instagram</span>
+                  </a>
+                  <a
+                    href={youtubeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-br from-red-500 to-red-600 text-white font-medium hover:shadow-lg hover:shadow-red-500/30 transition-all"
+                  >
+                    <Youtube size={20} />
+                    <span className="text-sm">YouTube</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Auth Actions */}
+              {user ? (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-red-600 hover:bg-red-500 text-white font-medium transition-colors"
+                >
+                  <LogOut size={20} />
+                  <span>Sair</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    login();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium transition-colors"
+                >
+                  <User size={20} />
+                  <span>Entrar com Google</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </>
