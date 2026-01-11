@@ -132,17 +132,18 @@ async def upload_photo(
     if len(file_content) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo 10MB")
     
-    # Validate image dimensions (minimum 1080p)
+    # Validate image dimensions (minimum 1080p in any dimension)
     try:
         img = Image.open(io.BytesIO(file_content))
         width, height = img.size
         
-        # Mínimo: 1920x1080 ou 1080x1920 (retrato)
+        # Mínimo: pelo menos uma dimensão deve ter 1080px
+        # Aceita diferentes aspect ratios: 1:1, 4:5, 16:9, 9:16, etc
         min_dimension = 1080
         if width < min_dimension and height < min_dimension:
             raise HTTPException(
                 status_code=400, 
-                detail=f"Resolução muito baixa. Mínimo: {min_dimension}p (ex: 1920x1080 ou 1080x1920)"
+                detail=f"Resolução muito baixa. Pelo menos uma dimensão deve ter mínimo {min_dimension}px (ex: 1080x1080, 1920x1080, 1080x1920, etc)"
             )
     except Exception as e:
         if isinstance(e, HTTPException):
