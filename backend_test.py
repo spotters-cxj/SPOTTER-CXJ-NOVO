@@ -537,6 +537,25 @@ def main():
     else:
         result.failure("POST /api/evaluation/{photo_id}", f"Expected 401/403, got: {response.get('status_code', 'Error')}")
     
+    # 10. BACKUP API ENDPOINTS (Should return 401 without admin auth)
+    print("\n💾 TESTING BACKUP API ENDPOINTS (Should return 401)")
+    print("-" * 40)
+    
+    backup_endpoints = [
+        ("GET", "/backup/status", "Backup system status"),
+        ("GET", "/backup/list", "List available backups"),
+        ("POST", "/backup/create", "Create manual backup")
+    ]
+    
+    for method, endpoint, description in backup_endpoints:
+        response = test_endpoint(method, endpoint, expected_status=401, description=description)
+        if response.get("success"):
+            result.success(f"{method} {endpoint}", "Correctly returned 401 Unauthorized (requires admin)")
+        elif response.get("status_code") == 403:
+            result.success(f"{method} {endpoint}", "Correctly returned 403 Forbidden (requires admin)")
+        else:
+            result.failure(f"{method} {endpoint}", f"Expected 401/403, got: {response.get('status_code', 'Error')}")
+    
     # Final summary
     success = result.summary()
     return 0 if success else 1
