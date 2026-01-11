@@ -15,6 +15,7 @@ async def lookup_aircraft(registration: str):
     """
     Busca informações de aeronave pela matrícula.
     Usa banco de dados local baseado em dados públicos da ANAC.
+    Retorna também sugestões de modelos baseado no tipo da aeronave.
     """
     if not registration or len(registration) < 2:
         raise HTTPException(status_code=400, detail="Matrícula inválida")
@@ -22,15 +23,23 @@ async def lookup_aircraft(registration: str):
     result = lookup_registration(registration)
     
     if result:
+        # Adicionar sugestões de modelos baseado no tipo
+        aircraft_type = result.get("aircraft_type")
+        models = []
+        if aircraft_type:
+            models = get_aircraft_models_by_type(aircraft_type)
+        
         return {
             "found": True,
-            **result
+            **result,
+            "suggested_models": models
         }
     
     return {
         "found": False,
         "registration": registration.upper(),
-        "message": "Matrícula não encontrada no banco de dados local. Por favor, preencha manualmente."
+        "message": "Matrícula não encontrada no banco de dados local. Por favor, preencha manualmente.",
+        "suggested_models": []
     }
 
 @router.get("/operators")
