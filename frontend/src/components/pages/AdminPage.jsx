@@ -1290,17 +1290,35 @@ export const AdminPage = () => {
                   <Camera size={20} className="text-sky-400" />
                   Galeria de Fotos ({photos.length})
                 </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {photos.slice(0, 20).map((photo) => (
-                    <div key={photo.photo_id} className="relative group">
+                    <div key={photo.photo_id} className="relative group bg-[#0a1929] rounded-lg overflow-hidden border border-[#1a3a5c]">
                       <img 
                         src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url} 
-                        alt={photo.description} 
-                        className="w-full h-24 object-cover rounded-lg"
+                        alt={photo.title || photo.description} 
+                        className="w-full h-32 object-cover"
                       />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                        <Button size="sm" variant="ghost" onClick={() => handleDeletePhoto(photo.photo_id)} className="text-red-400">
-                          <Trash2 size={16} />
+                      <div className="p-3">
+                        <h4 className="text-white text-sm font-medium truncate">{photo.title || 'Sem título'}</h4>
+                        <p className="text-gray-400 text-xs truncate">{photo.registration || 'Sem matrícula'} • {photo.airline || photo.aircraft_type || 'N/A'}</p>
+                        <p className="text-gray-500 text-xs">{photo.author_name || 'Autor desconhecido'}</p>
+                      </div>
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => handleEditPhoto(photo)} 
+                          className="bg-sky-600/80 hover:bg-sky-500 text-white h-7 w-7 p-0"
+                        >
+                          <Edit size={14} />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => handleDeletePhoto(photo.photo_id)} 
+                          className="bg-red-600/80 hover:bg-red-500 text-white h-7 w-7 p-0"
+                        >
+                          <Trash2 size={14} />
                         </Button>
                       </div>
                     </div>
