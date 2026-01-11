@@ -83,6 +83,7 @@ export const AdminPage = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showNewsModal, setShowNewsModal] = useState(false);
   const [showPhotoEditModal, setShowPhotoEditModal] = useState(false);
+  const [showCreditModal, setShowCreditModal] = useState(false);
   const [editingLeader, setEditingLeader] = useState(null);
   const [editingMemory, setEditingMemory] = useState(null);
   const [editingPage, setEditingPage] = useState(null);
@@ -91,6 +92,7 @@ export const AdminPage = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [editingNews, setEditingNews] = useState(null);
   const [editingPhoto, setEditingPhoto] = useState(null);
+  const [editingCredit, setEditingCredit] = useState(null);
 
   // Form states
   const [leaderForm, setLeaderForm] = useState({ name: '', role: '', instagram: '', photo_url: '', order: 0 });
