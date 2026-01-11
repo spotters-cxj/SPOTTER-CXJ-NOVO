@@ -20,6 +20,7 @@ import { EvaluationPage } from "./components/pages/EvaluationPage";
 import { UploadPage } from "./components/pages/UploadPage";
 import { ProfilePage } from "./components/pages/ProfilePage";
 import { EditProfilePage } from "./components/pages/EditProfilePage";
+import { CreditsPage } from "./components/pages/CreditsPage";
 import { VipPage } from "./components/pages/VipPage";
 import { SearchPage } from "./components/pages/SearchPage";
 import { AuthCallback } from "./components/auth/AuthCallback";
