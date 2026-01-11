@@ -129,7 +129,9 @@ export const AdminPage = () => {
         newsApi.list(50),
         evaluationApi.getQueue(),
         logsApi.getEvaluations({ limit: 100 }),
-        logsApi.getEvaluationStats()
+        logsApi.getEvaluationStats(),
+        backupApi.list(),
+        backupApi.status()
       ]);
 
       if (results[0].status === 'fulfilled') setUsers(results[0].value.data || []);
@@ -152,11 +154,97 @@ export const AdminPage = () => {
       if (results[11].status === 'fulfilled') setEvaluationQueue(results[11].value.data || []);
       if (results[12].status === 'fulfilled') setEvaluationLogs(results[12].value.data?.evaluations || []);
       if (results[13].status === 'fulfilled') setEvaluationStats(results[13].value.data || {});
+      if (results[14].status === 'fulfilled') setBackups(results[14].value.data?.backups || []);
+      if (results[15].status === 'fulfilled') setBackupStatus(results[15].value.data || {});
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Erro ao carregar dados');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ========== BACKUP FUNCTIONS ==========
+  const handleCreateBackup = async () => {
+    try {
+      setCreatingBackup(true);
+      const response = await backupApi.create();
+      toast.success(`Backup criado: ${response.data.filename}`);
+      loadAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erro ao criar backup');
+    } finally {
+      setCreatingBackup(false);
+    }
+  };
+
+  const handleDownloadBackup = (filename) => {
+    window.open(backupApi.download(filename), '_blank');
+  };
+
+  const handleDeleteBackup = async (filename) => {
+    if (!window.confirm(`Excluir backup ${filename}?`)) return;
+    try {
+      await backupApi.delete(filename);
+      toast.success('Backup excluído');
+      loadAllData();
+    } catch (error) {
+      toast.error('Erro ao excluir backup');
+    }
+  };
+
+  // ========== PHOTO EDIT FUNCTIONS ==========
+  const handleEditPhoto = (photo) => {
+    setEditingPhoto(photo);
+    setPhotoEditForm({
+      airline: photo.airline || '',
+      title: photo.title || '',
+      aircraft_model: photo.aircraft_model || '',
+      aircraft_type: photo.aircraft_type || '',
+      registration: photo.registration || '',
+      location: photo.location || '',
+      photo_date: photo.photo_date || photo.date || '',
+      description: photo.description || ''
+    });
+    setShowPhotoEditModal(true);
+  };
+
+  const handleSavePhotoEdit = async () => {
+    // Validar campos obrigatórios
+    const required = ['airline', 'title', 'aircraft_model', 'aircraft_type', 'registration', 'location', 'photo_date'];
+    for (const field of required) {
+      if (!photoEditForm[field] || photoEditForm[field].trim() === '') {
+        toast.error(`Campo obrigatório: ${field}`);
+        return;
+      }
+    }
+
+    try {
+      await photosApi.edit(editingPhoto.photo_id, photoEditForm);
+      toast.success('Foto atualizada com sucesso');
+      setShowPhotoEditModal(false);
+      loadAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erro ao atualizar foto');
+    }
+  };
+
+  const handleLookupRegistration = async () => {
+    if (!photoEditForm.registration) return;
+    try {
+      const response = await aircraftApi.lookup(photoEditForm.registration);
+      if (response.data.found) {
+        setPhotoEditForm(prev => ({
+          ...prev,
+          airline: response.data.operator || prev.airline,
+          aircraft_type: response.data.aircraft_type || prev.aircraft_type
+        }));
+        toast.success(`Encontrado: ${response.data.operator}`);
+      } else {
+        toast.info('Matrícula não encontrada no banco. Preencha manualmente.');
+      }
+    } catch (error) {
+      toast.error('Erro ao buscar matrícula');
     }
   };
 
