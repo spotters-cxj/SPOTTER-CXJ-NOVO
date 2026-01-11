@@ -520,7 +520,10 @@ export const AdminPage = () => {
                 <Newspaper size={16} className="mr-2" />Notícias
               </TabsTrigger>
               <TabsTrigger value="evaluation" className="data-[state=active]:bg-sky-600">
-                <CheckCircle size={16} className="mr-2" />Avaliações
+                <CheckCircle size={16} className="mr-2" />Fila
+              </TabsTrigger>
+              <TabsTrigger value="eval-logs" className="data-[state=active]:bg-sky-600">
+                <History size={16} className="mr-2" />Avaliações
               </TabsTrigger>
               <TabsTrigger value="stats" className="data-[state=active]:bg-sky-600">
                 <BarChart3 size={16} className="mr-2" />Estatísticas
