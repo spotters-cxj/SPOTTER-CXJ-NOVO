@@ -1348,6 +1348,77 @@ export const AdminPage = () => {
               </div>
             </TabsContent>
 
+            {/* ==================== CREDITS TAB ==================== */}
+            <TabsContent value="credits">
+              <div className="card-navy p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                    <Award size={20} className="text-sky-400" />
+                    Créditos da Equipe ({credits.length})
+                  </h2>
+                  <Button onClick={handleCreateCredit} className="bg-sky-600 hover:bg-sky-500">
+                    <Plus size={16} className="mr-2" />
+                    Adicionar Membro
+                  </Button>
+                </div>
+
+                <div className="grid gap-4">
+                  {credits.sort((a, b) => a.order - b.order).map((credit) => (
+                    <div key={credit.member_id} className="bg-[#0a1929] border border-[#1a3a5c] rounded-lg p-4 flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-2xl">{credit.order}</span>
+                          <div>
+                            <h3 className="text-white font-semibold">{credit.name}</h3>
+                            <p className="text-sky-400 text-sm">{credit.role}</p>
+                          </div>
+                        </div>
+                        {credit.description && (
+                          <p className="text-gray-400 text-sm mb-2">{credit.description}</p>
+                        )}
+                        {credit.instagram && (
+                          <a
+                            href={`https://instagram.com/${credit.instagram.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-pink-400 text-sm flex items-center gap-1 hover:text-pink-300"
+                          >
+                            <Instagram size={14} />
+                            {credit.instagram}
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditCredit(credit)}
+                          className="text-sky-400 hover:text-sky-300"
+                        >
+                          <Edit size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteCredit(credit.member_id)}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {credits.length === 0 && (
+                    <div className="text-center py-12 text-gray-500">
+                      <Award size={48} className="mx-auto mb-4 opacity-50" />
+                      <p>Nenhum crédito adicionado ainda</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
             {/* ==================== PHOTOS TAB ==================== */}
             <TabsContent value="photos">
               <div className="card-navy p-6">
