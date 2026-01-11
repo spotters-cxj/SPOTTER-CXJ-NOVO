@@ -12,6 +12,8 @@ const navLinks = [
   { path: '/galeria', label: 'Galeria', icon: Image },
   { path: '/ranking', label: 'Ranking', icon: Trophy },
   { path: '/membros', label: 'Membros', icon: Users },
+  { path: '/historia-aeroporto', label: 'Aeroporto', icon: Plane },
+  { path: '/informacoes', label: 'Sobre Nós', icon: Users },
   { path: '/creditos', label: 'Créditos', icon: Award },
   { path: '/buscar', label: 'Buscar', icon: Search },
 ];
