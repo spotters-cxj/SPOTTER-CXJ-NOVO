@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Instagram, ExternalLink, Camera, Star, Calendar, ArrowLeft, MapPin, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Instagram, ExternalLink, Camera, Star, Calendar, ArrowLeft, MapPin, CheckCircle, XCircle, Clock, Edit } from 'lucide-react';
 import { membersApi, photosApi, evaluationApi } from '../../services/api';
 import { TagBadge, TagBadgeList } from '../ui/TagBadge';
 import { Button } from '../ui/button';
