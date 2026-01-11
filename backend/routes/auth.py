@@ -106,7 +106,7 @@ async def create_session(request: Request, response: Response):
         "email": user["email"],
         "name": user["name"],
         "picture": user.get("picture"),
-        "tags": user.get("tags", ["membro"]),
+        "tags": user.get("tags", ["visitante"]),
         "approved": user.get("approved", False),
         "is_vip": user.get("is_vip", False)
     }
@@ -200,7 +200,7 @@ async def login_email(request: Request, response: Response):
         "email": user["email"],
         "name": user["name"],
         "picture": user.get("picture"),
-        "tags": user.get("tags", ["membro"]),
+        "tags": user.get("tags", ["visitante"]),
         "approved": user.get("approved", False),
         "is_vip": user.get("is_vip", False)
     }
@@ -246,7 +246,7 @@ async def get_current_user(request: Request):
         "email": user["email"],
         "name": user["name"],
         "picture": user.get("picture"),
-        "tags": user.get("tags", ["membro"]),
+        "tags": user.get("tags", ["visitante"]),
         "approved": user.get("approved", False),
         "is_vip": user.get("is_vip", False),
         "instagram": user.get("instagram"),
