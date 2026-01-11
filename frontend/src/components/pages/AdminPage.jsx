@@ -1266,15 +1266,18 @@ export const AdminPage = () => {
                   Textos e Informações
                 </h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {['home', 'sobre', 'aeroporto', 'historia'].map((slug) => (
-                    <div key={slug} className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]">
-                      <h3 className="text-white font-semibold capitalize mb-2">
-                        {slug === 'home' ? 'Página Inicial' : 
-                         slug === 'sobre' ? 'Sobre o Grupo' :
-                         slug === 'aeroporto' ? 'Aeroporto' : 'História'}
+                  {[
+                    { slug: 'home', label: 'Página Inicial' },
+                    { slug: 'group-info', label: 'Sobre o Grupo' },
+                    { slug: 'airport-history', label: 'Aeroporto e História' },
+                    { slug: 'spotters-history', label: 'História dos Spotters' }
+                  ].map((page) => (
+                    <div key={page.slug} className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]">
+                      <h3 className="text-white font-semibold mb-2">
+                        {page.label}
                       </h3>
                       <p className="text-gray-400 text-sm mb-4">Edite os textos desta página</p>
-                      <Button onClick={() => handleEditPage(slug)} className="w-full" variant="outline">
+                      <Button onClick={() => handleEditPage(page.slug)} className="w-full" variant="outline">
                         <Edit size={14} className="mr-2" />Editar
                       </Button>
                     </div>
