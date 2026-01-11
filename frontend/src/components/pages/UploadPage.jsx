@@ -228,6 +228,116 @@ export const UploadPage = () => {
     return <Navigate to="/" replace />;
   }
 
+  // Verificar se é visitante
+  const isVisitante = user.tags?.includes('visitante') && user.tags.length === 1;
+
+  // Se for visitante, mostrar popup com planos
+  if (isVisitante) {
+    return (
+      <div className="min-h-screen pt-24 pb-12">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="glass-card p-8 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-yellow-500/20 mb-6">
+              <Lock className="text-yellow-400" size={40} />
+            </div>
+            
+            <h1 className="text-3xl font-bold text-white mb-4">
+              🎉 Quer Postar Fotos?
+            </h1>
+            
+            <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
+              Você está atualmente como <span className="text-yellow-400 font-semibold">VISITANTE</span>.
+              Para enviar fotos e participar da comunidade, você precisa ser aprovado como Spotter CXJ.
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              {/* Plano Gratuito */}
+              <div className="bg-white/5 border-2 border-sky-500/50 rounded-xl p-6">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Camera className="text-sky-400" size={32} />
+                  <h3 className="text-2xl font-bold text-white">Spotter CXJ</h3>
+                </div>
+                <div className="text-4xl font-bold text-sky-400 mb-4">GRÁTIS</div>
+                <ul className="text-left space-y-3 mb-6">
+                  <li className="flex items-start gap-2 text-gray-300">
+                    <Check className="text-green-400 flex-shrink-0 mt-1" size={20} />
+                    <span>5 fotos por semana</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-300">
+                    <Check className="text-green-400 flex-shrink-0 mt-1" size={20} />
+                    <span>Avaliação profissional</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-300">
+                    <Check className="text-green-400 flex-shrink-0 mt-1" size={20} />
+                    <span>Publicação na galeria</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-300">
+                    <Check className="text-green-400 flex-shrink-0 mt-1" size={20} />
+                    <span>Ranking de spotters</span>
+                  </li>
+                </ul>
+                <p className="text-yellow-400 text-sm font-semibold bg-yellow-500/10 px-3 py-2 rounded-lg">
+                  ⏳ Aguardando aprovação de administrador
+                </p>
+              </div>
+
+              {/* Plano VIP */}
+              <div className="bg-gradient-to-br from-yellow-500/20 to-amber-600/20 border-2 border-yellow-500 rounded-xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-yellow-500 text-black px-3 py-1 text-xs font-bold rounded-bl-lg">
+                  POPULAR
+                </div>
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Sparkles className="text-yellow-400" size={32} />
+                  <h3 className="text-2xl font-bold text-white">VIP</h3>
+                </div>
+                <div className="text-4xl font-bold text-yellow-400 mb-2">R$ 15</div>
+                <div className="text-gray-400 text-sm mb-4">/mês</div>
+                <ul className="text-left space-y-3 mb-6">
+                  <li className="flex items-start gap-2 text-gray-300">
+                    <Check className="text-yellow-400 flex-shrink-0 mt-1" size={20} />
+                    <span className="font-semibold">Fotos ilimitadas</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-300">
+                    <Check className="text-yellow-400 flex-shrink-0 mt-1" size={20} />
+                    <span>Prioridade na avaliação</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-300">
+                    <Check className="text-yellow-400 flex-shrink-0 mt-1" size={20} />
+                    <span>Badge VIP no perfil</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-300">
+                    <Check className="text-yellow-400 flex-shrink-0 mt-1" size={20} />
+                    <span>Destaque no ranking</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-300">
+                    <Check className="text-yellow-400 flex-shrink-0 mt-1" size={20} />
+                    <span>Suporte prioritário</span>
+                  </li>
+                </ul>
+                <Link to="/vip">
+                  <Button className="w-full bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-black font-bold">
+                    Seja VIP Agora
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            <div className="border-t border-white/10 pt-6">
+              <h4 className="text-white font-semibold mb-3">📧 Entre em contato</h4>
+              <p className="text-gray-400 text-sm">
+                Aguarde a aprovação de um administrador ou entre em contato através do nosso{' '}
+                <a href="https://instagram.com/spotterscxj" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:text-sky-300">
+                  Instagram
+                </a>
+                {' '}para acelerar o processo.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen pt-24 flex items-center justify-center">
