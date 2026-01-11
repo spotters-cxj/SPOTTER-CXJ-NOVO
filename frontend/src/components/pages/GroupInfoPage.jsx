@@ -47,8 +47,8 @@ export const GroupInfoPage = () => {
                 <Users size={16} className="text-sky-400" />
                 <span className="text-sky-300 text-sm font-medium">Conheça o Grupo</span>
               </div>
-              <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">Liderança e Contatos</h1>
-              <p className="text-xl text-gray-300">Conheça os responsáveis pelo Spotters CXJ e entre em contato.</p>
+              <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">{content.title}</h1>
+              <p className="text-xl text-gray-300">{content.subtitle}</p>
             </div>
             <div className="flex justify-center">
               <img src={siteConfig.logoMain} alt="Spotters CXJ" className="w-64 h-64 object-contain rounded-2xl bg-black/50 animate-float" />
