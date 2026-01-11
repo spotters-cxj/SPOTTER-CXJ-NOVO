@@ -262,3 +262,95 @@ async def logout(request: Request, response: Response):
         await db.user_sessions.delete_one({"session_token": session_token})
     response.delete_cookie(key="session_token", path="/")
     return {"message": "Logged out successfully"}
+
+@router.put("/me/profile")
+async def update_profile(request: Request):
+    """Update user profile (instagram, jetphotos, bio)"""
+    user = await get_current_user(request)
+    db = await get_db(request)
+    body = await request.json()
+    
+    # Campos permitidos para atualização
+    allowed_fields = ["instagram", "jetphotos", "bio", "name"]
+    update_data = {}
+    
+    for field in allowed_fields:
+        if field in body:
+            update_data[field] = body[field]
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="Nenhum campo para atualizar")
+    
+    # Atualizar no banco
+    await db.users.update_one(
+        {"user_id": user["user_id"]},
+        {"$set": update_data}
+    )
+    
+    # Retornar usuário atualizado
+    updated_user = await db.users.find_one({"user_id": user["user_id"]}, {"_id": 0})
+    
+    return {
+        "message": "Perfil atualizado com sucesso",
+        "user": {
+            "user_id": updated_user["user_id"],
+            "email": updated_user["email"],
+            "name": updated_user["name"],
+            "picture": updated_user.get("picture"),
+            "instagram": updated_user.get("instagram"),
+            "jetphotos": updated_user.get("jetphotos"),
+            "bio": updated_user.get("bio"),
+            "tags": updated_user.get("tags", ["membro"])
+        }
+    }
+
+@router.post("/me/profile-picture")
+async def upload_profile_picture(request: Request):
+    """Upload profile picture"""
+    from fastapi import UploadFile, File
+    from fastapi.params import Form
+    
+    user = await get_current_user(request)
+    db = await get_db(request)
+    
+    # Parse multipart form data
+    form = await request.form()
+    file = form.get("file")
+    
+    if not file or not hasattr(file, 'read'):
+        raise HTTPException(status_code=400, detail="Nenhum arquivo enviado")
+    
+    # Validar tipo de arquivo
+    content_type = getattr(file, 'content_type', '')
+    if not content_type.startswith('image/'):
+        raise HTTPException(status_code=400, detail="Arquivo deve ser uma imagem")
+    
+    # Ler conteúdo
+    content = await file.read()
+    
+    # Validar tamanho (5MB max para foto de perfil)
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo 5MB")
+    
+    # Salvar arquivo
+    file_ext = file.filename.split(".")[-1] if hasattr(file, 'filename') and "." in file.filename else "jpg"
+    filename = f"{user['user_id']}_profile.{file_ext}"
+    
+    upload_dir = "/app/backend/uploads/profiles"
+    os.makedirs(upload_dir, exist_ok=True)
+    file_path = f"{upload_dir}/{filename}"
+    
+    with open(file_path, "wb") as f:
+        f.write(content)
+    
+    # Atualizar URL da foto no banco
+    picture_url = f"/api/uploads/profiles/{filename}"
+    await db.users.update_one(
+        {"user_id": user["user_id"]},
+        {"$set": {"picture": picture_url}}
+    )
+    
+    return {
+        "message": "Foto de perfil atualizada com sucesso",
+        "picture_url": picture_url
+    }
