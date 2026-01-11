@@ -263,7 +263,7 @@ backend:
 
   - task: "Settings Payment Fields"
     implemented: true
-    working: false
+    working: true
     file: "routes/settings.py"
     stuck_count: 0
     priority: "low"
@@ -272,6 +272,57 @@ backend:
         - working: false
           agent: "testing"
           comment: "Minor: GET /api/settings missing payment fields (pix_key, vip_monthly_price, vip_permanent_price) in DEFAULT_SETTINGS. These fields are defined in SiteSettings model but not included in default response. Core functionality works correctly."
+        - working: true
+          agent: "testing"
+          comment: "FIXED: GET /api/settings now includes all payment fields (pix_key, pix_name, vip_monthly_price, vip_permanent_price, extra_photo_price). All settings endpoints working correctly."
+
+  - task: "Aircraft API (ANAC) Endpoints"
+    implemented: true
+    working: true
+    file: "routes/aircraft.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "All aircraft API endpoints working correctly: GET /api/aircraft/types (returns 5 types), GET /api/aircraft/operators (returns 15 operators), GET /api/aircraft/lookup?registration=PR-XAA (found LATAM), GET /api/aircraft/lookup?registration=PR-GOL (found GOL), GET /api/aircraft/validate?registration=PR-ABC (validates correctly), GET /api/aircraft/models (returns models by type). Local ANAC database integration working properly."
+
+  - task: "Evaluation Logs System"
+    implemented: true
+    working: true
+    file: "routes/logs.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "All evaluation log endpoints working correctly with proper authentication: GET /api/logs/evaluations (401 without auth), GET /api/logs/evaluations/stats (401 without auth), GET /api/logs/security (401 without auth). All endpoints properly require gestao+ level authentication."
+
+  - task: "Photo Editing System"
+    implemented: true
+    working: true
+    file: "routes/photos.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Photo editing endpoints working correctly: PUT /api/photos/{photo_id}/edit (401 without auth), GET /api/photos/{photo_id}/edit-history (401 without auth). Proper authentication and permission checks implemented."
+
+  - task: "Evaluation System with AVALIADOR Permissions"
+    implemented: true
+    working: true
+    file: "routes/evaluation.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Evaluation system with strict AVALIADOR tag permissions working correctly: GET /api/evaluation/queue (401 without auth, requires AVALIADOR tag), POST /api/evaluation/{photo_id} (401 without auth, requires AVALIADOR tag). Security logging for unauthorized attempts implemented. Only users with AVALIADOR tag can evaluate photos."
 
 frontend:
   # Frontend testing not performed by testing agent as per instructions
