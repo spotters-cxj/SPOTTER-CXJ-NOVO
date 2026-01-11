@@ -1504,6 +1504,150 @@ export const AdminPage = () => {
                 </div>
               </div>
             </TabsContent>
+
+            {/* ==================== BACKUP TAB ==================== */}
+            <TabsContent value="backup" className="space-y-6">
+              {/* Backup Status */}
+              <div className="grid md:grid-cols-4 gap-4">
+                <div className="card-navy p-4">
+                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
+                    <Database size={16} />
+                    Status
+                  </div>
+                  <div className="text-xl font-bold text-green-400">✓ Ativo</div>
+                </div>
+                <div className="card-navy p-4">
+                  <div className="text-gray-400 text-sm">Total de Backups</div>
+                  <div className="text-2xl font-bold text-white">{backupStatus.total_backups || 0}</div>
+                </div>
+                <div className="card-navy p-4">
+                  <div className="text-gray-400 text-sm">Espaço Usado</div>
+                  <div className="text-2xl font-bold text-sky-400">{backupStatus.total_size_mb || 0} MB</div>
+                </div>
+                <div className="card-navy p-4">
+                  <div className="text-gray-400 text-sm">Último Backup</div>
+                  <div className="text-lg font-bold text-amber-400">
+                    {backupStatus.last_backup ? new Date(backupStatus.last_backup.created_at).toLocaleString('pt-BR') : 'Nenhum'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Create Backup */}
+              <div className="card-navy p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                      <HardDrive size={20} className="text-green-400" />
+                      Sistema de Backup
+                    </h2>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Backup automático a cada 6 horas. Mantém os últimos 10 backups automáticos.
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={handleCreateBackup} 
+                    disabled={creatingBackup}
+                    className="btn-accent"
+                  >
+                    {creatingBackup ? (
+                      <>
+                        <RefreshCw size={16} className="mr-2 animate-spin" />
+                        Criando...
+                      </>
+                    ) : (
+                      <>
+                        <Plus size={16} className="mr-2" />
+                        Criar Backup Manual
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Backup List */}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-[#102a43]">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Arquivo</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Data</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Tamanho</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#1a3a5c]">
+                      {backups.length === 0 ? (
+                        <tr>
+                          <td colSpan="4" className="px-4 py-12 text-center text-gray-400">
+                            <Database size={48} className="mx-auto mb-4 opacity-50" />
+                            <p>Nenhum backup encontrado</p>
+                            <p className="text-sm mt-2">Crie seu primeiro backup clicando no botão acima</p>
+                          </td>
+                        </tr>
+                      ) : (
+                        backups.map((backup) => (
+                          <tr key={backup.filename} className="hover:bg-[#102a43]/50">
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <Database size={16} className={backup.filename.includes('automatic') ? 'text-sky-400' : 'text-green-400'} />
+                                <span className="text-white text-sm font-mono">{backup.filename}</span>
+                                {backup.filename.includes('automatic') && (
+                                  <span className="px-2 py-0.5 bg-sky-500/20 text-sky-400 text-xs rounded">Auto</span>
+                                )}
+                                {backup.filename.includes('manual') && (
+                                  <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded">Manual</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-gray-300 text-sm">
+                              {new Date(backup.created_at).toLocaleString('pt-BR')}
+                            </td>
+                            <td className="px-4 py-3 text-gray-300 text-sm">
+                              {backup.size_mb} MB
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  onClick={() => handleDownloadBackup(backup.filename)}
+                                  className="text-sky-400 hover:text-sky-300"
+                                >
+                                  <Download size={14} className="mr-1" />
+                                  Baixar
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  onClick={() => handleDeleteBackup(backup.filename)}
+                                  className="text-red-400 hover:text-red-300"
+                                >
+                                  <Trash2 size={14} />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Backup Info */}
+              <div className="card-navy p-6 bg-amber-500/5 border-amber-500/20">
+                <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+                  <AlertCircle className="text-amber-400" size={18} />
+                  Informações Importantes
+                </h3>
+                <ul className="text-gray-400 text-sm space-y-1">
+                  <li>• O backup inclui: usuários, fotos, avaliações, notícias, configurações e todos os dados do site</li>
+                  <li>• Backups automáticos são criados a cada 6 horas</li>
+                  <li>• São mantidos os últimos 10 backups automáticos (os mais antigos são excluídos)</li>
+                  <li>• Backups manuais não são excluídos automaticamente</li>
+                  <li>• Faça download dos backups periodicamente para maior segurança</li>
+                </ul>
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
       </section>
