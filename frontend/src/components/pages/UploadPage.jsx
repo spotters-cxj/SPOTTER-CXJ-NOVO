@@ -275,13 +275,34 @@ export const UploadPage = () => {
             {/* Aircraft Model */}
             <div>
               <label className="text-white font-medium block mb-2">Modelo da Aeronave *</label>
-              <Input
-                value={formData.aircraft_model}
-                onChange={(e) => setFormData({ ...formData, aircraft_model: e.target.value })}
-                placeholder="Ex: Boeing 737-800"
-                required
-                className="bg-white/5 border-white/10"
-              />
+              {suggestedModels.length > 0 ? (
+                <select
+                  value={formData.aircraft_model}
+                  onChange={(e) => setFormData({ ...formData, aircraft_model: e.target.value })}
+                  required
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-sky-500 focus:outline-none"
+                >
+                  <option value="">Selecione o modelo</option>
+                  {suggestedModels.map((model) => (
+                    <option key={model.model} value={model.full_name}>
+                      {model.full_name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <Input
+                  value={formData.aircraft_model}
+                  onChange={(e) => setFormData({ ...formData, aircraft_model: e.target.value })}
+                  placeholder="Ex: Boeing 737-800"
+                  required
+                  className="bg-white/5 border-white/10"
+                />
+              )}
+              {suggestedModels.length > 0 && (
+                <p className="text-green-400 text-xs mt-1">
+                  ✅ Modelos sugeridos baseados na matrícula
+                </p>
+              )}
             </div>
 
             {/* Aircraft Type */}
