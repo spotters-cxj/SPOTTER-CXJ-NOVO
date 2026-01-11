@@ -30,6 +30,8 @@ const HIERARCHY_LEVELS = {
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
   const location = useLocation();
   const { user, login, logout, isAdmin, isGestao } = useAuth();
 
