@@ -304,7 +304,7 @@ async def update_profile(request: Request):
             "instagram": updated_user.get("instagram"),
             "jetphotos": updated_user.get("jetphotos"),
             "bio": updated_user.get("bio"),
-            "tags": updated_user.get("tags", ["membro"])
+            "tags": updated_user.get("tags", ["visitante"])
         }
     }
 
