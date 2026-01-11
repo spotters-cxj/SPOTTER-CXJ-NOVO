@@ -64,6 +64,9 @@ export const Header = () => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
       }
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target)) {
+        setIsMoreMenuOpen(false);
+      }
     };
     
     document.addEventListener('mousedown', handleClickOutside);
