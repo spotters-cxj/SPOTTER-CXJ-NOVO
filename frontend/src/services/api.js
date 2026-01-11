@@ -65,6 +65,8 @@ export const photosApi = {
   rate: (photoId, rating) => api.post(`/photos/${photoId}/rate`, { rating }),
   comment: (photoId, content) => api.post(`/photos/${photoId}/comment`, { content }),
   delete: (photoId) => api.delete(`/photos/${photoId}`),
+  edit: (photoId, data) => api.put(`/photos/${photoId}/edit`, data),
+  getEditHistory: (photoId) => api.get(`/photos/${photoId}/edit-history`),
 };
 
 // Memories API
