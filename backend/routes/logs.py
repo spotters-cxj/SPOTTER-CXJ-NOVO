@@ -156,3 +156,133 @@ async def get_log_stats(request: Request):
         "recent_24h": recent_count,
         "total": await db.audit_logs.count_documents({})
     }
+
+@router.get("/evaluations")
+async def list_evaluations(
+    request: Request,
+    limit: int = 100,
+    skip: int = 0,
+    evaluator_id: str = None,
+    photo_id: str = None,
+    date_from: str = None,
+    date_to: str = None
+):
+    """List all photo evaluations with details (gestao+)"""
+    await require_gestao(request)
+    db = await get_db(request)
+    
+    query = {}
+    if evaluator_id:
+        query["evaluator_id"] = evaluator_id
+    if photo_id:
+        query["photo_id"] = photo_id
+    if date_from:
+        try:
+            from_date = datetime.fromisoformat(date_from.replace('Z', '+00:00'))
+            query["created_at"] = {"$gte": from_date}
+        except:
+            pass
+    if date_to:
+        try:
+            to_date = datetime.fromisoformat(date_to.replace('Z', '+00:00'))
+            if "created_at" in query:
+                query["created_at"]["$lte"] = to_date
+            else:
+                query["created_at"] = {"$lte": to_date}
+        except:
+            pass
+    
+    evaluations = await db.evaluations.find(
+        query,
+        {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Enrich with photo data
+    enriched = []
+    for ev in evaluations:
+        photo = await db.photos.find_one({"photo_id": ev["photo_id"]}, {"_id": 0, "title": 1, "url": 1, "author_name": 1, "status": 1})
+        enriched.append({
+            "evaluation_id": ev.get("evaluation_id"),
+            "photo_id": ev.get("photo_id"),
+            "photo_title": photo.get("title") if photo else "Foto removida",
+            "photo_url": photo.get("url") if photo else None,
+            "photo_author": photo.get("author_name") if photo else "Desconhecido",
+            "photo_status": photo.get("status") if photo else "unknown",
+            "evaluator_id": ev.get("evaluator_id"),
+            "evaluator_name": ev.get("evaluator_name"),
+            "criteria": ev.get("criteria", {}),
+            "final_score": ev.get("final_score", 0),
+            "comment": ev.get("comment"),
+            "created_at": ev.get("created_at")
+        })
+    
+    total = await db.evaluations.count_documents(query)
+    
+    return {
+        "evaluations": enriched,
+        "total": total,
+        "limit": limit,
+        "skip": skip
+    }
+
+@router.get("/evaluations/stats")
+async def get_evaluation_stats(request: Request):
+    """Get evaluation statistics"""
+    await require_gestao(request)
+    db = await get_db(request)
+    
+    from datetime import timedelta
+    
+    # Total evaluations
+    total = await db.evaluations.count_documents({})
+    
+    # Last 24h
+    yesterday = datetime.now(timezone.utc) - timedelta(hours=24)
+    recent_24h = await db.evaluations.count_documents({"created_at": {"$gte": yesterday}})
+    
+    # Last 7 days
+    last_week = datetime.now(timezone.utc) - timedelta(days=7)
+    recent_7d = await db.evaluations.count_documents({"created_at": {"$gte": last_week}})
+    
+    # By evaluator
+    evaluator_pipeline = [
+        {"$group": {"_id": {"id": "$evaluator_id", "name": "$evaluator_name"}, "count": {"$sum": 1}, "avg_score": {"$avg": "$final_score"}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 20}
+    ]
+    by_evaluator = await db.evaluations.aggregate(evaluator_pipeline).to_list(20)
+    
+    # Average score
+    avg_pipeline = [
+        {"$group": {"_id": None, "avg_score": {"$avg": "$final_score"}}}
+    ]
+    avg_result = await db.evaluations.aggregate(avg_pipeline).to_list(1)
+    avg_score = avg_result[0]["avg_score"] if avg_result else 0
+    
+    return {
+        "total": total,
+        "recent_24h": recent_24h,
+        "recent_7d": recent_7d,
+        "average_score": round(avg_score, 2) if avg_score else 0,
+        "by_evaluator": [
+            {
+                "evaluator_id": e["_id"]["id"],
+                "evaluator_name": e["_id"]["name"],
+                "count": e["count"],
+                "avg_score": round(e["avg_score"], 2)
+            } for e in by_evaluator
+        ]
+    }
+
+@router.get("/security")
+async def list_security_logs(request: Request, limit: int = 50):
+    """List security logs (unauthorized attempts etc.)"""
+    await require_gestao(request)
+    db = await get_db(request)
+    
+    logs = await db.security_logs.find(
+        {},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    return {"logs": logs, "total": len(logs)}
