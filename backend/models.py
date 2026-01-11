@@ -28,7 +28,7 @@ class NotificationType(str, Enum):
     RANKING = "ranking"
 
 # Hierarchy levels for permissions
-# Ordem: Líder > Admin > Gestor > Colaborador > VIP > Produtor > Membro
+# Ordem: Líder > Admin > Gestor > Colaborador > VIP > Produtor > Spotter CXJ > Visitante
 # Nota: Avaliador é uma tag ESPECIAL que permite avaliar fotos, independente do nível
 HIERARCHY_LEVELS = {
     "lider": 8,
@@ -38,7 +38,8 @@ HIERARCHY_LEVELS = {
     "vip": 4,
     "produtor": 3,
     "avaliador": 2,  # Avaliador tem nível baixo, mas a TAG permite avaliar
-    "membro": 1
+    "spotter_cxj": 1,
+    "visitante": 0
 }
 
 # Tags que podem avaliar fotos - SOMENTE AVALIADOR
