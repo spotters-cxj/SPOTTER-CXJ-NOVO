@@ -1,9 +1,11 @@
 from fastapi import APIRouter, HTTPException, Request
 from datetime import datetime, timezone
-from models import HIERARCHY_LEVELS, get_highest_role_level, can_access_level
+from models import HIERARCHY_LEVELS, get_highest_role_level, can_access_level, has_evaluator_permission
 import uuid
+import logging
 
 router = APIRouter(prefix="/evaluation", tags=["evaluation"])
+logger = logging.getLogger(__name__)
 
 MIN_EVALUATORS_PERCENT = 0.5  # 50%
 MIN_APPROVAL_SCORE = 3.0
@@ -15,12 +17,41 @@ async def get_current_user(request: Request):
     from routes.auth import get_current_user as auth_get_user
     return await auth_get_user(request)
 
+async def log_unauthorized_evaluation_attempt(db, user: dict, ip_address: str):
+    """Log unauthorized evaluation attempts for security"""
+    log_entry = {
+        "log_id": f"security_{uuid.uuid4().hex[:12]}",
+        "type": "unauthorized_evaluation_attempt",
+        "user_id": user.get("user_id"),
+        "user_name": user.get("name"),
+        "user_email": user.get("email"),
+        "user_tags": user.get("tags", []),
+        "ip_address": ip_address,
+        "message": f"Usuário {user.get('name')} ({user.get('email')}) tentou avaliar sem tag AVALIADOR. Tags: {user.get('tags', [])}",
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.security_logs.insert_one(log_entry)
+    logger.warning(f"SECURITY: Unauthorized evaluation attempt by {user.get('email')} with tags {user.get('tags', [])}")
+
 async def require_evaluator(request: Request):
-    """Require avaliador level or higher"""
+    """
+    REGRA CRÍTICA: SOMENTE usuários com a tag 'avaliador' podem avaliar.
+    Admin, Líder, Gestão, Produtor - NENHUM pode avaliar sem a tag AVALIADOR.
+    """
     user = await get_current_user(request)
-    user_level = get_highest_role_level(user.get("tags", []))
-    if user_level < HIERARCHY_LEVELS["avaliador"]:
-        raise HTTPException(status_code=403, detail="Acesso restrito a avaliadores")
+    db = await get_db(request)
+    
+    # VERIFICAÇÃO: SOMENTE a tag 'avaliador' permite avaliar
+    if not has_evaluator_permission(user.get("tags", [])):
+        # Log tentativa indevida
+        forwarded = request.headers.get("X-Forwarded-For")
+        ip_address = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
+        await log_unauthorized_evaluation_attempt(db, user, ip_address)
+        
+        raise HTTPException(
+            status_code=403, 
+            detail="Acesso EXCLUSIVO para usuários com a tag AVALIADOR. Sua tentativa foi registrada."
+        )
     return user
 
 async def create_notification(db, user_id: str, notif_type: str, message: str, data: dict = None):
