@@ -57,6 +57,19 @@ export const GroupInfoPage = () => {
         </div>
       </section>
 
+      {/* Content Section - Editável */}
+      {content.content && (
+        <section className="py-16 bg-[#0a1929]">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="prose prose-invert max-w-none">
+              <p className="text-gray-300 text-lg leading-relaxed whitespace-pre-line">
+                {content.content}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Stats Section */}
       <section className="py-16 bg-[#102a43]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
