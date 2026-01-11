@@ -4,6 +4,8 @@ from datetime import datetime, timezone, timedelta
 from models import Photo, PhotoStatus, PhotoCreate, HIERARCHY_LEVELS, get_highest_role_level
 import uuid
 import os
+from PIL import Image
+import io
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 
