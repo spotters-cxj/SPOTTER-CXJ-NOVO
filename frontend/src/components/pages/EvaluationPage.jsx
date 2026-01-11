@@ -204,11 +204,22 @@ export const EvaluationPage = () => {
     return (
       <div className="min-h-screen pt-24 pb-12">
         <div className="max-w-2xl mx-auto px-4 text-center">
-          <AlertCircle size={64} className="mx-auto mb-6 text-yellow-500" />
-          <h1 className="text-3xl font-bold text-white mb-4">Acesso Restrito</h1>
-          <p className="text-gray-400">
-            Esta página é exclusiva para Avaliadores e níveis superiores da hierarquia.
-            Se você acredita que deveria ter acesso, entre em contato com a administração.
+          <AlertCircle size={64} className="mx-auto mb-6 text-red-500" />
+          <h1 className="text-3xl font-bold text-white mb-4">Acesso Exclusivo para Avaliadores</h1>
+          <p className="text-gray-400 mb-4">
+            Esta página é <strong className="text-red-400">EXCLUSIVA</strong> para usuários com a tag <strong className="text-green-400">AVALIADOR</strong>.
+          </p>
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-left">
+            <p className="text-red-300 text-sm">
+              <strong>⚠️ Importante:</strong> Mesmo usuários com cargos administrativos (Admin, Líder, Gestão, Produtor) 
+              <strong> NÃO podem avaliar</strong> fotos sem possuir a tag AVALIADOR.
+            </p>
+          </div>
+          <p className="text-gray-500 text-sm mt-4">
+            Se você acredita que deveria ter acesso, solicite a tag AVALIADOR à administração.
+          </p>
+          <p className="text-gray-600 text-xs mt-2">
+            Suas tags atuais: {user?.tags?.join(', ') || 'Nenhuma'}
           </p>
         </div>
       </div>
