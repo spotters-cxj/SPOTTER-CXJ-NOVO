@@ -71,8 +71,9 @@ export const UploadPage = () => {
       const img = new Image();
       img.onload = () => {
         const minDimension = 1080;
+        // Pelo menos uma dimensão deve ter 1080px
         if (img.width < minDimension && img.height < minDimension) {
-          toast.error(`Resolução muito baixa. Mínimo: ${minDimension}p (ex: 1920x1080)`);
+          toast.error(`Resolução muito baixa. Pelo menos uma dimensão deve ter ${minDimension}px (ex: 1080x1080, 1920x1080, 1080x1920)`);
           return;
         }
         setFormData({ ...formData, file });
