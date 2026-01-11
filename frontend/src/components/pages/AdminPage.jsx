@@ -18,18 +18,29 @@ import { Textarea } from '../ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { toast } from 'sonner';
 
-// Available tags
+// Available tags - Ordem hierárquica: Líder > Admin > Gestor > Colaborador > VIP > Produtor > Membro
+// Nota: Avaliador é uma tag ESPECIAL que permite avaliar fotos, independente da hierarquia
 const AVAILABLE_TAGS = [
-  { value: 'lider', label: 'Líder', color: 'bg-yellow-500', icon: '👑' },
-  { value: 'admin', label: 'Admin', color: 'bg-red-500', icon: '🛡️' },
-  { value: 'gestao', label: 'Gestão', color: 'bg-purple-500', icon: '📊' },
-  { value: 'produtor', label: 'Produtor', color: 'bg-blue-500', icon: '🎬' },
-  { value: 'avaliador', label: 'Avaliador', color: 'bg-green-500', icon: '✅' },
-  { value: 'colaborador', label: 'Colaborador', color: 'bg-pink-500', icon: '⭐' },
-  { value: 'membro', label: 'Membro', color: 'bg-gray-500', icon: '👤' },
-  { value: 'vip', label: 'VIP', color: 'bg-amber-500', icon: '💎' },
-  { value: 'podio', label: 'Pódio', color: 'bg-orange-500', icon: '🏆' },
+  { value: 'lider', label: 'Líder', color: 'bg-yellow-500', icon: '👑', level: 8 },
+  { value: 'admin', label: 'Admin', color: 'bg-red-500', icon: '🛡️', level: 7 },
+  { value: 'gestao', label: 'Gestão', color: 'bg-purple-500', icon: '📊', level: 6 },
+  { value: 'colaborador', label: 'Colaborador', color: 'bg-pink-500', icon: '⭐', level: 5 },
+  { value: 'vip', label: 'VIP', color: 'bg-amber-500', icon: '💎', level: 4 },
+  { value: 'produtor', label: 'Produtor', color: 'bg-blue-500', icon: '🎬', level: 3 },
+  { value: 'avaliador', label: 'Avaliador', color: 'bg-green-500', icon: '✅', level: 2, special: true },
+  { value: 'membro', label: 'Membro', color: 'bg-gray-500', icon: '👤', level: 1 },
+  { value: 'podio', label: 'Pódio', color: 'bg-orange-500', icon: '🏆', level: 0, special: true },
 ];
+
+// Função para ordenar tags pela hierarquia
+const sortTagsByHierarchy = (tags) => {
+  if (!tags || !Array.isArray(tags)) return [];
+  return [...tags].sort((a, b) => {
+    const tagA = AVAILABLE_TAGS.find(t => t.value === a);
+    const tagB = AVAILABLE_TAGS.find(t => t.value === b);
+    return (tagB?.level || 0) - (tagA?.level || 0);
+  });
+};
 
 export const AdminPage = () => {
   const { user, isAdmin, isAdminPrincipal, isGestao } = useAuth();
