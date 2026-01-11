@@ -4,6 +4,22 @@
   min-height: 100vh;
 }
 
+/* Performance optimizations */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Hero section styles */
 .hero-bg {
   background: linear-gradient(135deg, #0a1929 0%, #102a43 40%, #1a365d 100%);
