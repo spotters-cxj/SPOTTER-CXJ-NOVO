@@ -594,6 +594,139 @@ export const UploadPage = () => {
             </div>
           )}
         </div>
+
+        {/* Edit Photo Modal */}
+        {showEditModal && editingPhoto && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="glass-card max-w-2xl w-full p-6 my-8">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-white">Editar Foto</h2>
+                <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-white">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {/* Title */}
+                <div>
+                  <label className="text-white font-medium block mb-2">Título *</label>
+                  <Input
+                    value={editingPhoto.title}
+                    onChange={(e) => setEditingPhoto({ ...editingPhoto, title: e.target.value })}
+                    required
+                    className="bg-white/5 border-white/10"
+                  />
+                </div>
+
+                {/* Aircraft Model */}
+                <div>
+                  <label className="text-white font-medium block mb-2">Modelo da Aeronave *</label>
+                  <Input
+                    value={editingPhoto.aircraft_model}
+                    onChange={(e) => setEditingPhoto({ ...editingPhoto, aircraft_model: e.target.value })}
+                    required
+                    className="bg-white/5 border-white/10"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Aircraft Type */}
+                  <div>
+                    <label className="text-white font-medium block mb-2">Tipo *</label>
+                    <select
+                      value={editingPhoto.aircraft_type}
+                      onChange={(e) => setEditingPhoto({ ...editingPhoto, aircraft_type: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-sky-500 focus:outline-none"
+                    >
+                      {AIRCRAFT_TYPES.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Registration */}
+                  <div>
+                    <label className="text-white font-medium block mb-2">Matrícula</label>
+                    <Input
+                      value={editingPhoto.registration}
+                      onChange={(e) => setEditingPhoto({ ...editingPhoto, registration: e.target.value.toUpperCase() })}
+                      placeholder="Ex: PR-GXJ"
+                      className="bg-white/5 border-white/10"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Airline */}
+                  <div>
+                    <label className="text-white font-medium block mb-2">Companhia *</label>
+                    <Input
+                      value={editingPhoto.airline}
+                      onChange={(e) => setEditingPhoto({ ...editingPhoto, airline: e.target.value })}
+                      required
+                      className="bg-white/5 border-white/10"
+                    />
+                  </div>
+
+                  {/* Location */}
+                  <div>
+                    <label className="text-white font-medium block mb-2">Local *</label>
+                    <Input
+                      value={editingPhoto.location}
+                      onChange={(e) => setEditingPhoto({ ...editingPhoto, location: e.target.value })}
+                      required
+                      className="bg-white/5 border-white/10"
+                    />
+                  </div>
+                </div>
+
+                {/* Photo Date */}
+                <div>
+                  <label className="text-white font-medium block mb-2">Data da Foto *</label>
+                  <Input
+                    type="date"
+                    value={editingPhoto.photo_date}
+                    onChange={(e) => setEditingPhoto({ ...editingPhoto, photo_date: e.target.value })}
+                    required
+                    className="bg-white/5 border-white/10"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="text-white font-medium block mb-2">Descrição</label>
+                  <Textarea
+                    value={editingPhoto.description}
+                    onChange={(e) => setEditingPhoto({ ...editingPhoto, description: e.target.value })}
+                    className="bg-white/5 border-white/10"
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4 mt-6">
+                <Button
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 bg-white/5 hover:bg-white/10 text-white"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleSaveEdit}
+                  className="flex-1 bg-sky-600 hover:bg-sky-500"
+                >
+                  Salvar Alterações
+                </Button>
+              </div>
+
+              <p className="text-yellow-400 text-sm mt-4 flex items-center gap-2">
+                <Clock size={16} />
+                Você pode editar esta foto até 24h após o envio
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
