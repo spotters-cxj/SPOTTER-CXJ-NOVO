@@ -214,9 +214,11 @@ export const GalleryPage = () => {
                     src={getPhotoUrl(photo)} 
                     alt={photo.title || photo.description || photo.aircraft_model} 
                     loading="lazy"
+                    decoding="async"
                     onError={(e) => {
                       console.error('Error loading image:', getPhotoUrl(photo));
                       e.target.src = '/logo-spotters-round.png';
+                      e.target.style.objectFit = 'contain';
                     }}
                   />
                   <div className="photo-overlay">
