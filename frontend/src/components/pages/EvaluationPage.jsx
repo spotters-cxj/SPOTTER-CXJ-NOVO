@@ -1,20 +1,75 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Camera, Check, X, ChevronRight, AlertCircle, Info } from 'lucide-react';
+import { Camera, Check, X, ChevronRight, AlertCircle, Info, RefreshCw, ImageOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { evaluationApi } from '../../services/api';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { toast } from 'sonner';
 
-const HIERARCHY_LEVELS = {
-  lider: 7,
-  admin: 6,
-  gestao: 5,
-  produtor: 4,
-  avaliador: 3,
-  colaborador: 2,
-  membro: 1
+// Componente de imagem com retry e fallback
+const ImageWithRetry = ({ src, alt, className, maxRetries = 3 }) => {
+  const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [currentSrc, setCurrentSrc] = useState(src);
+
+  const handleError = useCallback(() => {
+    console.error(`[ImageWithRetry] Erro ao carregar imagem: ${src}, tentativa ${retryCount + 1}/${maxRetries}`);
+    if (retryCount < maxRetries) {
+      // Adiciona timestamp para forçar reload
+      const newSrc = src.includes('?') ? `${src}&retry=${Date.now()}` : `${src}?retry=${Date.now()}`;
+      setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+        setCurrentSrc(newSrc);
+      }, 1000 * (retryCount + 1)); // Backoff exponencial
+    } else {
+      setError(true);
+      setLoading(false);
+    }
+  }, [src, retryCount, maxRetries]);
+
+  const handleLoad = () => {
+    setLoading(false);
+    setError(false);
+  };
+
+  const handleRetry = () => {
+    setError(false);
+    setLoading(true);
+    setRetryCount(0);
+    setCurrentSrc(src.includes('?') ? `${src}&retry=${Date.now()}` : `${src}?retry=${Date.now()}`);
+  };
+
+  if (error) {
+    return (
+      <div className={`${className} flex flex-col items-center justify-center bg-gray-800`}>
+        <ImageOff size={48} className="text-gray-500 mb-4" />
+        <p className="text-gray-400 text-sm mb-4">Erro ao carregar imagem</p>
+        <Button size="sm" variant="outline" onClick={handleRetry}>
+          <RefreshCw size={14} className="mr-2" /> Tentar novamente
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      {loading && (
+        <div className={`${className} flex items-center justify-center bg-gray-800 absolute inset-0`}>
+          <div className="animate-spin w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full" />
+        </div>
+      )}
+      <img
+        src={currentSrc}
+        alt={alt}
+        className={className}
+        onError={handleError}
+        onLoad={handleLoad}
+        style={{ opacity: loading ? 0 : 1 }}
+      />
+    </div>
+  );
 };
 
 const criteriaInfo = {
@@ -55,16 +110,15 @@ export const EvaluationPage = () => {
   });
   const [comment, setComment] = useState('');
 
-  const getUserLevel = () => {
-    if (!user?.tags) return 0;
-    return Math.max(...user.tags.map(t => HIERARCHY_LEVELS[t] || 0));
-  };
-
-  const canEvaluate = getUserLevel() >= HIERARCHY_LEVELS.avaliador;
+  // REGRA CRÍTICA: SOMENTE a tag "avaliador" permite avaliar
+  // Admin, Líder, Gestão, Produtor - NENHUM pode avaliar sem a tag AVALIADOR
+  const canEvaluate = user?.tags?.includes('avaliador') || false;
 
   useEffect(() => {
     if (canEvaluate) {
       loadQueue();
+    } else {
+      setLoading(false);
     }
   }, [canEvaluate]);
 
