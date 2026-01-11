@@ -35,6 +35,13 @@ DEFAULT_PAGES = {
         "content": "O Spotters CXJ é um grupo apaixonado por aviação que se dedica a registrar e documentar as operações aéreas no Aeroporto Hugo Cantergiani (CXJ) em Caxias do Sul, Rio Grande do Sul.\n\nNossa missão é preservar a memória da aviação regional, compartilhar conhecimento sobre aeronaves e promover o hobby do aircraft spotting na Serra Gaúcha.",
         "sections": []
     },
+    "group-info": {
+        "slug": "group-info",
+        "title": "Sobre o Spotters CXJ",
+        "subtitle": "Conheça nossa comunidade",
+        "content": "O Spotters CXJ é uma comunidade de entusiastas da aviação dedicados a documentar e compartilhar a paixão por aeronaves.\n\nFundado por spotters locais, nosso grupo se reúne regularmente no Aeroporto Hugo Cantergiani para registrar as operações aéreas, trocar conhecimentos e promover o hobby do aircraft spotting na região da Serra Gaúcha.\n\nSomos uma comunidade aberta e acolhedora, sempre recebendo novos membros interessados em aprender mais sobre aviação.",
+        "sections": []
+    },
     "airport-history": {
         "slug": "airport-history",
         "title": "História do Aeroporto CXJ",
