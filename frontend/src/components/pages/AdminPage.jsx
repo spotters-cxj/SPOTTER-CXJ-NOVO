@@ -20,7 +20,7 @@ import { Textarea } from '../ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { toast } from 'sonner';
 
-// Available tags - Ordem hierárquica: Líder > Admin > Gestor > Colaborador > VIP > Produtor > Membro
+// Available tags - Ordem hierárquica: Líder > Admin > Gestor > Colaborador > VIP > Produtor > Spotter CXJ > Visitante
 // Nota: Avaliador é uma tag ESPECIAL que permite avaliar fotos, independente da hierarquia
 const AVAILABLE_TAGS = [
   { value: 'lider', label: 'Líder', color: 'bg-yellow-500', icon: '👑', level: 8 },
@@ -30,8 +30,9 @@ const AVAILABLE_TAGS = [
   { value: 'vip', label: 'VIP', color: 'bg-amber-500', icon: '💎', level: 4 },
   { value: 'produtor', label: 'Produtor', color: 'bg-blue-500', icon: '🎬', level: 3 },
   { value: 'avaliador', label: 'Avaliador', color: 'bg-green-500', icon: '✅', level: 2, special: true },
-  { value: 'membro', label: 'Membro', color: 'bg-gray-500', icon: '👤', level: 1 },
-  { value: 'podio', label: 'Pódio', color: 'bg-orange-500', icon: '🏆', level: 0, special: true },
+  { value: 'spotter_cxj', label: 'Spotter CXJ', color: 'bg-cyan-500', icon: '✈️', level: 1 },
+  { value: 'visitante', label: 'Visitante', color: 'bg-gray-500', icon: '👤', level: 0 },
+  { value: 'podio', label: 'Pódio', color: 'bg-orange-500', icon: '🏆', level: -1, special: true },
 ];
 
 // Função para ordenar tags pela hierarquia
