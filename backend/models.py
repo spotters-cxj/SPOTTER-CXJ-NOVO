@@ -333,6 +333,28 @@ class SiteSettingsUpdate(BaseModel):
     vip_permanent_price: Optional[str] = None
     extra_photo_price: Optional[str] = None
 
+# Credits/Team Models
+class CreditMemberBase(BaseModel):
+    name: str
+    role: str  # Ex: "Fundador", "Desenvolvedor", "Designer", "Colaborador"
+    description: Optional[str] = None  # Breve descrição do que fez
+    instagram: Optional[str] = None
+    order: int = 0  # Para ordenação hierárquica
+
+class CreditMember(CreditMemberBase):
+    member_id: str = Field(default_factory=lambda: f"credit_{uuid.uuid4().hex[:8]}")
+    created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
+
+class CreditMemberCreate(CreditMemberBase):
+    pass
+
+class CreditMemberUpdate(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    description: Optional[str] = None
+    instagram: Optional[str] = None
+    order: Optional[int] = None
+
 # Audit Log Models
 class AuditLogAction(str, Enum):
     CREATE = "create"
