@@ -276,12 +276,30 @@ export const UploadPage = () => {
             {/* Registration */}
             <div>
               <label className="text-white font-medium block mb-2">Matrícula</label>
-              <Input
-                value={formData.registration}
-                onChange={(e) => setFormData({ ...formData, registration: e.target.value.toUpperCase() })}
-                placeholder="Ex: PR-GXJ"
-                className="bg-white/5 border-white/10"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.registration}
+                  onChange={(e) => setFormData({ ...formData, registration: e.target.value.toUpperCase() })}
+                  placeholder="Ex: PR-GXJ"
+                  className="bg-white/5 border-white/10 flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={handleLookupRegistration}
+                  disabled={lookingUp}
+                  className="bg-sky-600 hover:bg-sky-500 text-white px-3"
+                  title="Buscar informações da aeronave"
+                >
+                  {lookingUp ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Search size={16} />
+                  )}
+                </Button>
+              </div>
+              <p className="text-gray-500 text-xs mt-1">
+                Clique na lupa para preencher automaticamente
+              </p>
             </div>
 
             {/* Airline */}
