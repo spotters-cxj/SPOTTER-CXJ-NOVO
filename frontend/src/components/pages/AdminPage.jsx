@@ -1970,6 +1970,67 @@ export const AdminPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Credit Modal */}
+      <Dialog open={showCreditModal} onOpenChange={setShowCreditModal}>
+        <DialogContent className="bg-[#0a1929] border-[#1a3a5c] text-white">
+          <DialogHeader>
+            <DialogTitle>{editingCredit ? 'Editar' : 'Adicionar'} Crédito</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-gray-300 text-sm mb-2 block">Nome *</label>
+              <Input 
+                value={creditForm.name} 
+                onChange={(e) => setCreditForm({...creditForm, name: e.target.value})} 
+                placeholder="Nome completo" 
+                className="bg-[#102a43] border-[#1a3a5c] text-white" 
+              />
+            </div>
+            <div>
+              <label className="text-gray-300 text-sm mb-2 block">Cargo *</label>
+              <Input 
+                value={creditForm.role} 
+                onChange={(e) => setCreditForm({...creditForm, role: e.target.value})} 
+                placeholder="Ex: Fundador, Desenvolvedor, Designer" 
+                className="bg-[#102a43] border-[#1a3a5c] text-white" 
+              />
+            </div>
+            <div>
+              <label className="text-gray-300 text-sm mb-2 block">Descrição</label>
+              <Textarea 
+                value={creditForm.description} 
+                onChange={(e) => setCreditForm({...creditForm, description: e.target.value})} 
+                placeholder="Breve descrição do que fez" 
+                className="bg-[#102a43] border-[#1a3a5c] text-white" 
+                rows={3} 
+              />
+            </div>
+            <div>
+              <label className="text-gray-300 text-sm mb-2 block">Instagram</label>
+              <Input 
+                value={creditForm.instagram} 
+                onChange={(e) => setCreditForm({...creditForm, instagram: e.target.value})} 
+                placeholder="@usuario" 
+                className="bg-[#102a43] border-[#1a3a5c] text-white" 
+              />
+            </div>
+            <div>
+              <label className="text-gray-300 text-sm mb-2 block">Ordem (0 = primeiro)</label>
+              <Input 
+                type="number" 
+                value={creditForm.order} 
+                onChange={(e) => setCreditForm({...creditForm, order: parseInt(e.target.value) || 0})} 
+                className="bg-[#102a43] border-[#1a3a5c] text-white" 
+              />
+            </div>
+            <Button onClick={handleSaveCredit} className="w-full btn-accent">
+              <Save size={16} className="mr-2" />
+              {editingCredit ? 'Atualizar' : 'Adicionar'} Crédito
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Timeline Modal */}
       <Dialog open={showTimelineModal} onOpenChange={setShowTimelineModal}>
         <DialogContent className="bg-[#0a1929] border-[#1a3a5c] text-white">
