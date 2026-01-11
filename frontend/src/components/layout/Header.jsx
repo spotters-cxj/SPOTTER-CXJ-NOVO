@@ -54,6 +54,18 @@ export const Header = () => {
     setIsMobileMenuOpen(false);
   }, [location]);
 
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Ensure YouTube URL is valid
   const youtubeUrl = siteConfig.youtube?.startsWith('http') 
     ? siteConfig.youtube 
