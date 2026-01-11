@@ -1866,6 +1866,152 @@ export const AdminPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Photo Edit Modal */}
+      <Dialog open={showPhotoEditModal} onOpenChange={setShowPhotoEditModal}>
+        <DialogContent className="bg-[#0a1929] border-[#1a3a5c] text-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit size={20} className="text-sky-400" />
+              Editar Foto
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Preview da foto */}
+            {editingPhoto && (
+              <div className="mb-4">
+                <img 
+                  src={editingPhoto.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${editingPhoto.url}` : editingPhoto.url} 
+                  alt={editingPhoto.title || 'Foto'} 
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+              </div>
+            )}
+            
+            {/* Matrícula com busca automática */}
+            <div>
+              <label className="block text-gray-300 text-sm mb-2">Matrícula *</label>
+              <div className="flex gap-2">
+                <Input 
+                  value={photoEditForm.registration || ''} 
+                  onChange={(e) => setPhotoEditForm({...photoEditForm, registration: e.target.value.toUpperCase()})} 
+                  placeholder="Ex: PR-GXJ" 
+                  className="bg-[#102a43] border-[#1a3a5c] text-white flex-1" 
+                />
+                <Button 
+                  type="button" 
+                  onClick={handleLookupRegistration}
+                  className="bg-sky-600 hover:bg-sky-500 text-white"
+                  title="Buscar informações da aeronave"
+                >
+                  <Search size={16} className="mr-1" />
+                  Buscar
+                </Button>
+              </div>
+              <p className="text-gray-500 text-xs mt-1">
+                Clique em "Buscar" para preencher automaticamente a companhia e tipo
+              </p>
+            </div>
+
+            {/* Título e Companhia */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-300 text-sm mb-2">Título *</label>
+                <Input 
+                  value={photoEditForm.title || ''} 
+                  onChange={(e) => setPhotoEditForm({...photoEditForm, title: e.target.value})} 
+                  placeholder="Título da foto" 
+                  className="bg-[#102a43] border-[#1a3a5c] text-white" 
+                />
+              </div>
+              <div>
+                <label className="block text-gray-300 text-sm mb-2">Companhia *</label>
+                <Input 
+                  value={photoEditForm.airline || ''} 
+                  onChange={(e) => setPhotoEditForm({...photoEditForm, airline: e.target.value})} 
+                  placeholder="Ex: GOL Linhas Aéreas" 
+                  className="bg-[#102a43] border-[#1a3a5c] text-white" 
+                />
+              </div>
+            </div>
+
+            {/* Modelo e Tipo */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-300 text-sm mb-2">Modelo *</label>
+                <Input 
+                  value={photoEditForm.aircraft_model || ''} 
+                  onChange={(e) => setPhotoEditForm({...photoEditForm, aircraft_model: e.target.value})} 
+                  placeholder="Ex: Boeing 737-800" 
+                  className="bg-[#102a43] border-[#1a3a5c] text-white" 
+                />
+              </div>
+              <div>
+                <label className="block text-gray-300 text-sm mb-2">Tipo *</label>
+                <select
+                  value={photoEditForm.aircraft_type || ''}
+                  onChange={(e) => setPhotoEditForm({...photoEditForm, aircraft_type: e.target.value})}
+                  className="w-full px-4 py-2 bg-[#102a43] border border-[#1a3a5c] rounded-md text-white focus:border-sky-500 focus:outline-none"
+                >
+                  <option value="">Selecione</option>
+                  <option value="Airbus">Airbus</option>
+                  <option value="Boeing">Boeing</option>
+                  <option value="Embraer">Embraer</option>
+                  <option value="ATR">ATR</option>
+                  <option value="Aviação Geral">Aviação Geral</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Local e Data */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-300 text-sm mb-2">Local *</label>
+                <Input 
+                  value={photoEditForm.location || ''} 
+                  onChange={(e) => setPhotoEditForm({...photoEditForm, location: e.target.value})} 
+                  placeholder="Ex: Aeroporto CXJ" 
+                  className="bg-[#102a43] border-[#1a3a5c] text-white" 
+                />
+              </div>
+              <div>
+                <label className="block text-gray-300 text-sm mb-2">Data da Foto *</label>
+                <Input 
+                  type="date"
+                  value={photoEditForm.photo_date || ''} 
+                  onChange={(e) => setPhotoEditForm({...photoEditForm, photo_date: e.target.value})} 
+                  className="bg-[#102a43] border-[#1a3a5c] text-white" 
+                />
+              </div>
+            </div>
+
+            {/* Descrição */}
+            <div>
+              <label className="block text-gray-300 text-sm mb-2">Descrição</label>
+              <Textarea 
+                value={photoEditForm.description || ''} 
+                onChange={(e) => setPhotoEditForm({...photoEditForm, description: e.target.value})} 
+                placeholder="Descrição opcional..." 
+                className="bg-[#102a43] border-[#1a3a5c] text-white" 
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button 
+                onClick={() => setShowPhotoEditModal(false)} 
+                variant="outline" 
+                className="flex-1 border-[#1a3a5c] text-gray-300 hover:bg-[#1a3a5c]"
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleSavePhotoEdit} className="flex-1 btn-accent">
+                <Save size={16} className="mr-2" />Salvar Alterações
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
