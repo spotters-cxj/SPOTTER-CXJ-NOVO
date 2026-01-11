@@ -183,8 +183,12 @@ export const Header = () => {
 
               {/* Auth Button */}
               {user ? (
-                <div className="flex items-center gap-2">
-                  <Link to={`/perfil/${user.user_id}`} className="hidden lg:flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div className="relative" ref={userMenuRef}>
+                  {/* User Button */}
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
+                  >
                     <img
                       src={user.picture || siteConfig.logoRound}
                       alt={user.name}
@@ -193,22 +197,83 @@ export const Header = () => {
                     <span className="text-sm text-gray-300 max-w-24 truncate">
                       {user.name?.split(' ')[0]}
                     </span>
-                  </Link>
-                  {isGestao && (
-                    <Link to="/admin" className="hidden lg:block">
-                      <Button variant="ghost" size="sm" className="text-sky-400 hover:text-sky-300">
-                        <Shield size={16} />
-                      </Button>
-                    </Link>
+                    <ChevronDown size={16} className="text-gray-400" />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-64 bg-[#0a1929] border border-white/10 rounded-lg shadow-2xl overflow-hidden z-50">
+                      {/* User Info */}
+                      <div className="p-4 border-b border-white/10">
+                        <div className="flex items-center gap-3 mb-2">
+                          <img
+                            src={user.picture || siteConfig.logoRound}
+                            alt={user.name}
+                            className="w-12 h-12 rounded-full object-cover border-2 border-sky-500/50"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-semibold truncate">{user.name}</p>
+                            <p className="text-gray-400 text-xs truncate">{user.email}</p>
+                          </div>
+                        </div>
+                        {user.tags && user.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {user.tags.slice(0, 3).map((tag, i) => (
+                              <span key={i} className="text-xs px-2 py-1 rounded-full bg-sky-500/20 text-sky-400">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="p-2">
+                        <Link
+                          to={`/perfil/${user.user_id}`}
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
+                        >
+                          <UserCircle size={18} />
+                          <span>Meu Perfil</span>
+                        </Link>
+
+                        <Link
+                          to="/perfil/editar"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
+                        >
+                          <Settings size={18} />
+                          <span>Editar Perfil</span>
+                        </Link>
+
+                        {isGestao && (
+                          <Link
+                            to="/admin"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sky-400 hover:bg-sky-500/10 transition-colors"
+                          >
+                            <Shield size={18} />
+                            <span>Painel Admin</span>
+                          </Link>
+                        )}
+                      </div>
+
+                      {/* Logout */}
+                      <div className="p-2 border-t border-white/10">
+                        <button
+                          onClick={() => {
+                            setIsUserMenuOpen(false);
+                            logout();
+                          }}
+                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
+                        >
+                          <LogOut size={18} />
+                          <span>Sair da Conta</span>
+                        </button>
+                      </div>
+                    </div>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={logout}
-                    className="hidden lg:flex text-gray-400 hover:text-white"
-                  >
-                    <LogOut size={18} />
-                  </Button>
                 </div>
               ) : (
                 <Button
