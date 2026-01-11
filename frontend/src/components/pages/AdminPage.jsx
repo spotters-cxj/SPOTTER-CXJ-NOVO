@@ -4,12 +4,14 @@ import {
   Users, Check, X, Trash2, Shield, Camera, Settings, RefreshCw, Plus, Edit, Save, 
   Image, FileText, UserCheck, UserX, Crown, Clock, BarChart3, Calendar, History, 
   Search, Filter, Tag, Newspaper, CreditCard, Instagram, Youtube, Eye, EyeOff,
-  ChevronDown, ChevronUp, AlertCircle, CheckCircle, XCircle, Plane, MapPin
+  ChevronDown, ChevronUp, AlertCircle, CheckCircle, XCircle, Plane, MapPin,
+  Download, Database, HardDrive
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
   adminApi, leadersApi, pagesApi, settingsApi, memoriesApi, galleryApi, 
-  timelineApi, statsApi, logsApi, newsApi, membersApi, evaluationApi, photosApi 
+  timelineApi, statsApi, logsApi, newsApi, membersApi, evaluationApi, photosApi,
+  backupApi, aircraftApi
 } from '../../services/api';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
