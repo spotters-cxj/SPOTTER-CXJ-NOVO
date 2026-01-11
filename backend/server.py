@@ -52,6 +52,10 @@ async def health_check():
 
 app.include_router(api_router)
 
+# Criar diretórios de upload
+os.makedirs("/app/backend/uploads", exist_ok=True)
+os.makedirs("/app/backend/uploads/profiles", exist_ok=True)
+
 app.mount("/api/uploads", StaticFiles(directory="/app/backend/uploads"), name="uploads")
 
 app.add_middleware(
