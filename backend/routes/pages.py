@@ -87,7 +87,7 @@ async def update_page(request: Request, slug: str, update: PageContentUpdate):
     # Update fields
     update_data = update.dict(exclude_unset=True)
     update_data["updated_at"] = datetime.now(timezone.utc)
-    update_data["updated_by"] = admin.user_id
+    update_data["updated_by"] = admin["user_id"]
     
     for key, value in update_data.items():
         existing[key] = value
