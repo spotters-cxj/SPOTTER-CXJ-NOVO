@@ -322,13 +322,29 @@ async def edit_photo(request: Request, photo_id: str):
     if not photo:
         raise HTTPException(status_code=404, detail="Foto não encontrada")
     
-    # Check permission: author or gestao+
+    # Check permission: author (within 24h) or gestao+
     user_level = get_highest_role_level(user.get("tags", []))
     is_author = photo["author_id"] == user["user_id"]
     is_admin = user_level >= HIERARCHY_LEVELS["gestao"]
     
     if not is_author and not is_admin:
         raise HTTPException(status_code=403, detail="Sem permissão para editar esta foto")
+    
+    # Check 24h time limit for authors (admins can edit anytime)
+    if is_author and not is_admin:
+        created_at = photo.get("created_at")
+        if created_at:
+            if isinstance(created_at, str):
+                created_at = datetime.fromisoformat(created_at)
+            if created_at.tzinfo is None:
+                created_at = created_at.replace(tzinfo=timezone.utc)
+            
+            time_diff = datetime.now(timezone.utc) - created_at
+            if time_diff > timedelta(hours=24):
+                raise HTTPException(
+                    status_code=403, 
+                    detail="Período de edição expirado. Você pode editar fotos apenas até 24h após o envio."
+                )
     
     # Required fields validation
     required_fields = ["airline", "title", "aircraft_model", "aircraft_type", "registration", "location", "photo_date"]
