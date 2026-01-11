@@ -89,6 +89,14 @@ async def upload_photo(
     user = await get_current_user(request)
     db = await get_db(request)
     
+    # Check if user is VISITANTE (block upload)
+    user_tags = user.get("tags", [])
+    if "visitante" in user_tags and len(user_tags) == 1:
+        raise HTTPException(
+            status_code=403, 
+            detail="Visitantes não podem enviar fotos. Aguarde aprovação de um administrador para se tornar Spotter CXJ."
+        )
+    
     if not user.get("approved", False):
         raise HTTPException(status_code=403, detail="Usuário não aprovado para upload")
     
