@@ -7,6 +7,7 @@ import { settingsApi } from '../../services/api';
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
   const [settings, setSettings] = useState(null);
+  const [version, setVersion] = useState('1.0.0');
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -17,7 +18,19 @@ export const Footer = () => {
         console.error('Error loading settings:', error);
       }
     };
+    
+    const loadVersion = async () => {
+      try {
+        const res = await fetch('/version.json');
+        const data = await res.json();
+        setVersion(data.version);
+      } catch (error) {
+        console.error('Error loading version:', error);
+      }
+    };
+    
     loadSettings();
+    loadVersion();
   }, []);
 
   return (
