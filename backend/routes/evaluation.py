@@ -180,9 +180,9 @@ async def submit_evaluation(request: Request, photo_id: str):
 
 async def check_photo_approval(db, photo_id: str):
     """Check if photo should be approved or rejected based on evaluations"""
-    # Get all evaluators count
+    # Get all users with AVALIADOR tag (SOMENTE avaliadores contam)
     total_evaluators = await db.users.count_documents({
-        "tags": {"$in": ["avaliador", "produtor", "gestao", "admin", "lider"]}
+        "tags": "avaliador"  # SOMENTE a tag avaliador
     })
     
     if total_evaluators == 0:
