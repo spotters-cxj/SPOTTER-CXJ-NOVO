@@ -20,6 +20,8 @@ export const UploadPage = () => {
   const [lookingUp, setLookingUp] = useState(false);
   const [registrationDisabled, setRegistrationDisabled] = useState(false);
   const [suggestedModels, setSuggestedModels] = useState([]);
+  const [editingPhoto, setEditingPhoto] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
