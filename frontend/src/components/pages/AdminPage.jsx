@@ -429,11 +429,16 @@ export const AdminPage = () => {
 
   const handleSavePage = async () => {
     try {
-      await pagesApi.updatePage(editingPage, pageForm);
+      console.log('Saving page:', editingPage, pageForm);
+      const response = await pagesApi.updatePage(editingPage, pageForm);
+      console.log('Page saved:', response);
       toast.success('Página atualizada');
       setShowPageModal(false);
+      loadAllData();
     } catch (error) {
-      toast.error('Erro ao salvar página');
+      console.error('Error saving page:', error);
+      console.error('Error response:', error.response?.data);
+      toast.error(error.response?.data?.detail || 'Erro ao salvar página');
     }
   };
 
