@@ -256,10 +256,11 @@ export const EvaluationPage = () => {
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Photo Display */}
             <div className="glass-card overflow-hidden">
-              <img
+              <ImageWithRetry
                 src={currentPhoto.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${currentPhoto.url}` : currentPhoto.url}
                 alt={currentPhoto.title}
                 className="w-full h-96 object-contain bg-black"
+                maxRetries={3}
               />
               <div className="p-6">
                 <h2 className="text-xl font-bold text-white mb-2">{currentPhoto.title}</h2>
