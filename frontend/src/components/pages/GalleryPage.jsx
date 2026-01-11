@@ -40,10 +40,13 @@ export const GalleryPage = () => {
         galleryApi.list({ aircraft_type: filterAircraft || undefined }),
         galleryApi.getTypes()
       ]);
+      console.log('Gallery loaded:', photosRes.data.length, 'photos');
+      console.log('First photo:', photosRes.data[0]);
       setPhotos(photosRes.data);
       setAircraftTypes(typesRes.data);
     } catch (error) {
       console.error('Error loading gallery:', error);
+      toast.error('Erro ao carregar galeria');
     } finally {
       setLoading(false);
     }
