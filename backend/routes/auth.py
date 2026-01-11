@@ -53,7 +53,7 @@ async def create_session(request: Request, response: Response):
             {"user_id": user_id},
             {"$set": {"name": auth_data["name"], "picture": auth_data.get("picture")}}
         )
-        tags = existing_user.get("tags", ["membro"])
+        tags = existing_user.get("tags", ["visitante"])
         approved = existing_user.get("approved", False)
     else:
         user_id = f"user_{uuid.uuid4().hex[:12]}"
