@@ -175,4 +175,13 @@ export const aircraftApi = {
   validate: (registration) => api.get('/aircraft/validate', { params: { registration } }),
 };
 
+// Backup API
+export const backupApi = {
+  create: () => api.post('/backup/create'),
+  list: () => api.get('/backup/list'),
+  status: () => api.get('/backup/status'),
+  download: (filename) => `${API}/backup/download/${filename}`,
+  delete: (filename) => api.delete(`/backup/${filename}`),
+};
+
 export default api;
