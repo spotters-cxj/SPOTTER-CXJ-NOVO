@@ -28,15 +28,27 @@ class NotificationType(str, Enum):
     RANKING = "ranking"
 
 # Hierarchy levels for permissions
+# Ordem: Líder > Admin > Gestor > Colaborador > VIP > Produtor > Membro
+# Nota: Avaliador é uma tag ESPECIAL que permite avaliar fotos, independente do nível
 HIERARCHY_LEVELS = {
-    "lider": 7,
-    "admin": 6,
-    "gestao": 5,
-    "produtor": 4,
-    "avaliador": 3,
-    "colaborador": 2,
+    "lider": 8,
+    "admin": 7,
+    "gestao": 6,
+    "colaborador": 5,
+    "vip": 4,
+    "produtor": 3,
+    "avaliador": 2,  # Avaliador tem nível baixo, mas a TAG permite avaliar
     "membro": 1
 }
+
+# Tags que podem avaliar fotos - SOMENTE AVALIADOR
+EVALUATOR_TAGS = ["avaliador"]
+
+def has_evaluator_permission(tags: List[str]) -> bool:
+    """Check if user has the AVALIADOR tag (ONLY avaliador can evaluate)"""
+    if not tags:
+        return False
+    return "avaliador" in tags
 
 def get_highest_role_level(tags: List[str]) -> int:
     """Get the highest hierarchy level from user tags"""
