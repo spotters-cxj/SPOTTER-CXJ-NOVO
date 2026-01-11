@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Upload, Camera, AlertTriangle, Check, CreditCard, X, Info } from 'lucide-react';
+import { Upload, Camera, AlertTriangle, Check, CreditCard, X, Info, Search, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { photosApi } from '../../services/api';
+import { photosApi, aircraftApi } from '../../services/api';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -17,6 +17,7 @@ export const UploadPage = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showPaymentInfo, setShowPaymentInfo] = useState(false);
+  const [lookingUp, setLookingUp] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
