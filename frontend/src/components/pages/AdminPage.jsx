@@ -108,6 +108,10 @@ export const AdminPage = () => {
     airline: '', title: '', aircraft_model: '', aircraft_type: '', 
     registration: '', location: '', photo_date: '', description: '' 
   });
+  const [creditForm, setCreditForm] = useState({ name: '', role: '', description: '', instagram: '', order: 0 });
+
+  // Data states
+  const [credits, setCredits] = useState([]);
 
   useEffect(() => {
     if (isGestao) {
