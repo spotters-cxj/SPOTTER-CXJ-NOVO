@@ -270,7 +270,7 @@ export const Header = () => {
                     {link.icon ? (
                       <link.icon size={20} />
                     ) : (
-                      <Camera size={20} className="opacity-50" />
+                      <Home size={20} className="opacity-50" />
                     )}
                     <span className="font-medium">{link.label}</span>
                   </Link>
