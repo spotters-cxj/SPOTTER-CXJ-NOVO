@@ -179,12 +179,22 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-[#1a2f45]">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-sm">
-              © {currentYear} Spotters CXJ. Todos os direitos reservados.
-            </p>
-            <p className="text-gray-500 text-sm flex items-center gap-2">
-              Feito com <span className="text-red-500">♥</span> para a comunidade de spotters
-            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <p className="text-gray-500 text-sm">
+                © {currentYear} Spotters CXJ. Todos os direitos reservados.
+              </p>
+              <Link to="/creditos" className="text-gray-500 hover:text-sky-400 text-sm transition-colors">
+                Créditos
+              </Link>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <p className="text-gray-500 text-sm flex items-center gap-2">
+                Feito com <span className="text-red-500">♥</span> para a comunidade de spotters
+              </p>
+              <span className="text-gray-600 text-xs font-mono bg-[#102a43] px-2 py-1 rounded">
+                v{version}
+              </span>
+            </div>
           </div>
         </div>
       </div>
