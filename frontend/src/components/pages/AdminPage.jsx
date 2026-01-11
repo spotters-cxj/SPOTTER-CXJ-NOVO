@@ -633,7 +633,7 @@ export const AdminPage = () => {
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap gap-1">
-                              {(u.tags || []).map(tag => {
+                              {sortTagsByHierarchy(u.tags || []).map(tag => {
                                 const tagConfig = AVAILABLE_TAGS.find(t => t.value === tag);
                                 return (
                                   <span key={tag} className={`px-2 py-0.5 rounded text-xs ${tagConfig?.color || 'bg-gray-500'} text-white`}>
