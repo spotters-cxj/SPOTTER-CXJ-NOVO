@@ -108,7 +108,8 @@ export const Header = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center">
-              {navLinks.map((link) => (
+              {/* Main navigation items */}
+              {navLinks.slice(0, 5).map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
@@ -120,6 +121,37 @@ export const Header = () => {
                   {link.label}
                 </Link>
               ))}
+              
+              {/* More dropdown for additional items */}
+              <div className="relative" ref={moreMenuRef}>
+                <button
+                  onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
+                  className={`nav-link px-3 py-2 text-sm font-medium flex items-center gap-1 ${
+                    navLinks.slice(5).some(link => location.pathname === link.path) ? 'active' : ''
+                  }`}
+                >
+                  Mais
+                  <ChevronDown size={14} />
+                </button>
+                
+                {isMoreMenuOpen && (
+                  <div className="absolute top-full mt-2 right-0 w-48 bg-[#0a1929] border border-white/10 rounded-lg shadow-2xl overflow-hidden z-50">
+                    {navLinks.slice(5).map((link) => (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        onClick={() => setIsMoreMenuOpen(false)}
+                        className={`flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-white/5 hover:text-white transition-colors ${
+                          location.pathname === link.path ? 'bg-sky-600 text-white' : ''
+                        }`}
+                      >
+                        {link.icon && <link.icon size={16} />}
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
               
               {/* VIP Link - Neon outline golden */}
               <Link
