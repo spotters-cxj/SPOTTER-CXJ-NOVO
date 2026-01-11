@@ -18,6 +18,8 @@ export const UploadPage = () => {
   const [uploading, setUploading] = useState(false);
   const [showPaymentInfo, setShowPaymentInfo] = useState(false);
   const [lookingUp, setLookingUp] = useState(false);
+  const [registrationDisabled, setRegistrationDisabled] = useState(false);
+  const [suggestedModels, setSuggestedModels] = useState([]);
   
   const [formData, setFormData] = useState({
     title: '',
