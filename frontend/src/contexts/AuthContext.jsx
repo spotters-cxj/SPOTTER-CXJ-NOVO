@@ -121,6 +121,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     processSession,
     checkAuth,
+    refreshUser,
     isAdmin,
     isAdminPrincipal,
     isGestao,
