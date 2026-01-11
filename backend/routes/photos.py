@@ -125,8 +125,31 @@ async def upload_photo(
                 detail=f"Limite semanal de {PHOTOS_PER_WEEK} fotos atingido. Faça upgrade para enviar mais."
             )
     
-    # Save file
+    # Read and validate file
     file_content = await file.read()
+    
+    # Validate file size (10MB max)
+    if len(file_content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo 10MB")
+    
+    # Validate image dimensions (minimum 1080p)
+    try:
+        img = Image.open(io.BytesIO(file_content))
+        width, height = img.size
+        
+        # Mínimo: 1920x1080 ou 1080x1920 (retrato)
+        min_dimension = 1080
+        if width < min_dimension and height < min_dimension:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Resolução muito baixa. Mínimo: {min_dimension}p (ex: 1920x1080 ou 1080x1920)"
+            )
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(status_code=400, detail="Arquivo inválido ou corrompido")
+    
+    # Save file
     file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
     photo_id = f"photo_{uuid.uuid4().hex[:12]}"
     
