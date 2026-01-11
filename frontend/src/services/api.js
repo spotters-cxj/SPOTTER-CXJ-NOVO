@@ -161,6 +161,18 @@ export const logsApi = {
   list: (params) => api.get('/logs', { params }),
   getActions: () => api.get('/logs/actions'),
   getStats: () => api.get('/logs/stats'),
+  getEvaluations: (params) => api.get('/logs/evaluations', { params }),
+  getEvaluationStats: () => api.get('/logs/evaluations/stats'),
+  getSecurityLogs: (limit = 50) => api.get('/logs/security', { params: { limit } }),
+};
+
+// Aircraft API (ANAC database)
+export const aircraftApi = {
+  lookup: (registration) => api.get('/aircraft/lookup', { params: { registration } }),
+  getOperators: () => api.get('/aircraft/operators'),
+  getTypes: () => api.get('/aircraft/types'),
+  getModels: (type = null) => api.get('/aircraft/models', { params: type ? { aircraft_type: type } : {} }),
+  validate: (registration) => api.get('/aircraft/validate', { params: { registration } }),
 };
 
 export default api;
