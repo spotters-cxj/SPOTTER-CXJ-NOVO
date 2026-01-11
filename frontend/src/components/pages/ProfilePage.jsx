@@ -95,11 +95,22 @@ export const ProfilePage = () => {
   return (
     <div className="min-h-screen pt-24 pb-12">
       <div className="max-w-5xl mx-auto px-4">
-        {/* Back button */}
-        <Link to="/membros" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors">
-          <ArrowLeft size={18} />
-          Voltar para membros
-        </Link>
+        {/* Back button and Edit button */}
+        <div className="flex justify-between items-center mb-6">
+          <Link to="/membros" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+            <ArrowLeft size={18} />
+            Voltar para membros
+          </Link>
+          
+          {isOwnProfile && (
+            <Link to="/perfil/editar">
+              <Button className="bg-sky-600 hover:bg-sky-500 text-white flex items-center gap-2">
+                <Edit size={18} />
+                Editar Perfil
+              </Button>
+            </Link>
+          )}
+        </div>
 
         {/* Profile Header */}
         <div className="glass-card p-8 mb-8">
