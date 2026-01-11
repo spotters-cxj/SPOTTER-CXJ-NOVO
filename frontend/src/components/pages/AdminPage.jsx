@@ -62,6 +62,9 @@ export const AdminPage = () => {
   const [evaluationQueue, setEvaluationQueue] = useState([]);
   const [evaluationLogs, setEvaluationLogs] = useState([]);
   const [evaluationStats, setEvaluationStats] = useState({});
+  const [backups, setBackups] = useState([]);
+  const [backupStatus, setBackupStatus] = useState({});
+  const [creatingBackup, setCreatingBackup] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Filter states
@@ -78,6 +81,7 @@ export const AdminPage = () => {
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showNewsModal, setShowNewsModal] = useState(false);
+  const [showPhotoEditModal, setShowPhotoEditModal] = useState(false);
   const [editingLeader, setEditingLeader] = useState(null);
   const [editingMemory, setEditingMemory] = useState(null);
   const [editingPage, setEditingPage] = useState(null);
@@ -85,6 +89,7 @@ export const AdminPage = () => {
   const [editingMilestone, setEditingMilestone] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [editingNews, setEditingNews] = useState(null);
+  const [editingPhoto, setEditingPhoto] = useState(null);
 
   // Form states
   const [leaderForm, setLeaderForm] = useState({ name: '', role: '', instagram: '', photo_url: '', order: 0 });
@@ -96,6 +101,10 @@ export const AdminPage = () => {
   const [milestoneForm, setMilestoneForm] = useState({ year: '', title: '', description: '', order: 0 });
   const [userForm, setUserForm] = useState({ tags: [], is_vip: false, approved: false, instagram: '', jetphotos: '' });
   const [newsForm, setNewsForm] = useState({ title: '', content: '', location: '', image: '', references: '', published: true });
+  const [photoEditForm, setPhotoEditForm] = useState({ 
+    airline: '', title: '', aircraft_model: '', aircraft_type: '', 
+    registration: '', location: '', photo_date: '', description: '' 
+  });
 
   useEffect(() => {
     if (isGestao) {
