@@ -793,6 +793,206 @@ export const AdminPage = () => {
               </div>
             </TabsContent>
 
+            {/* ==================== EVALUATION LOGS TAB ==================== */}
+            <TabsContent value="eval-logs" className="space-y-6">
+              {/* Stats Cards */}
+              <div className="grid md:grid-cols-4 gap-4">
+                <div className="card-navy p-4">
+                  <div className="text-gray-400 text-sm">Total de Avaliações</div>
+                  <div className="text-2xl font-bold text-white">{evaluationStats.total || 0}</div>
+                </div>
+                <div className="card-navy p-4">
+                  <div className="text-gray-400 text-sm">Últimas 24h</div>
+                  <div className="text-2xl font-bold text-sky-400">{evaluationStats.recent_24h || 0}</div>
+                </div>
+                <div className="card-navy p-4">
+                  <div className="text-gray-400 text-sm">Últimos 7 dias</div>
+                  <div className="text-2xl font-bold text-green-400">{evaluationStats.recent_7d || 0}</div>
+                </div>
+                <div className="card-navy p-4">
+                  <div className="text-gray-400 text-sm">Média Geral</div>
+                  <div className="text-2xl font-bold text-amber-400">⭐ {evaluationStats.average_score || 0}</div>
+                </div>
+              </div>
+
+              {/* Top Evaluators */}
+              {evaluationStats.by_evaluator?.length > 0 && (
+                <div className="card-navy p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Crown className="text-yellow-400" size={20} />
+                    Top Avaliadores
+                  </h3>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {evaluationStats.by_evaluator.slice(0, 8).map((ev, idx) => (
+                      <div key={ev.evaluator_id} className="bg-[#0a1929] rounded-lg p-3 border border-[#1a3a5c]">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            idx === 0 ? 'bg-yellow-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-amber-600' : 'bg-gray-600'
+                          } text-white`}>
+                            {idx + 1}
+                          </span>
+                          <span className="text-white font-medium text-sm truncate">{ev.evaluator_name}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-400">{ev.count} avaliações</span>
+                          <span className="text-amber-400">⭐ {ev.avg_score}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Evaluation Logs Table */}
+              <div className="card-navy overflow-hidden">
+                <div className="p-4 border-b border-[#1a3a5c]">
+                  <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                    <History size={20} className="text-green-400" />
+                    Registro de Avaliações de Fotos
+                  </h2>
+                  <p className="text-gray-400 text-sm mt-1">Histórico completo de todas as avaliações realizadas</p>
+                </div>
+
+                {/* Filters */}
+                <div className="p-4 border-b border-[#1a3a5c] bg-[#0a1929]">
+                  <div className="grid md:grid-cols-4 gap-4">
+                    <select 
+                      value={evalFilters.evaluator_id} 
+                      onChange={(e) => setEvalFilters({...evalFilters, evaluator_id: e.target.value})}
+                      className="bg-[#102a43] border border-[#1a3a5c] rounded-lg px-3 py-2 text-white text-sm"
+                    >
+                      <option value="">Todos os Avaliadores</option>
+                      {evaluationStats.by_evaluator?.map(ev => (
+                        <option key={ev.evaluator_id} value={ev.evaluator_id}>{ev.evaluator_name}</option>
+                      ))}
+                    </select>
+                    <Input 
+                      type="date" 
+                      value={evalFilters.date_from}
+                      onChange={(e) => setEvalFilters({...evalFilters, date_from: e.target.value})}
+                      className="bg-[#102a43] border-[#1a3a5c] text-white"
+                      placeholder="Data inicial"
+                    />
+                    <Input 
+                      type="date" 
+                      value={evalFilters.date_to}
+                      onChange={(e) => setEvalFilters({...evalFilters, date_to: e.target.value})}
+                      className="bg-[#102a43] border-[#1a3a5c] text-white"
+                      placeholder="Data final"
+                    />
+                    <Button 
+                      onClick={async () => {
+                        try {
+                          const res = await logsApi.getEvaluations({
+                            limit: 100,
+                            ...evalFilters
+                          });
+                          setEvaluationLogs(res.data?.evaluations || []);
+                        } catch (e) {
+                          toast.error('Erro ao filtrar');
+                        }
+                      }} 
+                      className="btn-accent"
+                    >
+                      <Search size={16} className="mr-2" />Filtrar
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-[#102a43]">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Foto</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Data/Hora</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Avaliador</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">Técnica</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">Composição</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">Momento</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">Edição</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">Spotter</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">Final</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#1a3a5c]">
+                      {evaluationLogs.length === 0 ? (
+                        <tr>
+                          <td colSpan="9" className="px-4 py-12 text-center text-gray-400">
+                            <CheckCircle size={48} className="mx-auto mb-4 opacity-50" />
+                            <p>Nenhuma avaliação registrada ainda</p>
+                          </td>
+                        </tr>
+                      ) : (
+                        evaluationLogs.map((ev) => (
+                          <tr key={ev.evaluation_id} className="hover:bg-[#102a43]/50">
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                {ev.photo_url && (
+                                  <img 
+                                    src={ev.photo_url.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${ev.photo_url}` : ev.photo_url}
+                                    alt={ev.photo_title}
+                                    className="w-12 h-12 object-cover rounded"
+                                  />
+                                )}
+                                <div>
+                                  <div className="text-white text-sm font-medium truncate max-w-[150px]">{ev.photo_title}</div>
+                                  <div className="text-gray-500 text-xs">{ev.photo_author}</div>
+                                  <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                    ev.photo_status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                                    ev.photo_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                                    'bg-yellow-500/20 text-yellow-400'
+                                  }`}>
+                                    {ev.photo_status === 'approved' ? '✓ Aprovada' : ev.photo_status === 'rejected' ? '✗ Rejeitada' : '⏳ Pendente'}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              <div className="text-white">{new Date(ev.created_at).toLocaleDateString('pt-BR')}</div>
+                              <div className="text-gray-500 text-xs">{new Date(ev.created_at).toLocaleTimeString('pt-BR')}</div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="text-white text-sm">{ev.evaluator_name}</div>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`font-medium ${ev.criteria?.technical_quality >= 4 ? 'text-green-400' : ev.criteria?.technical_quality >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                {ev.criteria?.technical_quality || 0}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`font-medium ${ev.criteria?.composition >= 4 ? 'text-green-400' : ev.criteria?.composition >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                {ev.criteria?.composition || 0}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`font-medium ${ev.criteria?.moment_angle >= 4 ? 'text-green-400' : ev.criteria?.moment_angle >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                {ev.criteria?.moment_angle || 0}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`font-medium ${ev.criteria?.editing >= 4 ? 'text-green-400' : ev.criteria?.editing >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                {ev.criteria?.editing || 0}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`font-medium ${ev.criteria?.spotter_criteria >= 4 ? 'text-green-400' : ev.criteria?.spotter_criteria >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                {ev.criteria?.spotter_criteria || 0}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`text-lg font-bold ${ev.final_score >= 4 ? 'text-green-400' : ev.final_score >= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                ⭐ {ev.final_score}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </TabsContent>
+
             {/* ==================== STATS TAB ==================== */}
             <TabsContent value="stats">
               <div className="card-navy p-6">
