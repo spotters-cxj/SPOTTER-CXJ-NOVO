@@ -282,6 +282,116 @@ async def add_comment(request: Request, photo_id: str):
     
     return {"comment_id": comment["comment_id"], "message": "Comentário adicionado"}
 
+@router.put("/{photo_id}/edit")
+async def edit_photo(request: Request, photo_id: str):
+    """
+    Edit photo information after upload.
+    Campos obrigatórios: airline, title, aircraft_model, aircraft_type, registration, location, photo_date
+    Campo opcional: description
+    """
+    user = await get_current_user(request)
+    db = await get_db(request)
+    body = await request.json()
+    
+    photo = await db.photos.find_one({"photo_id": photo_id}, {"_id": 0})
+    if not photo:
+        raise HTTPException(status_code=404, detail="Foto não encontrada")
+    
+    # Check permission: author or gestao+
+    user_level = get_highest_role_level(user.get("tags", []))
+    is_author = photo["author_id"] == user["user_id"]
+    is_admin = user_level >= HIERARCHY_LEVELS["gestao"]
+    
+    if not is_author and not is_admin:
+        raise HTTPException(status_code=403, detail="Sem permissão para editar esta foto")
+    
+    # Required fields validation
+    required_fields = ["airline", "title", "aircraft_model", "aircraft_type", "registration", "location", "photo_date"]
+    for field in required_fields:
+        if field in body and (body[field] is None or str(body[field]).strip() == ""):
+            raise HTTPException(status_code=400, detail=f"Campo obrigatório '{field}' não pode estar vazio")
+    
+    # Build update dict with only provided fields
+    update_data = {}
+    editable_fields = ["airline", "title", "aircraft_model", "aircraft_type", "registration", "location", "photo_date", "description"]
+    
+    old_values = {}
+    for field in editable_fields:
+        if field in body:
+            old_values[field] = photo.get(field)
+            update_data[field] = body[field]
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="Nenhum campo para atualizar")
+    
+    # Add edit timestamp and editor info
+    update_data["last_edited_at"] = datetime.now(timezone.utc)
+    update_data["last_edited_by"] = user["user_id"]
+    update_data["last_edited_by_name"] = user["name"]
+    
+    # Save edit history
+    edit_history_entry = {
+        "edited_at": datetime.now(timezone.utc),
+        "edited_by": user["user_id"],
+        "edited_by_name": user["name"],
+        "changes": {k: {"old": old_values.get(k), "new": v} for k, v in update_data.items() if k in editable_fields}
+    }
+    
+    await db.photos.update_one(
+        {"photo_id": photo_id},
+        {
+            "$set": update_data,
+            "$push": {"edit_history": edit_history_entry}
+        }
+    )
+    
+    # Create audit log
+    from routes.logs import create_audit_log
+    forwarded = request.headers.get("X-Forwarded-For")
+    ip_address = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
+    
+    await create_audit_log(
+        db,
+        admin_id=user["user_id"],
+        admin_name=user["name"],
+        action="update",
+        entity_type="photo",
+        entity_id=photo_id,
+        entity_name=photo.get("title"),
+        details=f"Foto editada: {', '.join(update_data.keys())}",
+        old_value=old_values,
+        new_value={k: v for k, v in update_data.items() if k in editable_fields},
+        ip_address=ip_address,
+        admin_email=user.get("email")
+    )
+    
+    return {"message": "Foto atualizada com sucesso", "updated_fields": list(update_data.keys())}
+
+@router.get("/{photo_id}/edit-history")
+async def get_photo_edit_history(request: Request, photo_id: str):
+    """Get edit history for a photo (author or gestao+)"""
+    user = await get_current_user(request)
+    db = await get_db(request)
+    
+    photo = await db.photos.find_one({"photo_id": photo_id}, {"_id": 0})
+    if not photo:
+        raise HTTPException(status_code=404, detail="Foto não encontrada")
+    
+    # Check permission
+    user_level = get_highest_role_level(user.get("tags", []))
+    is_author = photo["author_id"] == user["user_id"]
+    is_admin = user_level >= HIERARCHY_LEVELS["gestao"]
+    
+    if not is_author and not is_admin:
+        raise HTTPException(status_code=403, detail="Sem permissão para ver histórico")
+    
+    return {
+        "photo_id": photo_id,
+        "edit_history": photo.get("edit_history", []),
+        "last_edited_at": photo.get("last_edited_at"),
+        "last_edited_by_name": photo.get("last_edited_by_name")
+    }
+
 @router.delete("/{photo_id}")
 async def delete_photo(request: Request, photo_id: str):
     """Delete photo (author or admin)"""
