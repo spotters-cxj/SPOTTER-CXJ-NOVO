@@ -164,11 +164,60 @@ export const AdminPage = () => {
       if (results[13].status === 'fulfilled') setEvaluationStats(results[13].value.data || {});
       if (results[14].status === 'fulfilled') setBackups(results[14].value.data?.backups || []);
       if (results[15].status === 'fulfilled') setBackupStatus(results[15].value.data || {});
+      if (results[16].status === 'fulfilled') setCredits(results[16].value.data || []);
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Erro ao carregar dados');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ========== CREDITS FUNCTIONS ==========
+  const handleCreateCredit = () => {
+    setCreditForm({ name: '', role: '', description: '', instagram: '', order: 0 });
+    setEditingCredit(null);
+    setShowCreditModal(true);
+  };
+
+  const handleEditCredit = (credit) => {
+    setCreditForm({
+      name: credit.name || '',
+      role: credit.role || '',
+      description: credit.description || '',
+      instagram: credit.instagram || '',
+      order: credit.order || 0
+    });
+    setEditingCredit(credit.member_id);
+    setShowCreditModal(true);
+  };
+
+  const handleSaveCredit = async () => {
+    try {
+      if (editingCredit) {
+        await creditsApi.update(editingCredit, creditForm);
+        toast.success('Crédito atualizado');
+      } else {
+        await creditsApi.create(creditForm);
+        toast.success('Crédito adicionado');
+      }
+      setShowCreditModal(false);
+      loadAllData();
+    } catch (error) {
+      console.error('Error saving credit:', error);
+      toast.error(error.response?.data?.detail || 'Erro ao salvar crédito');
+    }
+  };
+
+  const handleDeleteCredit = async (memberId) => {
+    if (!confirm('Remover este membro dos créditos?')) return;
+    try {
+      await creditsApi.delete(memberId);
+      toast.success('Crédito removido');
+      loadAllData();
+    } catch (error) {
+      console.error('Error deleting credit:', error);
+      toast.error('Erro ao remover crédito');
     }
   };
 
