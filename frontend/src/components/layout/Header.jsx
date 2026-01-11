@@ -167,10 +167,10 @@ export const Header = () => {
                 </a>
               </div>
 
-              {/* Auth Button - Desktop only */}
+              {/* Auth Button */}
               {user ? (
-                <div className="hidden lg:flex items-center gap-2">
-                  <Link to={`/perfil/${user.user_id}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div className="flex items-center gap-2">
+                  <Link to={`/perfil/${user.user_id}`} className="hidden lg:flex items-center gap-2 hover:opacity-80 transition-opacity">
                     <img
                       src={user.picture || siteConfig.logoRound}
                       alt={user.name}
@@ -181,7 +181,7 @@ export const Header = () => {
                     </span>
                   </Link>
                   {isGestao && (
-                    <Link to="/admin">
+                    <Link to="/admin" className="hidden lg:block">
                       <Button variant="ghost" size="sm" className="text-sky-400 hover:text-sky-300">
                         <Shield size={16} />
                       </Button>
@@ -191,7 +191,7 @@ export const Header = () => {
                     variant="ghost"
                     size="sm"
                     onClick={logout}
-                    className="text-gray-400 hover:text-white"
+                    className="hidden lg:flex text-gray-400 hover:text-white"
                   >
                     <LogOut size={18} />
                   </Button>
