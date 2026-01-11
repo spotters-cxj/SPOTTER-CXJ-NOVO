@@ -66,6 +66,36 @@ export const UploadPage = () => {
     }
   };
 
+  const handleLookupRegistration = async () => {
+    if (!formData.registration || formData.registration.trim().length < 4) {
+      toast.warning('Digite uma matrícula válida (ex: PR-GXJ)');
+      return;
+    }
+    
+    try {
+      setLookingUp(true);
+      const response = await aircraftApi.lookup(formData.registration);
+      
+      if (response.data.found) {
+        const updates = {};
+        if (response.data.operator) updates.airline = response.data.operator;
+        if (response.data.aircraft_type && response.data.aircraft_type !== 'Mixed') {
+          updates.aircraft_type = response.data.aircraft_type;
+        }
+        
+        setFormData(prev => ({ ...prev, ...updates }));
+        toast.success(`✈️ Encontrado: ${response.data.operator || 'Aeronave brasileira'}`);
+      } else {
+        toast.info('Matrícula não encontrada no banco local. Preencha manualmente.');
+      }
+    } catch (error) {
+      console.error('Error looking up registration:', error);
+      toast.error('Erro ao buscar matrícula');
+    } finally {
+      setLookingUp(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
