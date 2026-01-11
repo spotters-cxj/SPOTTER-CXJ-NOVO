@@ -58,12 +58,15 @@ export const AdminPage = () => {
   const [logStats, setLogStats] = useState({});
   const [news, setNews] = useState([]);
   const [evaluationQueue, setEvaluationQueue] = useState([]);
+  const [evaluationLogs, setEvaluationLogs] = useState([]);
+  const [evaluationStats, setEvaluationStats] = useState({});
   const [loading, setLoading] = useState(true);
 
   // Filter states
   const [userSearch, setUserSearch] = useState('');
   const [userTagFilter, setUserTagFilter] = useState('');
   const [logFilters, setLogFilters] = useState({ action: '', entity_type: '', admin_id: '' });
+  const [evalFilters, setEvalFilters] = useState({ evaluator_id: '', date_from: '', date_to: '' });
 
   // Modal states
   const [showLeaderModal, setShowLeaderModal] = useState(false);
