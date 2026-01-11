@@ -323,17 +323,18 @@ export const UploadPage = () => {
             {/* Registration */}
             <div>
               <label className="text-white font-medium block mb-2">Matrícula</label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 mb-2">
                 <Input
                   value={formData.registration}
                   onChange={(e) => setFormData({ ...formData, registration: e.target.value.toUpperCase() })}
                   placeholder="Ex: PR-GXJ"
+                  disabled={registrationDisabled}
                   className="bg-white/5 border-white/10 flex-1"
                 />
                 <Button
                   type="button"
                   onClick={handleLookupRegistration}
-                  disabled={lookingUp}
+                  disabled={lookingUp || registrationDisabled}
                   className="bg-sky-600 hover:bg-sky-500 text-white px-3"
                   title="Buscar informações da aeronave"
                 >
@@ -344,29 +345,50 @@ export const UploadPage = () => {
                   )}
                 </Button>
               </div>
-              <p className="text-gray-500 text-xs mt-1">
-                Clique na lupa para preencher automaticamente
-              </p>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={registrationDisabled}
+                  onChange={(e) => {
+                    setRegistrationDisabled(e.target.checked);
+                    if (e.target.checked) {
+                      setFormData({ ...formData, registration: '' });
+                      setSuggestedModels([]);
+                    }
+                  }}
+                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-sky-500 focus:ring-sky-500"
+                />
+                <span className="text-gray-400 text-sm">
+                  Matrícula não visível / Múltiplas aeronaves
+                </span>
+              </label>
+              {!registrationDisabled && (
+                <p className="text-gray-500 text-xs mt-1">
+                  Clique na lupa para preencher automaticamente
+                </p>
+              )}
             </div>
 
             {/* Airline */}
             <div>
-              <label className="text-white font-medium block mb-2">Companhia</label>
+              <label className="text-white font-medium block mb-2">Companhia *</label>
               <Input
                 value={formData.airline}
                 onChange={(e) => setFormData({ ...formData, airline: e.target.value })}
                 placeholder="Ex: GOL Linhas Aéreas"
+                required
                 className="bg-white/5 border-white/10"
               />
             </div>
 
             {/* Location */}
             <div>
-              <label className="text-white font-medium block mb-2">Local</label>
+              <label className="text-white font-medium block mb-2">Local *</label>
               <Input
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 placeholder="Ex: Aeroporto CXJ"
+                required
                 className="bg-white/5 border-white/10"
               />
             </div>
