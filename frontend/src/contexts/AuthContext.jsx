@@ -68,6 +68,18 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const response = await authApi.getMe();
+      setUser(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Refresh user error:', error);
+      setUser(null);
+      throw error;
+    }
+  }, []);
+
   // Get highest role level from user tags
   const getUserLevel = useCallback(() => {
     if (!user?.tags || user.tags.length === 0) return 0;
