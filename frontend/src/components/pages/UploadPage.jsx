@@ -59,12 +59,27 @@ export const UploadPage = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate size
       if (file.size > 10 * 1024 * 1024) {
         toast.error('Arquivo muito grande. Máximo 10MB');
         return;
       }
-      setFormData({ ...formData, file });
-      setPreview(URL.createObjectURL(file));
+      
+      // Validate dimensions using Image object
+      const img = new Image();
+      img.onload = () => {
+        const minDimension = 1080;
+        if (img.width < minDimension && img.height < minDimension) {
+          toast.error(`Resolução muito baixa. Mínimo: ${minDimension}p (ex: 1920x1080)`);
+          return;
+        }
+        setFormData({ ...formData, file });
+        setPreview(URL.createObjectURL(file));
+      };
+      img.onerror = () => {
+        toast.error('Erro ao carregar imagem');
+      };
+      img.src = URL.createObjectURL(file);
     }
   };
 
