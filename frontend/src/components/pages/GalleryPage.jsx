@@ -206,13 +206,21 @@ export const GalleryPage = () => {
                   className="photo-card cursor-pointer group"
                   onClick={() => setSelectedPhoto(photo)}
                 >
-                  <img src={getPhotoUrl(photo)} alt={photo.description} loading="lazy" />
+                  <img 
+                    src={getPhotoUrl(photo)} 
+                    alt={photo.title || photo.description || photo.aircraft_model} 
+                    loading="lazy"
+                    onError={(e) => {
+                      console.error('Error loading image:', getPhotoUrl(photo));
+                      e.target.src = '/logo-spotters-round.png';
+                    }}
+                  />
                   <div className="photo-overlay">
                     <div className="flex items-center gap-2 mb-2">
                       <Plane size={16} className="text-sky-400" />
                       <span className="text-white font-semibold">{photo.aircraft_model}</span>
                     </div>
-                    <p className="text-gray-300 text-sm line-clamp-2">{photo.description}</p>
+                    <p className="text-gray-300 text-sm line-clamp-2">{photo.title || photo.description}</p>
                     <div className="flex items-center justify-between mt-3 text-xs text-gray-400">
                       <span className="flex items-center gap-1">
                         <User size={12} />
@@ -220,7 +228,7 @@ export const GalleryPage = () => {
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar size={12} />
-                        {formatDate(photo.date)}
+                        {formatDate(photo.photo_date || photo.date)}
                       </span>
                     </div>
                   </div>
