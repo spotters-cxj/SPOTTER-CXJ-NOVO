@@ -111,10 +111,11 @@ export const GalleryPage = () => {
   };
 
   const getPhotoUrl = (photo) => {
-    if (photo.url?.startsWith('/api')) {
-      return `${process.env.REACT_APP_BACKEND_URL}${photo.url}`;
-    }
-    return photo.url;
+    const url = photo.url?.startsWith('/api') 
+      ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}`
+      : photo.url;
+    console.log('Photo URL:', url);
+    return url;
   };
 
   return (
