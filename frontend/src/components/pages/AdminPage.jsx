@@ -257,7 +257,7 @@ export const AdminPage = () => {
   const handleEditUser = (userItem) => {
     setEditingUser(userItem);
     setUserForm({
-      tags: userItem.tags || ['membro'],
+      tags: userItem.tags || ['visitante'],
       is_vip: userItem.is_vip || false,
       approved: userItem.approved || false,
       instagram: userItem.instagram || '',
