@@ -138,7 +138,8 @@ export const AdminPage = () => {
         logsApi.getEvaluations({ limit: 100 }),
         logsApi.getEvaluationStats(),
         backupApi.list(),
-        backupApi.status()
+        backupApi.status(),
+        creditsApi.list()
       ]);
 
       if (results[0].status === 'fulfilled') setUsers(results[0].value.data || []);
