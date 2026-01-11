@@ -548,31 +548,49 @@ export const UploadPage = () => {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {myPhotos.map((photo) => (
-                <div key={photo.photo_id} className="glass-card overflow-hidden">
-                  <img
-                    src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url}
-                    alt={photo.title}
-                    className="w-full h-40 object-cover"
-                  />
-                  <div className="p-3">
-                    <h3 className="text-white font-medium text-sm line-clamp-1">{photo.title}</h3>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        photo.status === 'approved' ? 'bg-green-500/20 text-green-400' :
-                        photo.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                        'bg-yellow-500/20 text-yellow-400'
-                      }`}>
-                        {photo.status === 'approved' ? 'Aprovada' :
-                         photo.status === 'rejected' ? 'Recusada' : 'Pendente'}
-                      </span>
-                      {photo.public_rating > 0 && (
-                        <span className="text-yellow-400 text-sm">⭐ {photo.public_rating.toFixed(1)}</span>
+              {myPhotos.map((photo) => {
+                const canEdit = canEditPhoto(photo);
+                return (
+                  <div key={photo.photo_id} className="glass-card overflow-hidden">
+                    <img
+                      src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url}
+                      alt={photo.title}
+                      className="w-full h-40 object-cover"
+                    />
+                    <div className="p-3">
+                      <h3 className="text-white font-medium text-sm line-clamp-1">{photo.title}</h3>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          photo.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                          photo.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                          'bg-yellow-500/20 text-yellow-400'
+                        }`}>
+                          {photo.status === 'approved' ? 'Aprovada' :
+                           photo.status === 'rejected' ? 'Recusada' : 'Pendente'}
+                        </span>
+                        {photo.public_rating > 0 && (
+                          <span className="text-yellow-400 text-sm">⭐ {photo.public_rating.toFixed(1)}</span>
+                        )}
+                      </div>
+                      {canEdit && (
+                        <Button
+                          onClick={() => handleEditPhoto(photo)}
+                          className="w-full mt-3 bg-sky-600 hover:bg-sky-500 text-white text-xs py-1.5"
+                        >
+                          <Edit size={14} className="mr-1" />
+                          Editar (24h)
+                        </Button>
+                      )}
+                      {!canEdit && photo.status === 'pending' && (
+                        <p className="text-gray-500 text-xs mt-2 flex items-center gap-1">
+                          <Clock size={12} />
+                          Período de edição expirado
+                        </p>
                       )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
