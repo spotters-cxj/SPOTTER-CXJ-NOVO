@@ -45,6 +45,7 @@ function AppRouter() {
       <Route path="/buscar" element={<SearchPage />} />
       <Route path="/perfil/:userId" element={<ProfilePage />} />
       <Route path="/perfil/editar" element={<EditProfilePage />} />
+      <Route path="/creditos" element={<CreditsPage />} />
       <Route path="/vip" element={<VipPage />} />
       <Route path="/historia-aeroporto" element={<AirportHistoryPage />} />
       <Route path="/historia-spotters" element={<SpottersHistoryPage />} />
