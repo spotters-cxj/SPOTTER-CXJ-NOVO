@@ -100,14 +100,23 @@ export const UploadPage = () => {
           updates.aircraft_type = response.data.aircraft_type;
         }
         
+        // Store suggested models
+        if (response.data.suggested_models && response.data.suggested_models.length > 0) {
+          setSuggestedModels(response.data.suggested_models);
+          toast.success(`✈️ Encontrado: ${response.data.operator || 'Aeronave brasileira'}. Selecione o modelo abaixo.`);
+        } else {
+          toast.success(`✈️ Encontrado: ${response.data.operator || 'Aeronave brasileira'}`);
+        }
+        
         setFormData(prev => ({ ...prev, ...updates }));
-        toast.success(`✈️ Encontrado: ${response.data.operator || 'Aeronave brasileira'}`);
       } else {
+        setSuggestedModels([]);
         toast.info('Matrícula não encontrada no banco local. Preencha manualmente.');
       }
     } catch (error) {
       console.error('Error looking up registration:', error);
       toast.error('Erro ao buscar matrícula');
+      setSuggestedModels([]);
     } finally {
       setLookingUp(false);
     }
