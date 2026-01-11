@@ -439,7 +439,21 @@ def main():
     else:
         result.failure("GET /api/aircraft/lookup (PR-XAA)", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
     
-    # Test aircraft lookup - GOL
+    # Test aircraft lookup - GOL (PR-GXJ as requested)
+    response = test_endpoint("GET", "/aircraft/lookup?registration=PR-GXJ", description="GOL aircraft lookup (PR-GXJ)")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, dict) and "found" in data:
+            if data["found"]:
+                result.success("GET /api/aircraft/lookup (PR-GXJ)", f"Found GOL aircraft: {data.get('operator', 'N/A')}")
+            else:
+                result.success("GET /api/aircraft/lookup (PR-GXJ)", "Registration not found in database (expected for test data)")
+        else:
+            result.failure("GET /api/aircraft/lookup (PR-GXJ)", f"Unexpected response format: {data}")
+    else:
+        result.failure("GET /api/aircraft/lookup (PR-GXJ)", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test aircraft lookup - GOL (original PR-GOL test)
     response = test_endpoint("GET", "/aircraft/lookup?registration=PR-GOL", description="GOL aircraft lookup")
     if response.get("success"):
         data = response["data"]
