@@ -175,6 +175,54 @@ export const UploadPage = () => {
     }
   };
 
+  const canEditPhoto = (photo) => {
+    // Check if photo was created within 24h
+    if (!photo.created_at) return false;
+    const createdAt = new Date(photo.created_at);
+    const now = new Date();
+    const hoursDiff = (now - createdAt) / (1000 * 60 * 60);
+    return hoursDiff <= 24;
+  };
+
+  const handleEditPhoto = (photo) => {
+    setEditingPhoto({
+      ...photo,
+      airline: photo.airline || '',
+      title: photo.title || '',
+      aircraft_model: photo.aircraft_model || '',
+      aircraft_type: photo.aircraft_type || 'Boeing',
+      registration: photo.registration || '',
+      location: photo.location || '',
+      photo_date: photo.photo_date || '',
+      description: photo.description || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      const updateData = {
+        airline: editingPhoto.airline,
+        title: editingPhoto.title,
+        aircraft_model: editingPhoto.aircraft_model,
+        aircraft_type: editingPhoto.aircraft_type,
+        registration: editingPhoto.registration,
+        location: editingPhoto.location,
+        photo_date: editingPhoto.photo_date,
+        description: editingPhoto.description
+      };
+      
+      await photosApi.edit(editingPhoto.photo_id, updateData);
+      toast.success('Foto atualizada com sucesso!');
+      setShowEditModal(false);
+      setEditingPhoto(null);
+      loadData();
+    } catch (error) {
+      console.error('Error editing photo:', error);
+      toast.error(error.response?.data?.detail || 'Erro ao editar foto');
+    }
+  };
+
   if (!user) {
     return <Navigate to="/" replace />;
   }
