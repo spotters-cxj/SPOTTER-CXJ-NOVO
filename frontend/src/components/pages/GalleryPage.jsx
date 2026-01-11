@@ -245,14 +245,18 @@ export const GalleryPage = () => {
 
       {/* Photo Detail Modal */}
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
-        <DialogContent className="max-w-4xl bg-[#0a1929] border-[#1a3a5c] text-white">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-[#0a1929] border-[#1a3a5c] text-white">
           {selectedPhoto && (
             <>
-              <div className="relative aspect-video rounded-lg overflow-hidden mb-6">
+              <div className="relative rounded-lg overflow-hidden mb-6 bg-black/30">
                 <img
                   src={getPhotoUrl(selectedPhoto)}
-                  alt={selectedPhoto.description}
-                  className="w-full h-full object-cover"
+                  alt={selectedPhoto.title || selectedPhoto.description}
+                  className="w-full h-auto max-h-[70vh] object-contain mx-auto"
+                  onError={(e) => {
+                    console.error('Error loading modal image:', getPhotoUrl(selectedPhoto));
+                    e.target.src = '/logo-spotters-round.png';
+                  }}
                 />
               </div>
               <DialogHeader>
