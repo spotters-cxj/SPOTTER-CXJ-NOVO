@@ -339,6 +339,18 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Backup API Endpoints"
+    implemented: true
+    working: true
+    file: "routes/backup.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "All backup API endpoints working correctly with proper admin authentication: GET /api/backup/status (401 without auth), GET /api/backup/list (401 without auth), POST /api/backup/create (401 without auth). All endpoints properly require admin level authentication."
+
 agent_communication:
     - agent: "testing"
       message: "Comprehensive backend API testing completed successfully. All 19 test cases passed including public endpoints, authentication flow, protected endpoints, and error handling. The Spotters CXJ backend API is fully functional and properly secured. All endpoints return correct HTTP status codes and data structures. Google OAuth integration with Emergent Auth is properly implemented. Database connectivity is working. Ready for production use."
@@ -354,3 +366,5 @@ agent_communication:
       message: "TESTING COMPLETED: All new endpoints from review request tested successfully. Total 42/42 test cases passed. ✅ Aircraft API (ANAC): All 6 endpoints working (types, operators, lookup for LATAM/GOL, validation, models). ✅ Evaluation logs: All 3 endpoints properly secured (401 without auth). ✅ Photo editing: Both endpoints properly secured (401 without auth). ✅ Evaluation system: Both endpoints properly secured with AVALIADOR tag requirement (401 without auth). ✅ Settings payment fields: FIXED - now includes all payment fields. All systems functional and properly secured."
     - agent: "main"
       message: "Correções de frontend implementadas: 1) Modal de edição de foto adicionado no AdminPage com todos os campos e busca de aeronave, 2) Funcionalidade de lookup de aeronave adicionada na página de Upload com botão de busca. Backup automático já está implementado e funciona localmente (sem Google Cloud). TESTAR: Verificar se o modal de edição de foto abre e se o lookup de aeronave funciona tanto na edição quanto no upload."
+    - agent: "testing"
+      message: "REVIEW REQUEST TESTING COMPLETED: All requested endpoints tested successfully. Total 46/46 test cases passed. ✅ Aircraft API: GET /api/aircraft/lookup?registration=PR-GXJ (Found GOL), GET /api/aircraft/lookup?registration=PR-XAA (Found LATAM), GET /api/aircraft/types (5 types), GET /api/aircraft/operators (15 operators). ✅ Photo Editing: PUT /api/photos/{photo_id}/edit (401 without auth), GET /api/photos/{photo_id}/edit-history (401 without auth). ✅ Backup API: GET /api/backup/status (401 without auth), GET /api/backup/list (401 without auth), POST /api/backup/create (401 without auth). All systems working correctly with proper authentication and security."
