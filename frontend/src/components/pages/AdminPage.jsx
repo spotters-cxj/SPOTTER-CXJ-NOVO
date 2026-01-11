@@ -116,7 +116,9 @@ export const AdminPage = () => {
         logsApi.list({ limit: 50 }),
         logsApi.getStats(),
         newsApi.list(50),
-        evaluationApi.getQueue()
+        evaluationApi.getQueue(),
+        logsApi.getEvaluations({ limit: 100 }),
+        logsApi.getEvaluationStats()
       ]);
 
       if (results[0].status === 'fulfilled') setUsers(results[0].value.data || []);
@@ -137,6 +139,8 @@ export const AdminPage = () => {
       if (results[9].status === 'fulfilled') setLogStats(results[9].value.data || {});
       if (results[10].status === 'fulfilled') setNews(results[10].value.data || []);
       if (results[11].status === 'fulfilled') setEvaluationQueue(results[11].value.data || []);
+      if (results[12].status === 'fulfilled') setEvaluationLogs(results[12].value.data?.evaluations || []);
+      if (results[13].status === 'fulfilled') setEvaluationStats(results[13].value.data || {});
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Erro ao carregar dados');
