@@ -68,13 +68,33 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Background task for automatic backup
+async def auto_backup_task():
+    """Run automatic backup every 6 hours"""
+    import asyncio
+    from routes.backup import scheduled_backup
+    
+    while True:
+        try:
+            await asyncio.sleep(6 * 60 * 60)  # 6 horas
+            if hasattr(app.state, 'db'):
+                logger.info("Iniciando backup automático...")
+                await scheduled_backup(app.state.db)
+        except Exception as e:
+            logger.error(f"Erro no backup automático: {e}")
+
 @app.on_event("startup")
 async def startup_db_client():
+    import asyncio
     mongo_url = os.environ['MONGO_URL']
     client = AsyncIOMotorClient(mongo_url)
     app.state.db = client[os.environ.get('DB_NAME', 'spotters_cxj')]
     app.state.mongo_client = client
     logger.info("Connected to MongoDB")
+    
+    # Start automatic backup task
+    asyncio.create_task(auto_backup_task())
+    logger.info("Backup automático agendado (a cada 6 horas)")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
