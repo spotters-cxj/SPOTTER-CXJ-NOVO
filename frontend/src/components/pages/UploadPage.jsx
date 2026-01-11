@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Upload, Camera, AlertTriangle, Check, CreditCard, X, Info, Search, Loader2, Edit, Clock } from 'lucide-react';
+import { Navigate, Link } from 'react-router-dom';
+import { Upload, Camera, AlertTriangle, Check, CreditCard, X, Info, Search, Loader2, Edit, Clock, Sparkles, Lock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { photosApi, aircraftApi } from '../../services/api';
 import { Button } from '../ui/button';
