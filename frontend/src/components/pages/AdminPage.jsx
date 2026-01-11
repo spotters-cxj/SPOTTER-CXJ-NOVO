@@ -11,7 +11,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { 
   adminApi, leadersApi, pagesApi, settingsApi, memoriesApi, galleryApi, 
   timelineApi, statsApi, logsApi, newsApi, membersApi, evaluationApi, photosApi,
-  backupApi, aircraftApi
+  backupApi, aircraftApi, creditsApi
 } from '../../services/api';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
