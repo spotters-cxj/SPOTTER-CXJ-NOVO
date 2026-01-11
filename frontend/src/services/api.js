@@ -114,6 +114,14 @@ export const timelineApi = {
   deleteSpottersItem: (itemId) => api.delete(`/timeline/spotters/${itemId}`),
 };
 
+// Credits API
+export const creditsApi = {
+  list: () => api.get('/credits'),
+  create: (data) => api.post('/credits', data),
+  update: (memberId, data) => api.put(`/credits/${memberId}`, data),
+  delete: (memberId) => api.delete(`/credits/${memberId}`),
+};
+
 // Stats API
 export const statsApi = {
   get: () => api.get('/stats'),
