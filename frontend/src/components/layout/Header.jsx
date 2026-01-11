@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Instagram, Youtube, User, LogOut, Shield, Camera, Upload, Trophy, Users, Bell, Newspaper, Search, Sparkles } from 'lucide-react';
+import { Menu, X, Instagram, Youtube, User, LogOut, Shield, Camera, Upload, Trophy, Users, Bell, Newspaper, Search, Sparkles, Home, Image, Award } from 'lucide-react';
 import { siteConfig } from '../../data/mock';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
 import { NotificationBell } from '../ui/NotificationBell';
 
 const navLinks = [
-  { path: '/', label: 'Início' },
-  { path: '/noticias', label: 'Notícias' },
-  { path: '/galeria', label: 'Galeria' },
-  { path: '/ranking', label: 'Ranking' },
-  { path: '/membros', label: 'Membros' },
+  { path: '/', label: 'Início', icon: Home },
+  { path: '/noticias', label: 'Notícias', icon: Newspaper },
+  { path: '/galeria', label: 'Galeria', icon: Image },
+  { path: '/ranking', label: 'Ranking', icon: Trophy },
+  { path: '/membros', label: 'Membros', icon: Users },
+  { path: '/creditos', label: 'Créditos', icon: Award },
   { path: '/buscar', label: 'Buscar', icon: Search },
 ];
 
