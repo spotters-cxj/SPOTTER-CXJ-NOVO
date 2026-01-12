@@ -81,11 +81,3 @@ android-sdk/
 
 # Environment files - REMOVED to allow .env files in repository for deployment
 # Note: .env files must be tracked for Emergent deployments to work
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
