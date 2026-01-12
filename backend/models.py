@@ -12,7 +12,7 @@ class UserRole(str, Enum):
     PRODUTOR = "produtor"
     AVALIADOR = "avaliador"
     COLABORADOR = "colaborador"
-    MEMBRO = "membro"
+    SPOTTER_CXJ = "spotter_cxj"
 
 class PhotoStatus(str, Enum):
     PENDING = "pending"
