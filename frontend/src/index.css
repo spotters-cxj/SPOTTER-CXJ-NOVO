@@ -56,16 +56,17 @@ h1, h2, h3, h4, h5, h6 {
   left: 15%;
   z-index: 1;
   pointer-events: none;
-  animation: flyVertical 45s linear infinite;
-  opacity: 0.2;
-  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.4));
+  animation: flyVertical 30s linear infinite;
+  opacity: 0.25;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+  will-change: transform;
 }
 
 .airplane-icon-vertical {
   width: 70px;
   height: 70px;
   fill: white;
-  transform: rotate(90deg); /* Pointing upward */
+  transform: rotate(0deg); /* Bico apontando para cima */
 }
 
 .smoke-trail-vertical {
