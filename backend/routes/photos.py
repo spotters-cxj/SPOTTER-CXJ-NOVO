@@ -34,13 +34,17 @@ async def create_notification(db, user_id: str, notif_type: str, message: str, d
 
 @router.get("")
 async def list_photos(request: Request, status: Optional[str] = "approved", 
-                      aircraft_type: Optional[str] = None, limit: int = 50):
-    """List approved photos (public)"""
+                      aircraft_type: Optional[str] = None, 
+                      author_id: Optional[str] = None,
+                      limit: int = 50):
+    """List approved photos (public) - can filter by author"""
     db = await get_db(request)
     
     query = {"status": status}
     if aircraft_type:
         query["aircraft_type"] = aircraft_type
+    if author_id:
+        query["author_id"] = author_id
     
     photos = await db.photos.find(query, {"_id": 0}).sort("approved_at", -1).limit(limit).to_list(limit)
     return photos
