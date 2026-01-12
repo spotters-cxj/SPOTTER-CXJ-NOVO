@@ -139,10 +139,10 @@ async def update_member_tags(request: Request, user_id: str):
     
     new_tags = body.get("tags", [])
     if not new_tags:
-        new_tags = ["membro"]
+        new_tags = ["spotter_cxj"]
     
     # Validate tags
-    valid_tags = ["lider", "admin", "gestao", "produtor", "avaliador", "colaborador", "membro", "vip", "podio"]
+    valid_tags = ["lider", "admin", "gestao", "produtor", "avaliador", "colaborador", "spotter_cxj", "vip", "podio"]
     for tag in new_tags:
         if tag not in valid_tags:
             raise HTTPException(status_code=400, detail=f"Tag inválida: {tag}")
