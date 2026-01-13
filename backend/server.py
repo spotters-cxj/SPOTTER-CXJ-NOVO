@@ -76,13 +76,13 @@ logger = logging.getLogger(__name__)
 
 # Background task for automatic backup
 async def auto_backup_task():
-    """Run automatic backup every 6 hours"""
+    """Run automatic backup every 1 hour"""
     import asyncio
     from routes.backup import scheduled_backup
     
     while True:
         try:
-            await asyncio.sleep(6 * 60 * 60)  # 6 horas
+            await asyncio.sleep(60 * 60)  # 1 hora
             if hasattr(app.state, 'db'):
                 logger.info("Iniciando backup automático...")
                 await scheduled_backup(app.state.db)
