@@ -213,7 +213,7 @@ export const Header = () => {
               {/* Notifications - Show on all screen sizes */}
               {user && <NotificationBell />}
 
-              {/* Social Links - Desktop only */}
+              {/* Social Links - Desktop only (Instagram only, YouTube only in footer) */}
               <div className="hidden lg:flex items-center gap-1">
                 <a
                   href={instagramUrl}
@@ -223,15 +223,6 @@ export const Header = () => {
                   aria-label="Instagram"
                 >
                   <Instagram size={18} />
-                </a>
-                <a
-                  href={youtubeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                  aria-label="YouTube"
-                >
-                  <Youtube size={18} />
                 </a>
               </div>
 
