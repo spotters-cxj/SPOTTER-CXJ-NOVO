@@ -18,6 +18,15 @@ async def require_admin(request: Request):
         raise HTTPException(status_code=403, detail="Acesso restrito a administradores")
     return user
 
+async def require_gestao(request: Request):
+    """Require gestao level or higher (for viewing users)"""
+    from routes.auth import get_current_user as get_user
+    user = await get_user(request)
+    user_level = get_highest_role_level(user.get("tags", []))
+    if user_level < HIERARCHY_LEVELS["gestao"]:
+        raise HTTPException(status_code=403, detail="Acesso restrito a gestão ou superior")
+    return user
+
 async def require_lider(request: Request):
     """Require lider level"""
     from routes.auth import get_current_user as get_user
@@ -29,8 +38,8 @@ async def require_lider(request: Request):
 
 @router.get("/users")
 async def list_users(request: Request):
-    """List all users (admin only)"""
-    admin = await require_admin(request)
+    """List all users (gestao or higher)"""
+    user = await require_gestao(request)
     db = await get_db(request)
     
     users = await db.users.find({}, {"_id": 0}).to_list(1000)
