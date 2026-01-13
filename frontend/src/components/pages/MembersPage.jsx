@@ -11,7 +11,9 @@ const hierarchyConfig = {
   produtores: { title: 'Produtores', icon: '🎬' },
   avaliadores: { title: 'Avaliadores', icon: '✅' },
   colaboradores: { title: 'Colaboradores', icon: '⭐' },
-  membros: { title: 'Membros', icon: '👥' }
+  spotters: { title: 'Spotters CXJ', icon: '✈️' },
+  jornalistas: { title: 'Jornalistas', icon: '📰' },
+  diretores: { title: 'Diretores do Aeroporto', icon: '🏢' }
 };
 
 export const MembersPage = () => {
