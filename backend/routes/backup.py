@@ -196,7 +196,17 @@ async def get_backup_status(request: Request):
     last_backup = await db.backup_logs.find_one(
         {"status": "success"}, 
         {"_id": 0},
-
+        sort=[("created_at", -1)]
+    )
+    
+    return {
+        "configured": creds_exist and folder_configured,
+        "credentials_path": CREDENTIALS_PATH,
+        "credentials_exist": creds_exist,
+        "folder_id": FOLDER_ID,
+        "folder_configured": folder_configured,
+        "last_backup": last_backup
+    }
 
 async def scheduled_backup(db):
     """Function for scheduled automatic backups"""
