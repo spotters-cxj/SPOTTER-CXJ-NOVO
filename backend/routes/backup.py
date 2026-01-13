@@ -216,10 +216,8 @@ async def get_backup_status(request: Request):
 async def scheduled_backup(db):
     """Function for scheduled automatic backups"""
     try:
-        from routes.backup import create_backup_zip, upload_to_drive
-        
-        # Create backup
-        backup_path, backup_name = create_backup_zip()
+        # Create backup using async method
+        backup_path, backup_name = await create_backup_zip_async(db)
         
         # Upload to Drive
         result = upload_to_drive(backup_path, backup_name)
