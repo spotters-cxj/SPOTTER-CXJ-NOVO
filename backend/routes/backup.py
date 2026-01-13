@@ -20,13 +20,14 @@ FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID')
 async def get_db(request: Request):
     return request.app.state.db
 
-async def require_admin(request: Request):
+async def require_gestao(request: Request):
+    """Require gestao level or higher for backup operations"""
     from routes.auth import get_current_user
     from models import HIERARCHY_LEVELS, get_highest_role_level
     user = await get_current_user(request)
     user_level = get_highest_role_level(user.get("tags", []))
-    if user_level < HIERARCHY_LEVELS["admin"]:
-        raise HTTPException(status_code=403, detail="Admin access required")
+    if user_level < HIERARCHY_LEVELS["gestao"]:
+        raise HTTPException(status_code=403, detail="Gestão access required")
     return user
 
 def get_drive_service():
