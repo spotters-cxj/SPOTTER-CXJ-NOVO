@@ -2318,12 +2318,34 @@ export const AdminPage = () => {
               <Input value={newsForm.image || ''} onChange={(e) => setNewsForm({...newsForm, image: e.target.value})} placeholder="URL da Imagem" className="bg-[#102a43] border-[#1a3a5c] text-white" />
             </div>
             <Input value={newsForm.references || ''} onChange={(e) => setNewsForm({...newsForm, references: e.target.value})} placeholder="Referências" className="bg-[#102a43] border-[#1a3a5c] text-white" />
-            <label className="flex items-center gap-2 text-gray-300">
-              <input type="checkbox" checked={newsForm.published} onChange={(e) => setNewsForm({...newsForm, published: e.target.checked})} />
-              Publicar imediatamente
-            </label>
+            
+            <div className="flex items-center gap-4 p-3 bg-[#102a43] rounded-lg">
+              <label className="flex items-center gap-2 text-gray-300 cursor-pointer flex-1">
+                <input 
+                  type="checkbox" 
+                  checked={newsForm.published} 
+                  onChange={(e) => setNewsForm({...newsForm, published: e.target.checked})}
+                  className="w-4 h-4"
+                />
+                <span className="flex items-center gap-2">
+                  {newsForm.published ? (
+                    <>
+                      <Eye size={16} className="text-green-400" />
+                      <span className="text-green-400">Publicar imediatamente</span>
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff size={16} className="text-amber-400" />
+                      <span className="text-amber-400">Salvar como rascunho</span>
+                    </>
+                  )}
+                </span>
+              </label>
+            </div>
+
             <Button onClick={handleSaveNews} className="w-full btn-accent">
-              <Save size={16} className="mr-2" />Salvar Notícia
+              <Save size={16} className="mr-2" />
+              {newsForm.published ? 'Salvar e Publicar' : 'Salvar Rascunho'}
             </Button>
           </div>
         </DialogContent>
