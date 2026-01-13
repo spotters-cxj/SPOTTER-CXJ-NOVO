@@ -1426,41 +1426,63 @@ export const AdminPage = () => {
 
             {/* ==================== PHOTOS TAB ==================== */}
             <TabsContent value="photos">
-              <div className="card-navy p-6">
+              <div className="card-navy p-4 md:p-6">
                 <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
                   <Camera size={20} className="text-sky-400" />
                   Galeria de Fotos ({photos.length})
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {/* Responsive grid - 1 col mobile, 2 tablet, 3-4 desktop */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {photos.slice(0, 20).map((photo) => (
-                    <div key={photo.photo_id} className="relative group bg-[#0a1929] rounded-lg overflow-hidden border border-[#1a3a5c]">
-                      <img 
-                        src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url} 
-                        alt={photo.title || photo.description} 
-                        className="w-full h-32 object-cover"
-                      />
-                      <div className="p-3">
-                        <h4 className="text-white text-sm font-medium truncate">{photo.title || 'Sem título'}</h4>
-                        <p className="text-gray-400 text-xs truncate">{photo.registration || 'Sem matrícula'} • {photo.airline || photo.aircraft_type || 'N/A'}</p>
-                        <p className="text-gray-500 text-xs">{photo.author_name || 'Autor desconhecido'}</p>
+                    <div key={photo.photo_id} className="relative group bg-[#0a1929] rounded-lg overflow-hidden border border-[#1a3a5c] flex flex-col">
+                      {/* Image Container - Fixed aspect ratio */}
+                      <div className="relative w-full pt-[75%] overflow-hidden">
+                        <img 
+                          src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url} 
+                          alt={photo.title || photo.description} 
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        {/* Edit/Delete buttons - Always visible on mobile, hover on desktop */}
+                        <div className="absolute top-2 right-2 flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => handleEditPhoto(photo)} 
+                            className="bg-sky-600/90 hover:bg-sky-500 text-white h-8 w-8 p-0"
+                            title="Editar foto"
+                          >
+                            <Edit size={16} />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => handleDeletePhoto(photo.photo_id)} 
+                            className="bg-red-600/90 hover:bg-red-500 text-white h-8 w-8 p-0"
+                            title="Deletar foto"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => handleEditPhoto(photo)} 
-                          className="bg-sky-600/80 hover:bg-sky-500 text-white h-7 w-7 p-0"
-                        >
-                          <Edit size={14} />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => handleDeletePhoto(photo.photo_id)} 
-                          className="bg-red-600/80 hover:bg-red-500 text-white h-7 w-7 p-0"
-                        >
-                          <Trash2 size={14} />
-                        </Button>
+                      {/* Info Container - Flexible height, no truncate on mobile */}
+                      <div className="p-3 flex-1 flex flex-col gap-1">
+                        <h4 className="text-white text-sm font-medium line-clamp-2">{photo.title || 'Sem título'}</h4>
+                        <p className="text-gray-400 text-xs line-clamp-1">
+                          {photo.registration || 'Sem matrícula'} • {photo.airline || photo.aircraft_type || 'N/A'}
+                        </p>
+                        <p className="text-gray-500 text-xs mt-auto">Por: {photo.author_name || 'Desconhecido'}</p>
+                        {/* Status badge */}
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`text-xs px-2 py-0.5 rounded ${
+                            photo.status === 'approved' ? 'bg-green-500/20 text-green-400' :
+                            photo.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                            'bg-yellow-500/20 text-yellow-400'
+                          }`}>
+                            {photo.status === 'approved' ? '✓ Aprovada' : 
+                             photo.status === 'rejected' ? '✗ Rejeitada' : 
+                             '⏳ Pendente'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}
