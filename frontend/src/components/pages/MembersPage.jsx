@@ -89,7 +89,9 @@ export const MembersPage = () => {
             <option value="produtor">Produtores</option>
             <option value="avaliador">Avaliadores</option>
             <option value="colaborador">Colaboradores</option>
-            <option value="membro">Membros</option>
+            <option value="spotter_cxj">Spotters CXJ</option>
+            <option value="jornalista">Jornalistas</option>
+            <option value="diretor_aeroporto">Diretores</option>
           </select>
         </div>
 
