@@ -2,31 +2,37 @@ import React from 'react';
 import { cn } from '../../lib/utils';
 
 const TAG_STYLES = {
+  spotter_cxj: 'tag-spotter-cxj',
   colaborador: 'tag-colaborador',
   vip: 'tag-vip',
   avaliador: 'tag-avaliador',
-  membro: 'tag-membro',
+  jornalista: 'tag-jornalista',
+  diretor_aeroporto: 'tag-diretor',
   lider: 'tag-lider',
   admin: 'tag-admin',
   gestao: 'tag-gestao',
   produtor: 'tag-produtor',
-  podio: 'tag-podio'
+  podio: 'tag-podio',
+  visitante: 'tag-visitante'
 };
 
 const TAG_LABELS = {
+  spotter_cxj: 'Spotter CXJ',
   colaborador: 'Colaborador',
   vip: 'VIP',
   avaliador: 'Avaliador',
-  membro: 'Membro',
+  jornalista: 'Jornalista',
+  diretor_aeroporto: 'Diretor do Aeroporto',
   lider: 'Líder',
   admin: 'Admin',
   gestao: 'Gestão',
   produtor: 'Produtor',
-  podio: 'Pódio'
+  podio: 'Pódio',
+  visitante: 'Visitante'
 };
 
 export const UserTag = ({ type, className }) => {
-  const style = TAG_STYLES[type] || TAG_STYLES.membro;
+  const style = TAG_STYLES[type] || TAG_STYLES.spotter_cxj;
   const label = TAG_LABELS[type] || type;
 
   return (
@@ -50,18 +56,22 @@ export const UserTags = ({ tags = [], className }) => {
 
 // Hierarchy levels for permission checking
 export const HIERARCHY_LEVELS = {
-  lider: 7,
-  admin: 6,
-  gestao: 5,
-  produtor: 4,
-  avaliador: 3,
-  colaborador: 2,
-  membro: 1
+  lider: 8,
+  admin: 7,
+  gestao: 6,
+  colaborador: 5,
+  vip: 4,
+  produtor: 3,
+  avaliador: 2,
+  jornalista: 2,
+  diretor_aeroporto: 2,
+  spotter_cxj: 1,
+  visitante: 0
 };
 
 export const getHighestRole = (tags = []) => {
   let highest = 0;
-  let role = 'membro';
+  let role = 'spotter_cxj';
   
   tags.forEach(tag => {
     const level = HIERARCHY_LEVELS[tag] || 0;
