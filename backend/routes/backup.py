@@ -247,15 +247,3 @@ async def scheduled_backup(db):
             "type": "automatic"
         })
         return False
-
-        sort=[("created_at", -1)]
-    )
-    
-    return {
-        "configured": creds_exist and folder_configured,
-        "credentials_path": CREDENTIALS_PATH,
-        "credentials_exist": creds_exist,
-        "folder_id": FOLDER_ID,
-        "folder_configured": folder_configured,
-        "last_backup": last_backup
-    }
