@@ -56,8 +56,8 @@ async def get_news(request: Request, news_id: str):
 
 @router.post("")
 async def create_news(request: Request):
-    """Create news article (gestao+)"""
-    user = await require_gestao(request)
+    """Create news article (jornalista+)"""
+    user = await require_news_permission(request)
     db = await get_db(request)
     body = await request.json()
     
