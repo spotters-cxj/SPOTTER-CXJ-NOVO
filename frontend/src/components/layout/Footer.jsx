@@ -7,7 +7,6 @@ import { settingsApi } from '../../services/api';
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
   const [settings, setSettings] = useState(null);
-  const [version, setVersion] = useState('1.0.0');
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -19,19 +18,10 @@ export const Footer = () => {
       }
     };
     
-    const loadVersion = async () => {
-      try {
-        const res = await fetch('/version.json');
-        const data = await res.json();
-        setVersion(data.version);
-      } catch (error) {
-        console.error('Error loading version:', error);
-      }
-    };
-    
     loadSettings();
-    loadVersion();
   }, []);
+
+  const siteVersion = settings?.site_version || '1.0.0';
 
   return (
     <footer className="relative z-20 bg-[#050d17] border-t border-[#1a2f45]">
