@@ -208,6 +208,18 @@ export const AdminPage = () => {
     }
   };
 
+  const handleDismissMissingPhoto = async (photoId) => {
+    if (!window.confirm('Remover esta foto da lista de arquivos faltantes?')) return;
+    try {
+      await photosApi.dismissMissing(photoId);
+      toast.success('Foto removida da lista');
+      loadAllData();
+    } catch (error) {
+      console.error('Error dismissing photo:', error);
+      toast.error(error.response?.data?.detail || 'Erro ao remover da lista');
+    }
+  };
+
   // ========== CREDITS FUNCTIONS ==========
   const handleCreateCredit = () => {
     setCreditForm({ name: '', role: '', description: '', instagram: '', order: 0 });
