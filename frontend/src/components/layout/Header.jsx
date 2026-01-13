@@ -192,11 +192,11 @@ export const Header = () => {
                       </Button>
                     </Link>
                   )}
-
-                  {/* Notifications */}
-                  <NotificationBell />
                 </div>
               )}
+
+              {/* Notifications - Show on all screen sizes */}
+              {user && <NotificationBell />}
 
               {/* Social Links - Desktop only */}
               <div className="hidden lg:flex items-center gap-1">
