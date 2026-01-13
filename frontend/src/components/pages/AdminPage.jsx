@@ -139,7 +139,7 @@ export const AdminPage = () => {
         evaluationApi.getQueue(),
         logsApi.getEvaluations({ limit: 100 }),
         logsApi.getEvaluationStats(),
-        backupApi.list(),
+        backupApi.history(10),
         backupApi.status(),
         creditsApi.list()
       ]);
@@ -164,7 +164,7 @@ export const AdminPage = () => {
       if (results[11].status === 'fulfilled') setEvaluationQueue(results[11].value.data || []);
       if (results[12].status === 'fulfilled') setEvaluationLogs(results[12].value.data?.evaluations || []);
       if (results[13].status === 'fulfilled') setEvaluationStats(results[13].value.data || {});
-      if (results[14].status === 'fulfilled') setBackups(results[14].value.data?.backups || []);
+      if (results[14].status === 'fulfilled') setBackups(results[14].value.data || []);
       if (results[15].status === 'fulfilled') setBackupStatus(results[15].value.data || {});
       if (results[16].status === 'fulfilled') setCredits(results[16].value.data || []);
     } catch (error) {
