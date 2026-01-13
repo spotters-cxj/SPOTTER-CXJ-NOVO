@@ -1722,7 +1722,7 @@ export const AdminPage = () => {
                       Sistema de Backup
                     </h2>
                     <p className="text-gray-400 text-sm mt-1">
-                      Backup automático a cada 6 horas. Mantém os últimos 10 backups automáticos.
+                      ✅ Backup automático a cada 1 hora para Google Drive. Todos os dados e fotos são salvos.
                     </p>
                   </div>
                   <Button 
