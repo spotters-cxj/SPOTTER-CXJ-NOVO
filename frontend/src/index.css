@@ -456,6 +456,16 @@ html {
   animation: shine 3s ease-in-out infinite;
 }
 
+.tag-jornalista {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+}
+
+.tag-diretor {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: white;
+}
+
 @keyframes neonPulse {
   0%, 100% {
     box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
