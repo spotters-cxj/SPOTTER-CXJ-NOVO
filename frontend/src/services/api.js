@@ -195,10 +195,8 @@ export const aircraftApi = {
 // Backup API
 export const backupApi = {
   create: () => api.post('/backup/create'),
-  list: () => api.get('/backup/list'),
+  history: (limit = 10) => api.get('/backup/history', { params: { limit } }),
   status: () => api.get('/backup/status'),
-  download: (filename) => `${API}/backup/download/${filename}`,
-  delete: (filename) => api.delete(`/backup/${filename}`),
 };
 
 export default api;
