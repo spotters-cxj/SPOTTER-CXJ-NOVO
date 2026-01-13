@@ -519,18 +519,38 @@ export const AdminPage = () => {
   const handleSaveMemory = async () => {
     try {
       if (editingMemory) {
-        await memoriesApi.update(editingMemory.memory_id, memoryForm);
+        // Update existing memory (JSON)
+        await memoriesApi.update(editingMemory.memory_id, {
+          title: memoryForm.title,
+          description: memoryForm.description,
+          year: memoryForm.year,
+          author: memoryForm.author
+        });
         toast.success('Recordação atualizada');
       } else {
-        await memoriesApi.create(memoryForm);
+        // Create new memory with file upload (FormData)
+        if (!memoryForm.file) {
+          toast.error('Selecione uma imagem para a recordação');
+          return;
+        }
+        
+        const formData = new FormData();
+        formData.append('title', memoryForm.title);
+        formData.append('description', memoryForm.description);
+        formData.append('year', memoryForm.year || '');
+        formData.append('author', memoryForm.author || 'Anônimo');
+        formData.append('file', memoryForm.file);
+        
+        await memoriesApi.create(formData);
         toast.success('Recordação adicionada');
       }
       setShowMemoryModal(false);
       setEditingMemory(null);
-      setMemoryForm({ title: '', content: '', image_url: '', layout: 'left', order: 0, highlight: false });
+      setMemoryForm({ title: '', description: '', year: '', author: '', file: null });
       loadAllData();
     } catch (error) {
-      toast.error('Erro ao salvar recordação');
+      console.error('Error saving memory:', error);
+      toast.error(error.response?.data?.detail || 'Erro ao salvar recordação');
     }
   };
 
