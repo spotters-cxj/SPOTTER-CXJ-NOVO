@@ -43,46 +43,50 @@ def get_drive_service():
     return service
 
 def create_mongo_dump():
-    """Create MongoDB dump"""
+    """Create MongoDB dump using JSON export (no mongodump needed)"""
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     dump_dir = f"/tmp/backup_mongo_{timestamp}"
+    os.makedirs(dump_dir, exist_ok=True)
     
-    mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017')
-    db_name = os.getenv('DB_NAME', 'test_database')
-    
-    # Extract host from mongo_url
-    host = mongo_url.replace('mongodb://', '').split('/')[0]
-    
-    # Create dump
-    try:
-        subprocess.run([
-            'mongodump',
-            '--host', host,
-            '--db', db_name,
-            '--out', dump_dir
-        ], check=True, capture_output=True)
-        
-        return dump_dir
-    except subprocess.CalledProcessError as e:
-        raise Exception(f"MongoDB dump failed: {e.stderr.decode()}")
+    # We'll export directly in the backup function using the db connection
+    return dump_dir
 
-def create_backup_zip():
+async def export_database_to_json(db, dump_dir):
+    """Export all collections to JSON files"""
+    from bson import json_util
+    import json
+    
+    collections = await db.list_collection_names()
+    
+    for col_name in collections:
+        documents = await db[col_name].find({}, {"_id": 0}).to_list(10000)
+        
+        # Write to JSON file
+        json_path = os.path.join(dump_dir, f"{col_name}.json")
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(documents, f, default=str, ensure_ascii=False, indent=2)
+    
+    return collections
+
+async def create_backup_zip_async(db):
     """Create complete backup ZIP file"""
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     backup_name = f"spotters_backup_{timestamp}.zip"
     backup_path = f"/tmp/{backup_name}"
     
-    # Create MongoDB dump
+    # Create dump directory
     dump_dir = create_mongo_dump()
+    
+    # Export database to JSON
+    collections = await export_database_to_json(db, dump_dir)
     
     # Create ZIP with everything
     with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        # Add MongoDB dump
-        for root, dirs, files in os.walk(dump_dir):
-            for file in files:
-                file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, dump_dir)
-                zipf.write(file_path, f"database/{arcname}")
+        # Add JSON dumps
+        for col_name in collections:
+            json_path = os.path.join(dump_dir, f"{col_name}.json")
+            if os.path.exists(json_path):
+                zipf.write(json_path, f"database/{col_name}.json")
         
         # Add photos
         uploads_dir = "/app/backend/uploads"
@@ -94,7 +98,8 @@ def create_backup_zip():
                     zipf.write(file_path, f"uploads/{arcname}")
     
     # Cleanup dump directory
-    subprocess.run(['rm', '-rf', dump_dir], check=False)
+    import shutil
+    shutil.rmtree(dump_dir, ignore_errors=True)
     
     return backup_path, backup_name
 
