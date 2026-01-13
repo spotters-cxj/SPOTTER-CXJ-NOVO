@@ -211,6 +211,7 @@ export const aircraftApi = {
 // Backup API
 export const backupApi = {
   create: () => api.post('/backup/create'),
+  createLocal: () => api.post('/backup/create-local', {}, { responseType: 'blob' }),
   history: (limit = 10) => api.get('/backup/history', { params: { limit } }),
   status: () => api.get('/backup/status'),
 };
