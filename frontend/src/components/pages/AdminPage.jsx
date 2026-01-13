@@ -138,7 +138,7 @@ export const AdminPage = () => {
         logsApi.list({ limit: 50 }),
         logsApi.getStats(),
         newsApi.list(50),
-        evaluationApi.getQueue(),
+        evaluationApi.getAdminQueue(),
         logsApi.getEvaluations({ limit: 100 }),
         logsApi.getEvaluationStats(),
         backupApi.history(10),
