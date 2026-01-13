@@ -94,6 +94,24 @@ export const UploadPage = () => {
     
     try {
       setLookingUp(true);
+      
+      // Try our new API first (searches our database)
+      const infoResponse = await aircraftApi.getInfo(formData.registration);
+      
+      if (infoResponse.data.aircraft_model || infoResponse.data.airline) {
+        // Found in our database
+        const updates = {};
+        if (infoResponse.data.aircraft_model) updates.aircraft_model = infoResponse.data.aircraft_model;
+        if (infoResponse.data.aircraft_type) updates.aircraft_type = infoResponse.data.aircraft_type;
+        if (infoResponse.data.airline) updates.airline = infoResponse.data.airline;
+        
+        setFormData(prev => ({ ...prev, ...updates }));
+        toast.success(`✈️ Informações encontradas no banco de dados!`);
+        setLookingUp(false);
+        return;
+      }
+      
+      // Fallback to old lookup
       const response = await aircraftApi.lookup(formData.registration);
       
       if (response.data.found) {
@@ -114,7 +132,7 @@ export const UploadPage = () => {
         setFormData(prev => ({ ...prev, ...updates }));
       } else {
         setSuggestedModels([]);
-        toast.info('Matrícula não encontrada no banco local. Preencha manualmente.');
+        toast.info('Matrícula não encontrada. Preencha manualmente.');
       }
     } catch (error) {
       console.error('Error looking up registration:', error);
