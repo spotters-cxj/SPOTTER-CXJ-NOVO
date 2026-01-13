@@ -9,13 +9,21 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import asyncio
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv('/app/backend/.env')
 
 router = APIRouter(prefix="/backup", tags=["backup"])
 
 # Google Drive configuration
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
-CREDENTIALS_PATH = os.getenv('GOOGLE_CREDENTIALS_PATH', '/app/backend/google_credentials.json')
-FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID')
+
+def get_credentials_path():
+    return os.environ.get('GOOGLE_CREDENTIALS_PATH', '/app/backend/google_credentials.json')
+
+def get_folder_id():
+    return os.environ.get('GOOGLE_DRIVE_FOLDER_ID', '')
 
 async def get_db(request: Request):
     return request.app.state.db
