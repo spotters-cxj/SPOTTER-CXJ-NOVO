@@ -114,13 +114,24 @@ def upload_to_drive(file_path, file_name):
     
     media = MediaFileUpload(file_path, resumable=True)
     
-    file = service.files().create(
-        body=file_metadata,
-        media_body=media,
-        fields='id, name, webViewLink'
-    ).execute()
-    
-    return file
+    try:
+        file = service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id, name, webViewLink'
+        ).execute()
+        
+        return file
+    except Exception as e:
+        error_message = str(e)
+        if 'storageQuotaExceeded' in error_message or 'storage quota' in error_message.lower():
+            raise Exception(
+                "A Service Account não tem cota de armazenamento. "
+                "SOLUÇÃO: Compartilhe a pasta do Google Drive com a Service Account "
+                "(email encontrado em google_credentials.json 'client_email') "
+                "e dê permissão de 'Editor'."
+            )
+        raise
 
 @router.post("/create")
 async def create_backup(request: Request, background_tasks: BackgroundTasks):
