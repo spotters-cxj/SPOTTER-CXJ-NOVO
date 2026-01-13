@@ -46,7 +46,7 @@ async def create_memory(
     db = await get_db(request)
     
     # Validate file
-    if not file.content_type or not file.content_type.startsWith('image/'):
+    if not file.content_type or not file.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail="Apenas imagens são permitidas")
     
     # Read and validate
