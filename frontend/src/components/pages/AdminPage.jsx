@@ -2124,33 +2124,46 @@ export const AdminPage = () => {
 
               {/* Create Backup */}
               <div className="card-navy p-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
                   <div>
                     <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                       <HardDrive size={20} className="text-green-400" />
                       Sistema de Backup
                     </h2>
                     <p className="text-gray-400 text-sm mt-1">
-                      ✅ Backup automático a cada 1 hora para Google Drive. Todos os dados e fotos são salvos.
+                      Backup automático a cada 6 horas. Todos os dados e fotos são salvos.
                     </p>
                   </div>
-                  <Button 
-                    onClick={handleCreateBackup} 
-                    disabled={creatingBackup}
-                    className="btn-accent"
-                  >
-                    {creatingBackup ? (
-                      <>
-                        <RefreshCw size={16} className="mr-2 animate-spin" />
-                        Criando...
-                      </>
-                    ) : (
-                      <>
-                        <Plus size={16} className="mr-2" />
-                        Criar Backup Manual
-                      </>
-                    )}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleCreateBackup} 
+                      disabled={creatingBackup}
+                      className="btn-accent"
+                      title="Enviar para Google Drive"
+                    >
+                      {creatingBackup ? (
+                        <>
+                          <RefreshCw size={16} className="mr-2 animate-spin" />
+                          Criando...
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={16} className="mr-2" />
+                          Backup Google Drive
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      onClick={handleCreateLocalBackup} 
+                      disabled={creatingBackup}
+                      variant="outline"
+                      className="border-sky-500 text-sky-400 hover:bg-sky-500/20"
+                      title="Baixar backup diretamente"
+                    >
+                      <Download size={16} className="mr-2" />
+                      Backup Local
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Backup List */}
