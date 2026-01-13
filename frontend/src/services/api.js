@@ -79,7 +79,7 @@ export const photosApi = {
   reupload: (photoId, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post(`/photos/${photoId}/reupload`, formData, {
+    return api.post(`/photos/reupload/${photoId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
