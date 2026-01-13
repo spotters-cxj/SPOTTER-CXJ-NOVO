@@ -710,6 +710,9 @@ export const AdminPage = () => {
               <TabsTrigger value="credits" className="data-[state=active]:bg-sky-600">
                 <Award size={16} className="mr-2" />Créditos
               </TabsTrigger>
+              <TabsTrigger value="memories" className="data-[state=active]:bg-sky-600">
+                <Sparkles size={16} className="mr-2" />Recordações
+              </TabsTrigger>
               <TabsTrigger value="photos" className="data-[state=active]:bg-sky-600">
                 <Camera size={16} className="mr-2" />Galeria
               </TabsTrigger>
