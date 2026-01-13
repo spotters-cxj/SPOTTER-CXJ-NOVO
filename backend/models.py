@@ -38,6 +38,8 @@ HIERARCHY_LEVELS = {
     "vip": 4,
     "produtor": 3,
     "avaliador": 2,  # Avaliador tem nível baixo, mas a TAG permite avaliar
+    "diretor_aeroporto": 2,  # Pode editar informações do aeroporto
+    "jornalista": 2,  # Pode adicionar notícias
     "spotter_cxj": 1,
     "visitante": 0
 }
