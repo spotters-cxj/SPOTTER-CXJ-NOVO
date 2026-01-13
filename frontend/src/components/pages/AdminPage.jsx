@@ -782,6 +782,18 @@ export const AdminPage = () => {
 
             {/* ==================== MEMBERS TAB ==================== */}
             <TabsContent value="members" className="space-y-6">
+              {/* Error message if users not loaded */}
+              {users.length === 0 && !loading && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle size={20} className="text-red-400" />
+                    <span className="text-red-400 font-medium">
+                      Não foi possível carregar os membros. Verifique se você está logado com permissões de administração.
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Pending Users */}
               {pendingUsers.length > 0 && (
                 <div className="card-navy p-6">
