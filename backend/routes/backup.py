@@ -1,292 +1,209 @@
-from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
 from datetime import datetime, timezone
-from models import HIERARCHY_LEVELS, get_highest_role_level
-import json
 import os
+import json
+import subprocess
+import zipfile
+from pathlib import Path
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 import asyncio
-import logging
 
 router = APIRouter(prefix="/backup", tags=["backup"])
-logger = logging.getLogger(__name__)
 
-BACKUP_DIR = "/app/backend/backups"
+# Google Drive configuration
+SCOPES = ['https://www.googleapis.com/auth/drive.file']
+CREDENTIALS_PATH = os.getenv('GOOGLE_CREDENTIALS_PATH', '/app/backend/google_credentials.json')
+FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID')
 
 async def get_db(request: Request):
     return request.app.state.db
 
-async def get_current_user(request: Request):
-    from routes.auth import get_current_user as auth_get_user
-    return await auth_get_user(request)
-
 async def require_admin(request: Request):
-    """Require admin level or higher"""
+    from routes.auth import get_current_user
+    from models import HIERARCHY_LEVELS, get_highest_role_level
     user = await get_current_user(request)
     user_level = get_highest_role_level(user.get("tags", []))
     if user_level < HIERARCHY_LEVELS["admin"]:
-        raise HTTPException(status_code=403, detail="Acesso restrito a administradores")
+        raise HTTPException(status_code=403, detail="Admin access required")
     return user
 
-def ensure_backup_dir():
-    """Ensure backup directory exists"""
-    os.makedirs(BACKUP_DIR, exist_ok=True)
-
-async def create_backup(db, backup_type: str = "manual") -> dict:
-    """Create a backup of all collections"""
-    ensure_backup_dir()
+def get_drive_service():
+    """Initialize Google Drive API service"""
+    if not os.path.exists(CREDENTIALS_PATH):
+        raise HTTPException(status_code=500, detail="Google credentials not found")
     
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    backup_data = {
-        "backup_id": f"backup_{timestamp}",
-        "type": backup_type,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "collections": {}
+    credentials = service_account.Credentials.from_service_account_file(
+        CREDENTIALS_PATH, 
+        scopes=SCOPES
+    )
+    service = build('drive', 'v3', credentials=credentials)
+    return service
+
+def create_mongo_dump():
+    """Create MongoDB dump"""
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    dump_dir = f"/tmp/backup_mongo_{timestamp}"
+    
+    mongo_url = os.getenv('MONGO_URL', 'mongodb://localhost:27017')
+    db_name = os.getenv('DB_NAME', 'test_database')
+    
+    # Extract host from mongo_url
+    host = mongo_url.replace('mongodb://', '').split('/')[0]
+    
+    # Create dump
+    try:
+        subprocess.run([
+            'mongodump',
+            '--host', host,
+            '--db', db_name,
+            '--out', dump_dir
+        ], check=True, capture_output=True)
+        
+        return dump_dir
+    except subprocess.CalledProcessError as e:
+        raise Exception(f"MongoDB dump failed: {e.stderr.decode()}")
+
+def create_backup_zip():
+    """Create complete backup ZIP file"""
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    backup_name = f"spotters_backup_{timestamp}.zip"
+    backup_path = f"/tmp/{backup_name}"
+    
+    # Create MongoDB dump
+    dump_dir = create_mongo_dump()
+    
+    # Create ZIP with everything
+    with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        # Add MongoDB dump
+        for root, dirs, files in os.walk(dump_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, dump_dir)
+                zipf.write(file_path, f"database/{arcname}")
+        
+        # Add photos
+        uploads_dir = "/app/backend/uploads"
+        if os.path.exists(uploads_dir):
+            for root, dirs, files in os.walk(uploads_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, uploads_dir)
+                    zipf.write(file_path, f"uploads/{arcname}")
+    
+    # Cleanup dump directory
+    subprocess.run(['rm', '-rf', dump_dir], check=False)
+    
+    return backup_path, backup_name
+
+def upload_to_drive(file_path, file_name):
+    """Upload backup to Google Drive"""
+    service = get_drive_service()
+    
+    file_metadata = {
+        'name': file_name,
+        'parents': [FOLDER_ID]
     }
     
-    # Collections to backup
-    collections = [
-        "users", "photos", "evaluations", "comments", "public_ratings",
-        "notifications", "news", "leaders", "memories", "settings",
-        "pages", "stats", "airport_timeline", "spotters_milestones",
-        "audit_logs", "user_sessions", "gallery", "security_logs"
-    ]
+    media = MediaFileUpload(file_path, resumable=True)
     
-    for collection_name in collections:
-        try:
-            collection = db[collection_name]
-            documents = await collection.find({}, {"_id": 0}).to_list(None)
-            backup_data["collections"][collection_name] = {
-                "count": len(documents),
-                "documents": documents
-            }
-            logger.info(f"Backup: {collection_name} - {len(documents)} documentos")
-        except Exception as e:
-            logger.error(f"Erro ao fazer backup de {collection_name}: {e}")
-            backup_data["collections"][collection_name] = {
-                "count": 0,
-                "documents": [],
-                "error": str(e)
-            }
+    file = service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields='id, name, webViewLink'
+    ).execute()
     
-    # Save to file
-    filename = f"backup_{timestamp}_{backup_type}.json"
-    filepath = os.path.join(BACKUP_DIR, filename)
-    
-    # Custom JSON encoder for datetime
-    class DateTimeEncoder(json.JSONEncoder):
-        def default(self, obj):
-            if isinstance(obj, datetime):
-                return obj.isoformat()
-            return super().default(obj)
-    
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(backup_data, f, cls=DateTimeEncoder, ensure_ascii=False, indent=2)
-    
-    # Get file size
-    file_size = os.path.getsize(filepath)
-    
-    backup_data["filename"] = filename
-    backup_data["filepath"] = filepath
-    backup_data["file_size"] = file_size
-    backup_data["file_size_mb"] = round(file_size / (1024 * 1024), 2)
-    
-    logger.info(f"Backup criado: {filename} ({backup_data['file_size_mb']} MB)")
-    
-    return backup_data
+    return file
 
 @router.post("/create")
-async def create_backup_endpoint(request: Request):
-    """Create a manual backup (admin only)"""
+async def create_backup(request: Request, background_tasks: BackgroundTasks):
+    """Create and upload backup to Google Drive (admin only)"""
     user = await require_admin(request)
-    db = await get_db(request)
+    
+    if not FOLDER_ID:
+        raise HTTPException(
+            status_code=500, 
+            detail="Google Drive folder ID not configured"
+        )
     
     try:
-        backup_info = await create_backup(db, "manual")
+        # Create backup ZIP
+        backup_path, backup_name = create_backup_zip()
         
-        # Log the action
-        from routes.logs import create_audit_log
-        await create_audit_log(
-            db,
-            admin_id=user["user_id"],
-            admin_name=user["name"],
-            action="create",
-            entity_type="backup",
-            entity_id=backup_info["backup_id"],
-            entity_name=backup_info["filename"],
-            details=f"Backup manual criado: {backup_info['file_size_mb']} MB",
-            admin_email=user.get("email")
-        )
+        # Upload to Google Drive
+        result = upload_to_drive(backup_path, backup_name)
+        
+        # Cleanup local file
+        os.remove(backup_path)
+        
+        # Log backup
+        db = await get_db(request)
+        await db.backup_logs.insert_one({
+            "backup_id": result['id'],
+            "filename": backup_name,
+            "created_by": user['user_id'],
+            "created_by_name": user['name'],
+            "created_at": datetime.now(timezone.utc),
+            "drive_link": result.get('webViewLink'),
+            "status": "success"
+        })
         
         return {
-            "success": True,
-            "message": "Backup criado com sucesso",
-            "backup_id": backup_info["backup_id"],
-            "filename": backup_info["filename"],
-            "file_size_mb": backup_info["file_size_mb"],
-            "collections": {k: v["count"] for k, v in backup_info["collections"].items()},
-            "created_at": backup_info["created_at"]
+            "message": "Backup criado e enviado para Google Drive com sucesso!",
+            "filename": backup_name,
+            "drive_link": result.get('webViewLink'),
+            "file_id": result['id']
         }
+        
     except Exception as e:
-        logger.error(f"Erro ao criar backup: {e}")
+        # Log error
+        db = await get_db(request)
+        await db.backup_logs.insert_one({
+            "filename": "error",
+            "created_by": user['user_id'],
+            "created_at": datetime.now(timezone.utc),
+            "status": "error",
+            "error": str(e)
+        })
+        
         raise HTTPException(status_code=500, detail=f"Erro ao criar backup: {str(e)}")
 
-@router.get("/download/{filename}")
-async def download_backup(request: Request, filename: str):
-    """Download a backup file (admin only)"""
+@router.get("/history")
+async def get_backup_history(request: Request, limit: int = 10):
+    """Get backup history (admin only)"""
     await require_admin(request)
-    
-    filepath = os.path.join(BACKUP_DIR, filename)
-    
-    if not os.path.exists(filepath):
-        raise HTTPException(status_code=404, detail="Arquivo de backup não encontrado")
-    
-    # Security check - prevent directory traversal
-    if ".." in filename or "/" in filename:
-        raise HTTPException(status_code=400, detail="Nome de arquivo inválido")
-    
-    def iterfile():
-        with open(filepath, "rb") as f:
-            yield from f
-    
-    return StreamingResponse(
-        iterfile(),
-        media_type="application/json",
-        headers={
-            "Content-Disposition": f"attachment; filename={filename}",
-            "Content-Length": str(os.path.getsize(filepath))
-        }
-    )
-
-@router.get("/list")
-async def list_backups(request: Request):
-    """List all available backups (admin only)"""
-    await require_admin(request)
-    
-    ensure_backup_dir()
-    
-    backups = []
-    for filename in os.listdir(BACKUP_DIR):
-        if filename.endswith(".json") and filename.startswith("backup_"):
-            filepath = os.path.join(BACKUP_DIR, filename)
-            stat = os.stat(filepath)
-            backups.append({
-                "filename": filename,
-                "size_bytes": stat.st_size,
-                "size_mb": round(stat.st_size / (1024 * 1024), 2),
-                "created_at": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat()
-            })
-    
-    # Sort by date descending
-    backups.sort(key=lambda x: x["created_at"], reverse=True)
-    
-    return {
-        "backups": backups,
-        "total": len(backups),
-        "backup_directory": BACKUP_DIR
-    }
-
-@router.delete("/{filename}")
-async def delete_backup(request: Request, filename: str):
-    """Delete a backup file (admin only)"""
-    user = await require_admin(request)
     db = await get_db(request)
     
-    filepath = os.path.join(BACKUP_DIR, filename)
+    logs = await db.backup_logs.find(
+        {}, 
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
     
-    if not os.path.exists(filepath):
-        raise HTTPException(status_code=404, detail="Arquivo de backup não encontrado")
-    
-    # Security check
-    if ".." in filename or "/" in filename:
-        raise HTTPException(status_code=400, detail="Nome de arquivo inválido")
-    
-    os.remove(filepath)
-    
-    # Log the action
-    from routes.logs import create_audit_log
-    await create_audit_log(
-        db,
-        admin_id=user["user_id"],
-        admin_name=user["name"],
-        action="delete",
-        entity_type="backup",
-        entity_name=filename,
-        details=f"Backup excluído: {filename}",
-        admin_email=user.get("email")
-    )
-    
-    return {"success": True, "message": f"Backup {filename} excluído"}
+    return logs
 
 @router.get("/status")
 async def get_backup_status(request: Request):
     """Get backup system status (admin only)"""
     await require_admin(request)
     
-    ensure_backup_dir()
+    # Check if credentials exist
+    creds_exist = os.path.exists(CREDENTIALS_PATH)
+    folder_configured = bool(FOLDER_ID)
     
     # Get last backup
-    backups = []
-    for filename in os.listdir(BACKUP_DIR):
-        if filename.endswith(".json") and filename.startswith("backup_"):
-            filepath = os.path.join(BACKUP_DIR, filename)
-            stat = os.stat(filepath)
-            backups.append({
-                "filename": filename,
-                "created_at": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc)
-            })
-    
-    backups.sort(key=lambda x: x["created_at"], reverse=True)
-    
-    last_backup = backups[0] if backups else None
-    
-    # Calculate total size
-    total_size = sum(
-        os.path.getsize(os.path.join(BACKUP_DIR, f)) 
-        for f in os.listdir(BACKUP_DIR) 
-        if f.endswith(".json")
+    db = await get_db(request)
+    last_backup = await db.backup_logs.find_one(
+        {"status": "success"}, 
+        {"_id": 0},
+        sort=[("created_at", -1)]
     )
     
     return {
-        "enabled": True,
-        "backup_directory": BACKUP_DIR,
-        "total_backups": len(backups),
-        "total_size_mb": round(total_size / (1024 * 1024), 2),
-        "last_backup": {
-            "filename": last_backup["filename"],
-            "created_at": last_backup["created_at"].isoformat()
-        } if last_backup else None
+        "configured": creds_exist and folder_configured,
+        "credentials_path": CREDENTIALS_PATH,
+        "credentials_exist": creds_exist,
+        "folder_id": FOLDER_ID,
+        "folder_configured": folder_configured,
+        "last_backup": last_backup
     }
-
-# Função para backup automático (chamada por scheduler)
-async def scheduled_backup(db):
-    """Create an automatic scheduled backup"""
-    try:
-        backup_info = await create_backup(db, "automatic")
-        logger.info(f"Backup automático concluído: {backup_info['filename']}")
-        
-        # Limpar backups antigos (manter últimos 10)
-        ensure_backup_dir()
-        backups = []
-        for filename in os.listdir(BACKUP_DIR):
-            if filename.endswith(".json") and "automatic" in filename:
-                filepath = os.path.join(BACKUP_DIR, filename)
-                stat = os.stat(filepath)
-                backups.append({
-                    "filename": filename,
-                    "filepath": filepath,
-                    "created_at": stat.st_mtime
-                })
-        
-        # Sort by date and remove old ones
-        backups.sort(key=lambda x: x["created_at"], reverse=True)
-        for old_backup in backups[10:]:
-            try:
-                os.remove(old_backup["filepath"])
-                logger.info(f"Backup antigo removido: {old_backup['filename']}")
-            except Exception as e:
-                logger.error(f"Erro ao remover backup antigo: {e}")
-        
-        return backup_info
-    except Exception as e:
-        logger.error(f"Erro no backup automático: {e}")
-        return None
