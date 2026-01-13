@@ -405,6 +405,30 @@ async def reupload_photo_file(
     
     return {"message": "Arquivo reenviado com sucesso", "photo_id": photo_id, "url": new_url}
 
+@router.post("/dismiss-missing/{photo_id}")
+async def dismiss_missing_photo(request: Request, photo_id: str):
+    """Mark a photo as dismissed from missing files list - Admin only"""
+    user = await get_current_user(request)
+    db = await get_db(request)
+    
+    # Check admin permission
+    user_tags = user.get("tags", [])
+    if not any(tag in user_tags for tag in ["admin", "gestao", "lider"]):
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    
+    # Get existing photo
+    photo = await db.photos.find_one({"photo_id": photo_id}, {"_id": 0})
+    if not photo:
+        raise HTTPException(status_code=404, detail="Foto não encontrada")
+    
+    # Mark as dismissed (won't appear in missing files list)
+    await db.photos.update_one(
+        {"photo_id": photo_id}, 
+        {"$set": {"missing_dismissed": True, "updated_at": datetime.now(timezone.utc)}}
+    )
+    
+    return {"message": "Foto removida da lista de arquivos faltantes", "photo_id": photo_id}
+
 @router.get("/{photo_id}")
 async def get_photo(request: Request, photo_id: str):
     """Get single photo details"""
