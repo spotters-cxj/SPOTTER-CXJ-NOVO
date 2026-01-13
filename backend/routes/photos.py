@@ -181,6 +181,14 @@ async def upload_photo(
         queue_position = pending_count + 1
         priority = False
     
+    # Check if user has auto-approve permission (avaliador, admin, gestao, lider)
+    auto_approve_tags = ["avaliador", "admin", "gestao", "lider"]
+    has_auto_approve = any(tag in user_data.get("tags", []) for tag in auto_approve_tags)
+    
+    # Set status based on permissions
+    photo_status = "approved" if has_auto_approve else "pending"
+    approved_at = datetime.now(timezone.utc) if has_auto_approve else None
+    
     # Create photo record
     photo_data = {
         "photo_id": photo_id,
@@ -195,16 +203,17 @@ async def upload_photo(
         "photo_date": photo_date,
         "author_id": user["user_id"],
         "author_name": user["name"],
-        "status": "pending",
-        "queue_position": queue_position,
+        "status": photo_status,
+        "queue_position": queue_position if not has_auto_approve else None,
         "priority": priority,
-        "final_rating": None,
-        "rating_count": 0,
-        "public_rating": 0.0,
-        "public_rating_count": 0,
+        "final_rating": 5.0 if has_auto_approve else None,  # Auto 5 estrelas
+        "rating_count": 1 if has_auto_approve else 0,
+        "public_rating": 5.0 if has_auto_approve else 0.0,
+        "public_rating_count": 1 if has_auto_approve else 0,
         "comments_count": 0,
         "views": 0,
-        "created_at": datetime.now(timezone.utc)
+        "created_at": datetime.now(timezone.utc),
+        "approved_at": approved_at
     }
     
     await db.photos.insert_one(photo_data)
