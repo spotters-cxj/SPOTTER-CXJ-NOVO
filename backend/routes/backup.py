@@ -161,6 +161,38 @@ def upload_to_drive(file_path, file_name):
             )
         raise
 
+@router.post("/create-local")
+async def create_local_backup(request: Request):
+    """Create backup and return download link (gestao only) - Alternative when Google Drive fails"""
+    from fastapi.responses import FileResponse
+    
+    user = await require_gestao(request)
+    db = await get_db(request)
+    
+    try:
+        # Create backup ZIP
+        backup_path, backup_name = await create_backup_zip_async(db)
+        
+        # Log backup
+        await db.backup_logs.insert_one({
+            "backup_id": f"local_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "filename": backup_name,
+            "created_by": user['user_id'],
+            "created_by_name": user['name'],
+            "created_at": datetime.now(timezone.utc),
+            "status": "success",
+            "type": "local"
+        })
+        
+        return FileResponse(
+            path=backup_path,
+            filename=backup_name,
+            media_type="application/zip"
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao criar backup: {str(e)}")
+
 @router.post("/create")
 async def create_backup(request: Request, background_tasks: BackgroundTasks):
     """Create and upload backup to Google Drive (gestao only)"""
