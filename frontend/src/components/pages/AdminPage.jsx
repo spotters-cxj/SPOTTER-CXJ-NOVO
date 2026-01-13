@@ -212,6 +212,19 @@ export const AdminPage = () => {
   };
 
   const handleDeleteCredit = async (memberId) => {
+
+
+  const handleDeleteMemory = async (memoryId) => {
+    if (!window.confirm('Tem certeza que deseja excluir esta recordação?')) return;
+    try {
+      await memoriesApi.delete(memoryId);
+      toast.success('Recordação excluída');
+      loadAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erro ao excluir recordação');
+    }
+  };
+
     if (!confirm('Remover este membro dos créditos?')) return;
     try {
       await creditsApi.delete(memberId);
