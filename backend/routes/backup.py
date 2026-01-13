@@ -120,7 +120,7 @@ def upload_to_drive(file_path, file_name):
 @router.post("/create")
 async def create_backup(request: Request, background_tasks: BackgroundTasks):
     """Create and upload backup to Google Drive (admin only)"""
-    user = await require_admin(request)
+    user = await require_gestao(request)
     
     if not FOLDER_ID:
         raise HTTPException(
@@ -173,7 +173,7 @@ async def create_backup(request: Request, background_tasks: BackgroundTasks):
 @router.get("/history")
 async def get_backup_history(request: Request, limit: int = 10):
     """Get backup history (admin only)"""
-    await require_admin(request)
+    await require_gestao(request)
     db = await get_db(request)
     
     logs = await db.backup_logs.find(
@@ -186,7 +186,7 @@ async def get_backup_history(request: Request, limit: int = 10):
 @router.get("/status")
 async def get_backup_status(request: Request):
     """Get backup system status (admin only)"""
-    await require_admin(request)
+    await require_gestao(request)
     
     # Check if credentials exist
     creds_exist = os.path.exists(CREDENTIALS_PATH)
