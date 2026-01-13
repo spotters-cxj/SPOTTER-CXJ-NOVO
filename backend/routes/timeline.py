@@ -18,6 +18,18 @@ async def require_admin(request: Request):
         raise HTTPException(status_code=403, detail="Gestao access required")
     return user
 
+async def require_airport_permission(request: Request):
+    """Require diretor_aeroporto, lider, admin or gestao"""
+    from routes.auth import get_current_user
+    user = await get_current_user(request)
+    allowed_tags = ["diretor_aeroporto", "lider", "admin", "gestao"]
+    if not any(tag in user.get("tags", []) for tag in allowed_tags):
+        raise HTTPException(
+            status_code=403, 
+            detail="Apenas diretores do aeroporto ou administradores podem gerenciar informações do aeroporto"
+        )
+    return user
+
 async def require_admin_principal(request: Request):
     from routes.auth import get_current_user
     from models import HIERARCHY_LEVELS, get_highest_role_level
