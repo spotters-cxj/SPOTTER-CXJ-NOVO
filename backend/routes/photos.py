@@ -320,8 +320,11 @@ async def check_missing_files(request: Request):
     if not any(tag in user_tags for tag in ["admin", "gestao", "lider"]):
         raise HTTPException(status_code=403, detail="Acesso negado")
     
-    # Get all photos
-    photos = await db.photos.find({}, {"_id": 0}).to_list(1000)
+    # Get all photos (excluding dismissed ones)
+    photos = await db.photos.find(
+        {"missing_dismissed": {"$ne": True}}, 
+        {"_id": 0}
+    ).to_list(1000)
     
     missing_files = []
     existing_files = []
