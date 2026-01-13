@@ -1448,18 +1448,66 @@ export const AdminPage = () => {
             {/* ==================== MEMORIES TAB (RECORDAÇÕES) ==================== */}
             <TabsContent value="memories">
               <div className="card-navy p-4 md:p-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                    <Sparkles size={20} className="text-sky-400" />
-                    Recordações do Aeroporto ({memories.length})
-                  </h2>
-                  <Button 
-                    onClick={() => setIsMemoryModalOpen(true)}
-                    className="bg-sky-600 hover:bg-sky-500"
-                  >
-                    <Plus size={16} className="mr-2" />
-                    Nova Recordação
-                  </Button>
+                <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                  <Sparkles size={20} className="text-sky-400" />
+                  Recordações do Aeroporto ({memories.length})
+                </h2>
+
+                {/* Add/Edit Form */}
+                <div className="bg-[#0a1929] p-4 rounded-lg border border-[#1a3a5c] mb-6">
+                  <h3 className="text-white text-sm font-medium mb-3">
+                    {editingMemory ? 'Editar Recordação' : 'Nova Recordação'}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Input 
+                      placeholder="Título *" 
+                      value={memoryForm.title || ''} 
+                      onChange={(e) => setMemoryForm({...memoryForm, title: e.target.value})}
+                      className="bg-[#102a43] border-[#1a3a5c] text-white"
+                    />
+                    <Input 
+                      placeholder="Ano (ex: 1950)" 
+                      value={memoryForm.year || ''} 
+                      onChange={(e) => setMemoryForm({...memoryForm, year: e.target.value})}
+                      className="bg-[#102a43] border-[#1a3a5c] text-white"
+                    />
+                    <Input 
+                      placeholder="Autor da foto *" 
+                      value={memoryForm.author || ''} 
+                      onChange={(e) => setMemoryForm({...memoryForm, author: e.target.value})}
+                      className="bg-[#102a43] border-[#1a3a5c] text-white"
+                    />
+                    <Input 
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) setMemoryForm({...memoryForm, file});
+                      }}
+                      className="bg-[#102a43] border-[#1a3a5c] text-white"
+                    />
+                  </div>
+                  <Textarea 
+                    placeholder="Descrição *" 
+                    value={memoryForm.description || ''} 
+                    onChange={(e) => setMemoryForm({...memoryForm, description: e.target.value})}
+                    className="bg-[#102a43] border-[#1a3a5c] text-white mt-3"
+                    rows={3}
+                  />
+                  <div className="flex gap-2 mt-3">
+                    <Button onClick={handleSaveMemory} disabled={!memoryForm.title || !memoryForm.description}>
+                      <Save size={16} className="mr-2" />
+                      {editingMemory ? 'Salvar Alterações' : 'Adicionar'}
+                    </Button>
+                    {editingMemory && (
+                      <Button variant="ghost" onClick={() => {
+                        setEditingMemory(null);
+                        setMemoryForm({ title: '', description: '', year: '', author: '', file: null });
+                      }}>
+                        Cancelar
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Memories Grid */}
@@ -1479,8 +1527,14 @@ export const AdminPage = () => {
                             size="sm" 
                             variant="ghost" 
                             onClick={() => {
-                              setMemoryForm(memory);
-                              setIsMemoryModalOpen(true);
+                              setEditingMemory(memory);
+                              setMemoryForm({
+                                title: memory.title,
+                                description: memory.description,
+                                year: memory.year,
+                                author: memory.author,
+                                file: null
+                              });
                             }} 
                             className="bg-sky-600/90 hover:bg-sky-500 text-white h-8 w-8 p-0"
                             title="Editar recordação"
