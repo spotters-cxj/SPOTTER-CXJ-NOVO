@@ -18,6 +18,7 @@ async def require_admin(request: Request):
 
 # Default settings
 DEFAULT_SETTINGS = {
+    "site_version": "1.0.0",
     "google_form_link": "",
     "instagram_url": "https://instagram.com/spotterscxj",
     "instagram_handle": "@spotterscxj",
