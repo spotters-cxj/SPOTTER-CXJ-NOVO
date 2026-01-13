@@ -1430,6 +1430,83 @@ export const AdminPage = () => {
               </div>
             </TabsContent>
 
+
+
+            {/* ==================== MEMORIES TAB (RECORDAÇÕES) ==================== */}
+            <TabsContent value="memories">
+              <div className="card-navy p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                    <Sparkles size={20} className="text-sky-400" />
+                    Recordações do Aeroporto ({memories.length})
+                  </h2>
+                  <Button 
+                    onClick={() => setIsMemoryModalOpen(true)}
+                    className="bg-sky-600 hover:bg-sky-500"
+                  >
+                    <Plus size={16} className="mr-2" />
+                    Nova Recordação
+                  </Button>
+                </div>
+
+                {/* Memories Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {memories.map((memory) => (
+                    <div key={memory.memory_id} className="relative group bg-[#0a1929] rounded-lg overflow-hidden border border-[#1a3a5c] flex flex-col">
+                      {/* Image */}
+                      <div className="relative w-full pt-[75%] overflow-hidden">
+                        <img 
+                          src={memory.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${memory.url}` : memory.url} 
+                          alt={memory.title} 
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        {/* Edit/Delete buttons */}
+                        <div className="absolute top-2 right-2 flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => {
+                              setMemoryForm(memory);
+                              setIsMemoryModalOpen(true);
+                            }} 
+                            className="bg-sky-600/90 hover:bg-sky-500 text-white h-8 w-8 p-0"
+                            title="Editar recordação"
+                          >
+                            <Edit size={16} />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => handleDeleteMemory(memory.memory_id)} 
+                            className="bg-red-600/90 hover:bg-red-500 text-white h-8 w-8 p-0"
+                            title="Deletar recordação"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+                      </div>
+                      {/* Info */}
+                      <div className="p-3 flex-1 flex flex-col gap-1">
+                        <h4 className="text-white text-sm font-medium line-clamp-2">{memory.title}</h4>
+                        <p className="text-gray-400 text-xs line-clamp-2">{memory.description}</p>
+                        <div className="flex justify-between items-center mt-auto pt-2">
+                          <span className="text-sky-400 text-xs">{memory.year}</span>
+                          <span className="text-gray-500 text-xs">Por: {memory.author}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {memories.length === 0 && (
+                  <div className="text-center py-12 text-gray-500">
+                    <Sparkles size={48} className="mx-auto mb-4 opacity-50" />
+                    <p>Nenhuma recordação adicionada ainda</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
             {/* ==================== PHOTOS TAB ==================== */}
             <TabsContent value="photos">
               <div className="card-navy p-4 md:p-6">
