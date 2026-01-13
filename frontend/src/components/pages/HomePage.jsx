@@ -6,6 +6,7 @@ import { pagesApi, settingsApi, galleryApi, statsApi, rankingApi } from '../../s
 import { Button } from '../ui/button';
 import { NewsCarousel } from '../ui/NewsCarousel';
 import { CollaboratorCarousel } from '../ui/CollaboratorCarousel';
+import { PhotoCarousel } from '../ui/PhotoCarousel';
 import { Podium } from '../ui/Podium';
 
 export const HomePage = () => {
