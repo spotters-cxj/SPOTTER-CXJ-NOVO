@@ -142,10 +142,14 @@ export const statsApi = {
 // News API
 export const newsApi = {
   list: (limit = 20) => api.get('/news', { params: { limit } }),
+  listAll: (limit = 50) => api.get('/news/all', { params: { limit } }),
+  listDrafts: (limit = 50) => api.get('/news/drafts', { params: { limit } }),
   get: (newsId) => api.get(`/news/${newsId}`),
   create: (data) => api.post('/news', data),
   update: (newsId, data) => api.put(`/news/${newsId}`, data),
   delete: (newsId) => api.delete(`/news/${newsId}`),
+  publish: (newsId) => api.put(`/news/${newsId}`, { published: true }),
+  unpublish: (newsId) => api.put(`/news/${newsId}`, { published: false }),
 };
 
 // Members API
