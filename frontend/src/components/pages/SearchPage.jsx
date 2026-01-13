@@ -14,7 +14,9 @@ const AVAILABLE_TAGS = [
   { value: 'avaliador', label: 'Avaliador', icon: '✅' },
   { value: 'colaborador', label: 'Colaborador', icon: '⭐' },
   { value: 'vip', label: 'VIP', icon: '💎' },
-  { value: 'membro', label: 'Membro', icon: '👤' },
+  { value: 'spotter_cxj', label: 'Spotter CXJ', icon: '✈️' },
+  { value: 'jornalista', label: 'Jornalista', icon: '📰' },
+  { value: 'diretor_aeroporto', label: 'Diretor do Aeroporto', icon: '🏢' },
 ];
 
 export const SearchPage = () => {
