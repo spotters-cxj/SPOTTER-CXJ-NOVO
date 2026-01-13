@@ -938,24 +938,74 @@ export const AdminPage = () => {
             {/* ==================== NEWS TAB ==================== */}
             <TabsContent value="news" className="space-y-6">
               <div className="card-navy p-6">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                   <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                     <Newspaper className="text-sky-400" size={20} />
                     Notícias ({news.length})
                   </h2>
-                  <Button onClick={() => handleEditNews(null)} className="btn-accent">
-                    <Plus size={16} className="mr-2" />Nova Notícia
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => handleEditNews(null)} className="btn-accent">
+                      <Plus size={16} className="mr-2" />Nova Notícia
+                    </Button>
+                  </div>
                 </div>
 
+                {/* Drafts Section */}
+                {news.filter(n => !n.published).length > 0 && (
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-6">
+                    <h3 className="text-amber-400 font-semibold mb-3 flex items-center gap-2">
+                      <FileText size={16} />
+                      Rascunhos ({news.filter(n => !n.published).length})
+                    </h3>
+                    <div className="space-y-3">
+                      {news.filter(n => !n.published).map((item) => (
+                        <div key={item.news_id} className="bg-[#0a1929] rounded-lg p-3 border border-amber-500/20 flex items-center justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-white font-medium truncate">{item.title}</h4>
+                            <p className="text-gray-500 text-xs">{new Date(item.created_at).toLocaleDateString('pt-BR')}</p>
+                          </div>
+                          <div className="flex gap-2 flex-shrink-0">
+                            <Button 
+                              size="sm" 
+                              onClick={async () => {
+                                try {
+                                  await newsApi.publish(item.news_id);
+                                  toast.success('Notícia publicada!');
+                                  loadAllData();
+                                } catch (e) {
+                                  toast.error('Erro ao publicar');
+                                }
+                              }} 
+                              className="bg-green-600 hover:bg-green-500 text-white text-xs"
+                            >
+                              <Eye size={12} className="mr-1" />Publicar
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => handleEditNews(item)} className="text-sky-400">
+                              <Edit size={14} />
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => handleDeleteNews(item.news_id)} className="text-red-400">
+                              <Trash2 size={14} />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Published News */}
+                <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                  <CheckCircle size={16} className="text-green-400" />
+                  Publicadas ({news.filter(n => n.published).length})
+                </h3>
                 <div className="space-y-4">
-                  {news.length === 0 ? (
+                  {news.filter(n => n.published).length === 0 ? (
                     <div className="text-center py-12 text-gray-400">
                       <Newspaper size={48} className="mx-auto mb-4 opacity-50" />
                       <p>Nenhuma notícia publicada</p>
                     </div>
                   ) : (
-                    news.map((item) => (
+                    news.filter(n => n.published).map((item) => (
                       <div key={item.news_id} className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c] flex gap-4">
                         {item.image && (
                           <img 
@@ -972,12 +1022,27 @@ export const AdminPage = () => {
                               <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                                 <span>{new Date(item.created_at).toLocaleDateString('pt-BR')}</span>
                                 {item.location && <span className="flex items-center gap-1"><MapPin size={12} />{item.location}</span>}
-                                <span className={item.published ? 'text-green-400' : 'text-amber-400'}>
-                                  {item.published ? '✓ Publicada' : '⏳ Rascunho'}
-                                </span>
                               </div>
                             </div>
                             <div className="flex gap-2 flex-shrink-0">
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                onClick={async () => {
+                                  if (!window.confirm('Despublicar esta notícia e mover para rascunhos?')) return;
+                                  try {
+                                    await newsApi.unpublish(item.news_id);
+                                    toast.success('Notícia movida para rascunhos');
+                                    loadAllData();
+                                  } catch (e) {
+                                    toast.error('Erro ao despublicar');
+                                  }
+                                }} 
+                                className="text-amber-400"
+                                title="Mover para rascunhos"
+                              >
+                                <EyeOff size={14} />
+                              </Button>
                               <Button size="sm" variant="ghost" onClick={() => handleEditNews(item)} className="text-sky-400">
                                 <Edit size={14} />
                               </Button>
