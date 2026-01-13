@@ -1,21 +1,28 @@
-from fastapi import APIRouter, HTTPException, Request
-from typing import List
+from fastapi import APIRouter, HTTPException, Request, UploadFile, File, Form
+from typing import Optional
 from datetime import datetime, timezone
-from models import Memory, MemoryCreate, MemoryUpdate
 import uuid
+import os
+from PIL import Image
+import io
 
 router = APIRouter(prefix="/memories", tags=["memories"])
 
 async def get_db(request: Request):
     return request.app.state.db
 
-async def require_admin(request: Request):
+async def require_director(request: Request):
+    """Require diretor_aeroporto, lider, admin or gestao"""
     from routes.auth import get_current_user
     from models import HIERARCHY_LEVELS, get_highest_role_level
     user = await get_current_user(request)
-    user_level = get_highest_role_level(user.get("tags", []))
-    if user_level < HIERARCHY_LEVELS["gestao"]:
-        raise HTTPException(status_code=403, detail="Gestao access required")
+    
+    allowed_tags = ["diretor_aeroporto", "lider", "admin", "gestao"]
+    if not any(tag in user.get("tags", []) for tag in allowed_tags):
+        raise HTTPException(
+            status_code=403, 
+            detail="Apenas diretores do aeroporto ou administradores podem gerenciar recordações"
+        )
     return user
 
 @router.get("")
