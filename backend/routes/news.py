@@ -20,6 +20,17 @@ async def require_gestao(request: Request):
         raise HTTPException(status_code=403, detail="Acesso restrito à gestão")
     return user
 
+async def require_news_permission(request: Request):
+    """Require jornalista, gestao, admin or lider to manage news"""
+    user = await get_current_user(request)
+    allowed_tags = ["jornalista", "gestao", "admin", "lider"]
+    if not any(tag in user.get("tags", []) for tag in allowed_tags):
+        raise HTTPException(
+            status_code=403, 
+            detail="Apenas jornalistas ou administradores podem gerenciar notícias"
+        )
+    return user
+
 @router.get("")
 async def list_news(request: Request, limit: int = 20):
     """List published news (public)"""
