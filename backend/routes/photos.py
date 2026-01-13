@@ -309,6 +309,102 @@ async def upload_photo(
         )
         return {"photo_id": photo_id, "queue_position": queue_position, "message": "Foto enviada para avaliação"}
 
+@router.get("/check-missing-files")
+async def check_missing_files(request: Request):
+    """Check which photos have missing files - Admin only"""
+    user = await get_current_user(request)
+    db = await get_db(request)
+    
+    # Check admin permission
+    user_tags = user.get("tags", [])
+    if not any(tag in user_tags for tag in ["admin", "gestao", "lider"]):
+        raise HTTPException(status_code=403, detail="Acesso negado")
+    
+    # Get all photos
+    photos = await db.photos.find({}, {"_id": 0}).to_list(1000)
+    
+    missing_files = []
+    existing_files = []
+    
+    for photo in photos:
+        url = photo.get("url", "")
+        if url.startswith("/api/uploads/"):
+            filename = url.split("/")[-1]
+            file_path = f"/app/backend/uploads/{filename}"
+            
+            if not os.path.exists(file_path):
+                missing_files.append({
+                    "photo_id": photo.get("photo_id"),
+                    "title": photo.get("title"),
+                    "author_name": photo.get("author_name"),
+                    "url": url,
+                    "status": photo.get("status")
+                })
+            else:
+                existing_files.append(photo.get("photo_id"))
+    
+    return {
+        "total_photos": len(photos),
+        "missing_count": len(missing_files),
+        "existing_count": len(existing_files),
+        "missing_files": missing_files
+    }
+
+@router.post("/reupload/{photo_id}")
+async def reupload_photo_file(
+    request: Request,
+    photo_id: str,
+    file: UploadFile = File(...)
+):
+    """Reupload a photo file - Admin only"""
+    user = await get_current_user(request)
+    db = await get_db(request)
+    
+    # Check admin permission
+    user_tags = user.get("tags", [])
+    if not any(tag in user_tags for tag in ["admin", "gestao", "lider"]):
+        raise HTTPException(status_code=403, detail="Apenas admin, gestão ou lider podem fazer reupload")
+    
+    # Get existing photo
+    photo = await db.photos.find_one({"photo_id": photo_id}, {"_id": 0})
+    if not photo:
+        raise HTTPException(status_code=404, detail="Foto não encontrada")
+    
+    # Read and validate file
+    file_content = await file.read()
+    
+    if len(file_content) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo 15MB")
+    
+    # Validate image
+    try:
+        img = Image.open(io.BytesIO(file_content))
+        img.verify()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Arquivo de imagem inválido")
+    
+    # Save file
+    file_ext = file.filename.split(".")[-1].lower() if "." in file.filename else "jpg"
+    if file_ext not in ["jpg", "jpeg", "png", "webp"]:
+        file_ext = "jpg"
+    
+    new_filename = f"{photo_id}.{file_ext}"
+    upload_dir = "/app/backend/uploads"
+    os.makedirs(upload_dir, exist_ok=True)
+    file_path = f"{upload_dir}/{new_filename}"
+    
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+    
+    # Update photo URL
+    new_url = f"/api/uploads/{new_filename}"
+    await db.photos.update_one(
+        {"photo_id": photo_id}, 
+        {"$set": {"url": new_url, "updated_at": datetime.now(timezone.utc)}}
+    )
+    
+    return {"message": "Arquivo reenviado com sucesso", "photo_id": photo_id, "url": new_url}
+
 @router.get("/{photo_id}")
 async def get_photo(request: Request, photo_id: str):
     """Get single photo details"""
