@@ -44,6 +44,26 @@ async def list_photos(request: Request, status: Optional[str] = "approved",
     if aircraft_type:
         query["aircraft_type"] = aircraft_type
     if author_id:
+
+
+@router.get("/search/registration")
+async def search_by_registration(request: Request, registration: str):
+    """Search photos by aircraft registration"""
+    db = await get_db(request)
+    
+    if not registration:
+        raise HTTPException(status_code=400, detail="Registration parameter required")
+    
+    # Search for approved photos with this registration
+    photos = await db.photos.find(
+        {
+            "status": "approved",
+            "registration": {"$regex": registration, "$options": "i"}
+        },
+        {"_id": 0}
+    ).sort("approved_at", -1).limit(50).to_list(50)
+    
+    return photos
         query["author_id"] = author_id
     
     photos = await db.photos.find(query, {"_id": 0}).sort("approved_at", -1).limit(limit).to_list(limit)
