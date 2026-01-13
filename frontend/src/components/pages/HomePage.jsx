@@ -147,7 +147,7 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* Gallery Preview */}
+      {/* Photo Gallery Section */}
       <section className="py-24 bg-[#0a1929]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
@@ -165,34 +165,8 @@ export const HomePage = () => {
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {photos.length > 0 ? photos.map((photo) => (
-              <div key={photo.photo_id} className="photo-card group">
-                <img 
-                  src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url} 
-                  alt={photo.description} 
-                />
-                <div className="photo-overlay">
-                  <h3 className="text-white font-semibold mb-1">{photo.aircraft_model}</h3>
-                  <p className="text-gray-300 text-sm">{photo.description}</p>
-                  <div className="flex justify-between items-center mt-2">
-                    <p className="text-sky-400 text-xs">Por {photo.author_name}</p>
-                    {photo.public_rating > 0 && (
-                      <span className="text-yellow-400 text-xs flex items-center gap-1">
-                        <Star size={12} fill="currentColor" />
-                        {photo.public_rating?.toFixed(1)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )) : (
-              <div className="col-span-3 text-center py-12">
-                <Camera className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Nenhuma foto na galeria ainda</p>
-              </div>
-            )}
-          </div>
+          {/* Photo Carousel - Infinite scroll */}
+          <PhotoCarousel photos={photos} />
         </div>
       </section>
 
