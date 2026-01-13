@@ -160,6 +160,7 @@ export const membersApi = {
 // Evaluation API
 export const evaluationApi = {
   getQueue: () => api.get('/evaluation/queue'),
+  getAdminQueue: () => api.get('/evaluation/admin/pending'),
   getPhoto: (photoId) => api.get(`/evaluation/${photoId}`),
   submit: (photoId, criteria, comment) => api.post(`/evaluation/${photoId}`, { criteria, comment }),
   getHistory: (photoId) => api.get(`/evaluation/history/${photoId}`),
