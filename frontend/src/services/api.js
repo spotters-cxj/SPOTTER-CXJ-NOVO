@@ -80,7 +80,9 @@ export const photosApi = {
 // Memories API
 export const memoriesApi = {
   list: () => api.get('/memories'),
-  create: (data) => api.post('/memories', data),
+  create: (formData) => api.post('/memories', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
   update: (memoryId, data) => api.put(`/memories/${memoryId}`, data),
   delete: (memoryId) => api.delete(`/memories/${memoryId}`),
 };
