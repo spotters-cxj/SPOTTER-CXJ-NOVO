@@ -1667,8 +1667,8 @@ export const AdminPage = () => {
                               <p className="text-gray-600 text-xs truncate">{photo.photo_id}</p>
                             </div>
                           </div>
-                          <div className="mt-3">
-                            <label className="flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white text-sm py-2 px-3 rounded cursor-pointer transition-colors">
+                          <div className="mt-3 flex gap-2">
+                            <label className="flex-1 flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white text-sm py-2 px-3 rounded cursor-pointer transition-colors">
                               {reuploadingPhoto === photo.photo_id ? (
                                 <>
                                   <RefreshCw size={14} className="animate-spin" />
@@ -1677,7 +1677,7 @@ export const AdminPage = () => {
                               ) : (
                                 <>
                                   <Upload size={14} />
-                                  Reenviar Imagem
+                                  Reenviar
                                 </>
                               )}
                               <input 
@@ -1692,6 +1692,15 @@ export const AdminPage = () => {
                                 }}
                               />
                             </label>
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => handleDismissMissingPhoto(photo.photo_id)}
+                              className="bg-gray-600 hover:bg-gray-500 text-white text-sm py-2 px-3"
+                              title="Ignorar (remover da lista)"
+                            >
+                              <X size={14} />
+                            </Button>
                           </div>
                         </div>
                       ))}
