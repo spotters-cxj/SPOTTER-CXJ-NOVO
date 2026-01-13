@@ -147,7 +147,19 @@ export const AdminPage = () => {
         photosApi.checkMissingFiles()
       ]);
 
-      if (results[0].status === 'fulfilled') setUsers(results[0].value.data || []);
+      // Log any failed requests for debugging
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.error(`API call ${index} failed:`, result.reason);
+        }
+      });
+
+      if (results[0].status === 'fulfilled') {
+        setUsers(results[0].value.data || []);
+      } else {
+        console.error('Failed to load users:', results[0].reason);
+        toast.error('Erro ao carregar membros. Verifique se você está logado como admin.');
+      }
       if (results[1].status === 'fulfilled') setLeaders(results[1].value.data || []);
       if (results[2].status === 'fulfilled') setPhotos(results[2].value.data || []);
       if (results[3].status === 'fulfilled') setMemories(results[3].value.data || []);
@@ -166,7 +178,7 @@ export const AdminPage = () => {
       if (results[10].status === 'fulfilled') setNews(results[10].value.data || []);
       if (results[11].status === 'fulfilled') setEvaluationQueue(results[11].value.data || []);
       if (results[12].status === 'fulfilled') setEvaluationLogs(results[12].value.data?.evaluations || []);
-      if (results[13].status === 'fulfilled') setEvaluationStats(results[13].value.data || {});
+      if (results[13].status === 'fulfilled') setEvaluationStats(results[13].value.data || []);
       if (results[14].status === 'fulfilled') setBackups(results[14].value.data || []);
       if (results[15].status === 'fulfilled') setBackupStatus(results[15].value.data || {});
       if (results[16].status === 'fulfilled') setCredits(results[16].value.data || []);
