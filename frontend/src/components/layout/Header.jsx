@@ -88,12 +88,12 @@ export const Header = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Ensure YouTube URL is valid
-  const youtubeUrl = siteConfig.youtube?.startsWith('http') 
+  // Ensure YouTube URL is valid - use settings if available
+  const youtubeUrl = settings?.youtube_url || siteConfig.youtube?.startsWith('http') 
     ? siteConfig.youtube 
     : `https://youtube.com/${siteConfig.youtube || '@spotterscxj'}`;
 
-  const instagramUrl = siteConfig.instagramUrl?.startsWith('http')
+  const instagramUrl = settings?.instagram_url || siteConfig.instagramUrl?.startsWith('http')
     ? siteConfig.instagramUrl
     : `https://instagram.com/${(siteConfig.instagram || 'spotterscxj').replace('@', '')}`;
 
