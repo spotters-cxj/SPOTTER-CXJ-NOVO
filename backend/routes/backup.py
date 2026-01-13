@@ -196,6 +196,48 @@ async def get_backup_status(request: Request):
     last_backup = await db.backup_logs.find_one(
         {"status": "success"}, 
         {"_id": 0},
+
+
+async def scheduled_backup(db):
+    """Function for scheduled automatic backups"""
+    try:
+        from routes.backup import create_backup_zip, upload_to_drive
+        
+        # Create backup
+        backup_path, backup_name = create_backup_zip()
+        
+        # Upload to Drive
+        result = upload_to_drive(backup_path, backup_name)
+        
+        # Cleanup
+        os.remove(backup_path)
+        
+        # Log
+        await db.backup_logs.insert_one({
+            "backup_id": result['id'],
+            "filename": backup_name,
+            "created_by": "system",
+            "created_by_name": "Auto Backup",
+            "created_at": datetime.now(timezone.utc),
+            "drive_link": result.get('webViewLink'),
+            "status": "success",
+            "type": "automatic"
+        })
+        
+        logger.info(f"Backup automático concluído: {backup_name}")
+        return True
+    except Exception as e:
+        logger.error(f"Erro no backup automático: {e}")
+        await db.backup_logs.insert_one({
+            "filename": "auto_backup_error",
+            "created_by": "system",
+            "created_at": datetime.now(timezone.utc),
+            "status": "error",
+            "error": str(e),
+            "type": "automatic"
+        })
+        return False
+
         sort=[("created_at", -1)]
     )
     
