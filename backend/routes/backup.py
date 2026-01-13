@@ -115,10 +115,11 @@ async def create_backup_zip_async(db):
 def upload_to_drive(file_path, file_name):
     """Upload backup to Google Drive"""
     service = get_drive_service()
+    folder_id = get_folder_id()
     
     file_metadata = {
         'name': file_name,
-        'parents': [FOLDER_ID]
+        'parents': [folder_id]
     }
     
     media = MediaFileUpload(file_path, resumable=True)
@@ -137,7 +138,7 @@ def upload_to_drive(file_path, file_name):
             raise Exception(
                 "A Service Account não tem cota de armazenamento. "
                 "SOLUÇÃO: Compartilhe a pasta do Google Drive com a Service Account "
-                "(email encontrado em google_credentials.json 'client_email') "
+                "(email: backup-site-spotters@backup-spotters-cxj.iam.gserviceaccount.com) "
                 "e dê permissão de 'Editor'."
             )
         raise
@@ -148,7 +149,8 @@ async def create_backup(request: Request, background_tasks: BackgroundTasks):
     user = await require_gestao(request)
     db = await get_db(request)
     
-    if not FOLDER_ID:
+    folder_id = get_folder_id()
+    if not folder_id:
         raise HTTPException(
             status_code=500, 
             detail="Google Drive folder ID not configured"
