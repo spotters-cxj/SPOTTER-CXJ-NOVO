@@ -310,6 +310,7 @@ class MemoryUpdate(BaseModel):
 
 # Site Settings Models
 class SiteSettings(BaseModel):
+    site_version: str = "1.0.0"
     google_form_link: Optional[str] = None
     instagram_url: str = "https://instagram.com/spotterscxj"
     instagram_handle: str = "@spotterscxj"
@@ -324,6 +325,7 @@ class SiteSettings(BaseModel):
     extra_photo_price: str = "R$ 3,50"
 
 class SiteSettingsUpdate(BaseModel):
+    site_version: Optional[str] = None
     google_form_link: Optional[str] = None
     instagram_url: Optional[str] = None
     instagram_handle: Optional[str] = None
