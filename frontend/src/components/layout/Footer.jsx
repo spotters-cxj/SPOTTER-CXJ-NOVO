@@ -182,7 +182,7 @@ export const Footer = () => {
                 Feito com <span className="text-red-500">♥</span> para a comunidade de spotters
               </p>
               <span className="text-gray-600 text-xs font-mono bg-[#102a43] px-2 py-1 rounded">
-                v{version}
+                v{siteVersion}
               </span>
             </div>
           </div>
