@@ -86,6 +86,43 @@ async def create_memory(
     await db.memories.insert_one(memory_data)
     return {"memory_id": memory_id, "message": "Recordação criada com sucesso"}
 
+@router.put("/{memory_id}")
+async def update_memory(
+    request: Request,
+    memory_id: str,
+    title: str = Form(None),
+    description: str = Form(None),
+    year: str = Form(None),
+    author: str = Form(None)
+):
+    """Update memory - Directors only"""
+    user = await require_director(request)
+    db = await get_db(request)
+    
+    memory = await db.memories.find_one({"memory_id": memory_id})
+    if not memory:
+        raise HTTPException(status_code=404, detail="Recordação não encontrada")
+    
+    # Build update dict with only provided fields
+    update_data = {}
+    if title is not None:
+        update_data["title"] = title
+    if description is not None:
+        update_data["description"] = description
+    if year is not None:
+        update_data["year"] = year
+    if author is not None:
+        update_data["author"] = author
+    
+    if update_data:
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        await db.memories.update_one(
+            {"memory_id": memory_id},
+            {"$set": update_data}
+        )
+    
+    return {"message": "Recordação atualizada com sucesso"}
+
 @router.delete("/{memory_id}")
 async def delete_memory(request: Request, memory_id: str):
     """Delete memory - Directors only"""
