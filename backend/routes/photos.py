@@ -493,3 +493,109 @@ async def delete_photo(request: Request, photo_id: str):
     await db.evaluations.delete_many({"photo_id": photo_id})
     
     return {"message": "Foto excluída"}
+
+
+@router.put("/{photo_id}")
+async def update_photo(
+    request: Request,
+    photo_id: str,
+    title: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    aircraft_model: Optional[str] = Form(None),
+    aircraft_type: Optional[str] = Form(None),
+    registration: Optional[str] = Form(None),
+    airline: Optional[str] = Form(None),
+    location: Optional[str] = Form(None),
+    photo_date: Optional[str] = Form(None),
+    final_rating: Optional[float] = Form(None),
+    file: Optional[UploadFile] = File(None)
+):
+    """Update photo details - Admin/Gestao/Lider only"""
+    user = await get_current_user(request)
+    db = await get_db(request)
+    
+    # Check admin permission
+    user_tags = user.get("tags", [])
+    if not any(tag in user_tags for tag in ["admin", "gestao", "lider"]):
+        raise HTTPException(status_code=403, detail="Apenas admin, gestão ou lider podem editar fotos")
+    
+    # Get existing photo
+    photo = await db.photos.find_one({"photo_id": photo_id}, {"_id": 0})
+    if not photo:
+        raise HTTPException(status_code=404, detail="Foto não encontrada")
+    
+    # Build update dict
+    update_data = {}
+    if title is not None:
+        update_data["title"] = title
+    if description is not None:
+        update_data["description"] = description
+    if aircraft_model is not None:
+        update_data["aircraft_model"] = aircraft_model
+    if aircraft_type is not None:
+        update_data["aircraft_type"] = aircraft_type
+    if registration is not None:
+        update_data["registration"] = registration
+    if airline is not None:
+        update_data["airline"] = airline
+    if location is not None:
+        update_data["location"] = location
+    if photo_date is not None:
+        update_data["photo_date"] = photo_date
+    if final_rating is not None:
+        update_data["final_rating"] = final_rating
+        update_data["public_rating"] = final_rating
+    
+    # Handle file replacement if provided
+    if file:
+        # Read and validate new file
+        file_content = await file.read()
+        
+        # Validate file size (10MB max)
+        if len(file_content) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo 10MB")
+        
+        # Validate image
+        try:
+            img = Image.open(io.BytesIO(file_content))
+            width, height = img.size
+            min_dimension = 1080
+            if width < min_dimension and height < min_dimension:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Resolução muito baixa. Pelo menos uma dimensão deve ter mínimo {min_dimension}px"
+                )
+        except Exception as e:
+            if isinstance(e, HTTPException):
+                raise
+            raise HTTPException(status_code=400, detail="Arquivo inválido ou corrompido")
+        
+        # Delete old file and save new one
+        old_url = photo.get("url", "")
+        if old_url.startswith("/api/uploads/"):
+            old_filename = old_url.split("/")[-1]
+            old_path = f"/app/backend/uploads/{old_filename}"
+            try:
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            except:
+                pass
+        
+        # Save new file
+        file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+        new_filename = f"{photo_id}.{file_ext}"
+        upload_dir = "/app/backend/uploads"
+        os.makedirs(upload_dir, exist_ok=True)
+        file_path = f"{upload_dir}/{new_filename}"
+        
+        with open(file_path, "wb") as f:
+            f.write(file_content)
+        
+        update_data["url"] = f"/api/uploads/{new_filename}"
+    
+    # Update photo
+    if update_data:
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        await db.photos.update_one({"photo_id": photo_id}, {"$set": update_data})
+    
+    return {"message": "Foto atualizada com sucesso", "photo_id": photo_id}
