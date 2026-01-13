@@ -83,6 +83,7 @@ export const photosApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  dismissMissing: (photoId) => api.post(`/photos/dismiss-missing/${photoId}`),
 };
 
 // Memories API
