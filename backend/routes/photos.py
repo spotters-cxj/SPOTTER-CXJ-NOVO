@@ -68,6 +68,56 @@ async def search_by_registration(request: Request, registration: str):
     
     return photos
 
+
+@router.get("/aircraft-info/{registration}")
+async def get_aircraft_info(registration: str):
+    """Get aircraft information by registration (for autocomplete during upload)"""
+    import httpx
+    
+    try:
+        # Try to fetch from ANAC database (Brazilian Aviation)
+        # Note: This is a simplified version. Real ANAC API may require authentication
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            # Attempt to get info from ANAC or similar database
+            # For now, we'll search our own database first
+            from server import app
+            db = app.state.db
+            
+            # Search our existing photos for this registration
+            existing = await db.photos.find_one(
+                {"registration": {"$regex": f"^{registration}$", "$options": "i"}},
+                {"aircraft_model": 1, "aircraft_type": 1, "airline": 1, "_id": 0}
+            )
+            
+            if existing:
+                return {
+                    "registration": registration.upper(),
+                    "aircraft_model": existing.get("aircraft_model", ""),
+                    "aircraft_type": existing.get("aircraft_type", ""),
+                    "airline": existing.get("airline", ""),
+                    "source": "database"
+                }
+            
+            # If not in database, return empty but formatted registration
+            return {
+                "registration": registration.upper(),
+                "aircraft_model": "",
+                "aircraft_type": "",
+                "airline": "",
+                "source": "manual"
+            }
+    except Exception as e:
+        # Return empty info if search fails
+        return {
+            "registration": registration.upper(),
+            "aircraft_model": "",
+            "aircraft_type": "",
+            "airline": "",
+            "source": "error",
+            "error": str(e)
+        }
+
+
 @router.get("/queue")
 async def get_queue_status(request: Request):
     """Get current queue status"""
