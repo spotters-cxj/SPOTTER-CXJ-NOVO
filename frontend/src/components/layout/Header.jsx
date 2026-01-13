@@ -35,9 +35,11 @@ export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [settings, setSettings] = useState(null);
   const userMenuRef = useRef(null);
   const moreMenuRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, login, logout, isAdmin, isGestao } = useAuth();
 
   const getUserLevel = () => {
