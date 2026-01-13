@@ -124,8 +124,9 @@ def upload_to_drive(file_path, file_name):
 
 @router.post("/create")
 async def create_backup(request: Request, background_tasks: BackgroundTasks):
-    """Create and upload backup to Google Drive (admin only)"""
+    """Create and upload backup to Google Drive (gestao only)"""
     user = await require_gestao(request)
+    db = await get_db(request)
     
     if not FOLDER_ID:
         raise HTTPException(
@@ -134,8 +135,8 @@ async def create_backup(request: Request, background_tasks: BackgroundTasks):
         )
     
     try:
-        # Create backup ZIP
-        backup_path, backup_name = create_backup_zip()
+        # Create backup ZIP using async method
+        backup_path, backup_name = await create_backup_zip_async(db)
         
         # Upload to Google Drive
         result = upload_to_drive(backup_path, backup_name)
@@ -144,7 +145,6 @@ async def create_backup(request: Request, background_tasks: BackgroundTasks):
         os.remove(backup_path)
         
         # Log backup
-        db = await get_db(request)
         await db.backup_logs.insert_one({
             "backup_id": result['id'],
             "filename": backup_name,
@@ -164,7 +164,6 @@ async def create_backup(request: Request, background_tasks: BackgroundTasks):
         
     except Exception as e:
         # Log error
-        db = await get_db(request)
         await db.backup_logs.insert_one({
             "filename": "error",
             "created_by": user['user_id'],
