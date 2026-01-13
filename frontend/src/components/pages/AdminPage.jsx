@@ -1739,6 +1739,37 @@ export const AdminPage = () => {
             {/* ==================== SETTINGS TAB ==================== */}
             <TabsContent value="settings">
               <div className="space-y-6">
+                {/* Site Version */}
+                <div className="card-navy p-6">
+                  <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                    <Database size={20} className="text-purple-400" />
+                    Versão do Site
+                  </h2>
+                  <div className="flex items-center gap-4 max-w-md">
+                    <div className="flex-1">
+                      <label className="block text-gray-300 text-sm mb-2">Versão Atual</label>
+                      <Input 
+                        value={settingsForm.site_version || '1.0.0'} 
+                        onChange={(e) => setSettingsForm({...settingsForm, site_version: e.target.value})} 
+                        placeholder="1.0.0" 
+                        className="bg-[#102a43] border-[#1a3a5c] text-white font-mono text-lg"
+                      />
+                    </div>
+                    <div className="pt-6">
+                      <Button 
+                        onClick={handleSaveSettings} 
+                        className="bg-purple-600 hover:bg-purple-500"
+                      >
+                        <Save size={16} className="mr-2" />
+                        Salvar Versão
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-gray-500 text-xs mt-2">
+                    Use formato semântico: MAJOR.MINOR.PATCH (ex: 1.2.3)
+                  </p>
+                </div>
+
                 {/* Social Links */}
                 <div className="card-navy p-6">
                   <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
