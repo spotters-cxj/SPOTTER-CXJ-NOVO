@@ -143,7 +143,8 @@ export const AdminPage = () => {
         logsApi.getEvaluationStats(),
         backupApi.history(10),
         backupApi.status(),
-        creditsApi.list()
+        creditsApi.list(),
+        photosApi.checkMissingFiles()
       ]);
 
       if (results[0].status === 'fulfilled') setUsers(results[0].value.data || []);
@@ -169,11 +170,29 @@ export const AdminPage = () => {
       if (results[14].status === 'fulfilled') setBackups(results[14].value.data || []);
       if (results[15].status === 'fulfilled') setBackupStatus(results[15].value.data || {});
       if (results[16].status === 'fulfilled') setCredits(results[16].value.data || []);
+      if (results[17].status === 'fulfilled') setMissingFiles(results[17].value.data?.missing_files || []);
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Erro ao carregar dados');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ========== REUPLOAD FUNCTION ==========
+  const handleReuploadPhoto = async (photoId, file) => {
+    if (!file) return;
+    
+    try {
+      setReuploadingPhoto(photoId);
+      await photosApi.reupload(photoId, file);
+      toast.success('Foto reenviada com sucesso!');
+      loadAllData();
+    } catch (error) {
+      console.error('Error reuploading photo:', error);
+      toast.error(error.response?.data?.detail || 'Erro ao reenviar foto');
+    } finally {
+      setReuploadingPhoto(null);
     }
   };
 
