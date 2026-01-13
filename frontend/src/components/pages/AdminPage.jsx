@@ -228,7 +228,10 @@ export const AdminPage = () => {
     try {
       setCreatingBackup(true);
       const response = await backupApi.create();
-      toast.success(`Backup criado: ${response.data.filename}`);
+      toast.success(`✅ ${response.data.message}\nArquivo: ${response.data.filename}`);
+      if (response.data.drive_link) {
+        toast.info(`🔗 Acessar no Drive: ${response.data.drive_link}`);
+      }
       loadAllData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Erro ao criar backup');
