@@ -1605,6 +1605,64 @@ export const AdminPage = () => {
             {/* ==================== PHOTOS TAB ==================== */}
             <TabsContent value="photos">
               <div className="card-navy p-4 md:p-6">
+                {/* Missing Files Alert */}
+                {missingFiles.length > 0 && (
+                  <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4 mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <ImageOff size={20} className="text-orange-400" />
+                      <h3 className="text-orange-400 font-semibold">
+                        {missingFiles.length} foto(s) com arquivo faltando
+                      </h3>
+                    </div>
+                    <p className="text-gray-400 text-sm mb-4">
+                      As fotos abaixo têm metadados no banco de dados, mas os arquivos de imagem não existem no servidor. 
+                      Use o botão de upload para reenviar as imagens.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
+                      {missingFiles.map((photo) => (
+                        <div key={photo.photo_id} className="bg-[#0a1929] rounded-lg p-3 border border-orange-500/30">
+                          <div className="flex items-center gap-3">
+                            <div className="w-16 h-16 bg-[#1a3a5c] rounded flex items-center justify-center flex-shrink-0">
+                              <ImageOff size={24} className="text-gray-500" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-white text-sm font-medium truncate">{photo.title || 'Sem título'}</h4>
+                              <p className="text-gray-500 text-xs">Por: {photo.author_name || 'Desconhecido'}</p>
+                              <p className="text-gray-600 text-xs truncate">{photo.photo_id}</p>
+                            </div>
+                          </div>
+                          <div className="mt-3">
+                            <label className="flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white text-sm py-2 px-3 rounded cursor-pointer transition-colors">
+                              {reuploadingPhoto === photo.photo_id ? (
+                                <>
+                                  <RefreshCw size={14} className="animate-spin" />
+                                  Enviando...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload size={14} />
+                                  Reenviar Imagem
+                                </>
+                              )}
+                              <input 
+                                type="file" 
+                                accept="image/*" 
+                                className="hidden"
+                                disabled={reuploadingPhoto === photo.photo_id}
+                                onChange={(e) => {
+                                  const file = e.target.files[0];
+                                  if (file) handleReuploadPhoto(photo.photo_id, file);
+                                  e.target.value = '';
+                                }}
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
                   <Camera size={20} className="text-sky-400" />
                   Galeria de Fotos ({photos.length})
@@ -1619,7 +1677,14 @@ export const AdminPage = () => {
                           src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url} 
                           alt={photo.title || photo.description} 
                           className="absolute inset-0 w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
                         />
+                        <div className="absolute inset-0 bg-[#1a3a5c] items-center justify-center hidden">
+                          <ImageOff size={32} className="text-gray-500" />
+                        </div>
                         {/* Edit/Delete buttons - Always visible on mobile, hover on desktop */}
                         <div className="absolute top-2 right-2 flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <Button 
