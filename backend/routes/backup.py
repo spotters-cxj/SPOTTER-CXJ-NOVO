@@ -40,11 +40,12 @@ async def require_gestao(request: Request):
 
 def get_drive_service():
     """Initialize Google Drive API service"""
-    if not os.path.exists(CREDENTIALS_PATH):
+    creds_path = get_credentials_path()
+    if not os.path.exists(creds_path):
         raise HTTPException(status_code=500, detail="Google credentials not found")
     
     credentials = service_account.Credentials.from_service_account_file(
-        CREDENTIALS_PATH, 
+        creds_path, 
         scopes=SCOPES
     )
     service = build('drive', 'v3', credentials=credentials)
