@@ -185,6 +185,7 @@ export const logsApi = {
 // Aircraft API (ANAC database)
 export const aircraftApi = {
   lookup: (registration) => api.get('/aircraft/lookup', { params: { registration } }),
+  getInfo: (registration) => api.get(`/photos/aircraft-info/${registration}`),
   getOperators: () => api.get('/aircraft/operators'),
   getTypes: () => api.get('/aircraft/types'),
   getModels: (type = null) => api.get('/aircraft/models', { params: type ? { aircraft_type: type } : {} }),
