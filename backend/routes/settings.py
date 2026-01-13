@@ -47,7 +47,11 @@ async def get_settings(request: Request):
     
     # Remove internal type field
     settings.pop("type", None)
-    return settings
+    
+    # Merge with defaults to ensure all fields are present
+    result = DEFAULT_SETTINGS.copy()
+    result.update(settings)
+    return result
 
 @router.put("")
 async def update_settings(request: Request, update: SiteSettingsUpdate):
