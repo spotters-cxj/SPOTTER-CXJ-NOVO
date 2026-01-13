@@ -74,8 +74,8 @@ async def get_airport_timeline(request: Request):
 
 @router.post("/airport")
 async def create_airport_timeline_item(request: Request, item: TimelineItemCreate):
-    """Add airport timeline item (admin principal only)"""
-    await require_admin_principal(request)
+    """Add airport timeline item (diretor_aeroporto+)"""
+    await require_airport_permission(request)
     db = await get_db(request)
     
     item_data = item.dict()
@@ -87,8 +87,8 @@ async def create_airport_timeline_item(request: Request, item: TimelineItemCreat
 
 @router.put("/airport/{item_id}")
 async def update_airport_timeline_item(request: Request, item_id: str, item: TimelineItemCreate):
-    """Update airport timeline item (admin principal only)"""
-    await require_admin_principal(request)
+    """Update airport timeline item (diretor_aeroporto+)"""
+    await require_airport_permission(request)
     db = await get_db(request)
     
     update_data = item.dict()
@@ -103,8 +103,8 @@ async def update_airport_timeline_item(request: Request, item_id: str, item: Tim
 
 @router.delete("/airport/{item_id}")
 async def delete_airport_timeline_item(request: Request, item_id: str):
-    """Delete airport timeline item (admin principal only)"""
-    await require_admin_principal(request)
+    """Delete airport timeline item (diretor_aeroporto+)"""
+    await require_airport_permission(request)
     db = await get_db(request)
     
     result = await db.airport_timeline.delete_one({"item_id": item_id})
