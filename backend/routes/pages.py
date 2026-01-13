@@ -86,12 +86,12 @@ async def get_page(request: Request, slug: str):
 
 @router.put("/{slug}")
 async def update_page(request: Request, slug: str, update: PageContentUpdate):
-    """Update page content (admin only, airport-history requires admin_principal)"""
+    """Update page content (airport pages allow diretor_aeroporto)"""
     db = await get_db(request)
     
-    # airport-history requires admin_principal
+    # airport-history requires diretor_aeroporto or higher
     if slug == "airport-history":
-        admin = await require_admin_principal(request)
+        admin = await require_airport_permission(request)
     else:
         admin = await require_admin(request)
     
