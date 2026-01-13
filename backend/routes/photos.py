@@ -224,14 +224,21 @@ async def upload_photo(
         {"$inc": {"photos_this_week": 1}}
     )
     
-    # Send notification
-    await create_notification(
-        db, user["user_id"], "photo_sent",
-        f"Sua foto '{title}' foi enviada com sucesso e está aguardando avaliação. Posição na fila: {queue_position}",
-        {"photo_id": photo_id}
-    )
-    
-    return {"photo_id": photo_id, "queue_position": queue_position, "message": "Foto enviada para avaliação"}
+    # Send notification based on auto-approve
+    if has_auto_approve:
+        await create_notification(
+            db, user["user_id"], "photo_approved",
+            f"✅ Sua foto '{title}' foi publicada automaticamente na galeria!",
+            {"photo_id": photo_id}
+        )
+        return {"photo_id": photo_id, "status": "approved", "message": "Foto publicada automaticamente!", "auto_approved": True}
+    else:
+        await create_notification(
+            db, user["user_id"], "photo_sent",
+            f"Sua foto '{title}' foi enviada com sucesso e está aguardando avaliação. Posição na fila: {queue_position}",
+            {"photo_id": photo_id}
+        )
+        return {"photo_id": photo_id, "queue_position": queue_position, "message": "Foto enviada para avaliação"}
 
 @router.get("/{photo_id}")
 async def get_photo(request: Request, photo_id: str):
