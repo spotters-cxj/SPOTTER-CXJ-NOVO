@@ -75,6 +75,14 @@ export const photosApi = {
   delete: (photoId) => api.delete(`/photos/${photoId}`),
   edit: (photoId, data) => api.put(`/photos/${photoId}/edit`, data),
   getEditHistory: (photoId) => api.get(`/photos/${photoId}/edit-history`),
+  checkMissingFiles: () => api.get('/photos/check-missing-files'),
+  reupload: (photoId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/photos/${photoId}/reupload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 // Memories API
