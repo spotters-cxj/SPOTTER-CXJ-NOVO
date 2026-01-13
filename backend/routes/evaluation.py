@@ -91,6 +91,25 @@ async def get_evaluation_queue(request: Request):
     
     return photos
 
+@router.get("/admin/pending")
+async def get_admin_pending_queue(request: Request):
+    """Get all pending photos for admin view (gestao+)"""
+    user = await get_current_user(request)
+    db = await get_db(request)
+    
+    # Check if user has gestao level or higher
+    user_level = get_highest_role_level(user.get("tags", []))
+    if user_level < HIERARCHY_LEVELS["gestao"]:
+        raise HTTPException(status_code=403, detail="Acesso restrito a gestão ou superior")
+    
+    # Get all pending photos
+    photos = await db.photos.find(
+        {"status": "pending"},
+        {"_id": 0}
+    ).sort([("priority", -1), ("queue_position", 1), ("created_at", 1)]).to_list(100)
+    
+    return photos
+
 @router.get("/{photo_id}")
 async def get_photo_for_evaluation(request: Request, photo_id: str):
     """Get photo details for evaluation"""
