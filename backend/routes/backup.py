@@ -214,9 +214,12 @@ async def get_backup_status(request: Request):
     """Get backup system status (admin only)"""
     await require_gestao(request)
     
+    creds_path = get_credentials_path()
+    folder_id = get_folder_id()
+    
     # Check if credentials exist
-    creds_exist = os.path.exists(CREDENTIALS_PATH)
-    folder_configured = bool(FOLDER_ID)
+    creds_exist = os.path.exists(creds_path)
+    folder_configured = bool(folder_id)
     
     # Get last backup
     db = await get_db(request)
@@ -228,15 +231,20 @@ async def get_backup_status(request: Request):
     
     return {
         "configured": creds_exist and folder_configured,
-        "credentials_path": CREDENTIALS_PATH,
+        "credentials_path": creds_path,
         "credentials_exist": creds_exist,
-        "folder_id": FOLDER_ID,
+        "folder_id": folder_id,
         "folder_configured": folder_configured,
         "last_backup": last_backup
     }
 
 async def scheduled_backup(db):
     """Function for scheduled automatic backups"""
+    folder_id = get_folder_id()
+    if not folder_id:
+        print("Backup automático cancelado: FOLDER_ID não configurado")
+        return
+    
     try:
         # Create backup using async method
         backup_path, backup_name = await create_backup_zip_async(db)
