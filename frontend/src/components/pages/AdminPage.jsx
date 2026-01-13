@@ -5,7 +5,7 @@ import {
   Image, FileText, UserCheck, UserX, Crown, Clock, BarChart3, Calendar, History, 
   Search, Filter, Tag, Newspaper, CreditCard, Instagram, Youtube, Eye, EyeOff,
   ChevronDown, ChevronUp, AlertCircle, CheckCircle, XCircle, Plane, MapPin,
-  Download, Database, HardDrive, Award, Sparkles
+  Download, Database, HardDrive, Award, Sparkles, Upload, ImageOff
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
