@@ -26,15 +26,65 @@ async def require_director(request: Request):
     return user
 
 @router.get("")
-async def list_memories(request: Request):
+async def list_memories(request: Request, limit: int = 100):
     """List all memories (public)"""
     db = await get_db(request)
-    memories = await db.memories.find({}, {"_id": 0}).sort("order", 1).to_list(100)
+    memories = await db.memories.find({}, {"_id": 0}).sort("year", -1).limit(limit).to_list(limit)
     return memories
 
 @router.post("")
-async def create_memory(request: Request, memory: MemoryCreate):
-    """Create new memory (admin only)"""
+async def create_memory(
+    request: Request,
+    title: str = Form(...),
+    description: str = Form(...),
+    year: str = Form(...),
+    author: str = Form(...),
+    file: UploadFile = File(...)
+):
+    """Create new memory - Directors only"""
+    user = await require_director(request)
+    db = await get_db(request)
+    
+    # Validate file
+    if not file.content_type or not file.content_type.startsWith('image/'):
+        raise HTTPException(status_code=400, detail="Apenas imagens são permitidas")
+    
+    # Read and validate
+    file_content = await file.read()
+    if len(file_content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo 10MB")
+    
+    try:
+        img = Image.open(io.BytesIO(file_content))
+        img.verify()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Arquivo de imagem inválido")
+    
+    # Generate ID and save file
+    memory_id = f"memory_{uuid.uuid4().hex[:12]}"
+    file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    filename = f"{memory_id}.{file_ext}"
+    upload_dir = "/app/backend/uploads/memories"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    with open(f"{upload_dir}/{filename}", "wb") as f:
+        f.write(file_content)
+    
+    # Create record
+    memory_data = {
+        "memory_id": memory_id,
+        "title": title,
+        "description": description,
+        "year": year,
+        "author": author,
+        "url": f"/api/uploads/memories/{filename}",
+        "created_by": user["user_id"],
+        "created_by_name": user["name"],
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.memories.insert_one(memory_data)
+    return {"memory_id": memory_id, "message": "Recordação criada com sucesso"}
     await require_admin(request)
     db = await get_db(request)
     
