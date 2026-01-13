@@ -94,8 +94,8 @@ async def create_news(request: Request):
 
 @router.put("/{news_id}")
 async def update_news(request: Request, news_id: str):
-    """Update news article (gestao+)"""
-    user = await require_gestao(request)
+    """Update news article (jornalista+)"""
+    user = await require_news_permission(request)
     db = await get_db(request)
     body = await request.json()
     
