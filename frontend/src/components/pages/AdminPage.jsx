@@ -137,7 +137,7 @@ export const AdminPage = () => {
         timelineApi.getSpotters(),
         logsApi.list({ limit: 50 }),
         logsApi.getStats(),
-        newsApi.list(50),
+        newsApi.listAll(50),
         evaluationApi.getAdminQueue(),
         logsApi.getEvaluations({ limit: 100 }),
         logsApi.getEvaluationStats(),
