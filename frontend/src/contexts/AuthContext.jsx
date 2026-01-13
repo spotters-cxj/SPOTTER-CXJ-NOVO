@@ -5,13 +5,16 @@ const AuthContext = createContext(null);
 
 // Hierarchy levels for permission checking
 const HIERARCHY_LEVELS = {
-  lider: 7,
-  admin: 6,
-  gestao: 5,
-  produtor: 4,
-  avaliador: 3,
-  colaborador: 2,
-  membro: 1
+  lider: 8,
+  admin: 7,
+  gestao: 6,
+  produtor: 5,
+  avaliador: 4,
+  colaborador: 3,
+  jornalista: 2,
+  diretor_aeroporto: 2,
+  spotter_cxj: 1,
+  visitante: 0
 };
 
 export const useAuth = () => {
