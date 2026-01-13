@@ -285,6 +285,31 @@ export const AdminPage = () => {
     }
   };
 
+  const handleCreateLocalBackup = async () => {
+    try {
+      setCreatingBackup(true);
+      toast.info('Criando backup local... Aguarde o download.');
+      const response = await backupApi.createLocal();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `spotters_backup_${new Date().toISOString().slice(0,10)}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('✅ Backup criado e baixado com sucesso!');
+      loadAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erro ao criar backup local');
+    } finally {
+      setCreatingBackup(false);
+    }
+  };
+
   const handleDownloadBackup = (filename) => {
     window.open(backupApi.download(filename), '_blank');
   };
