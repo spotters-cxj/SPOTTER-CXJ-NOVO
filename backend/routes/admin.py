@@ -47,8 +47,8 @@ async def list_users(request: Request):
 
 @router.put("/users/{user_id}/role")
 async def update_user_role(request: Request, user_id: str):
-    """Update user role/tags (admin only)"""
-    admin = await require_admin(request)
+    """Update user role/tags (gestao or higher)"""
+    admin = await require_gestao(request)
     db = await get_db(request)
     body = await request.json()
     
@@ -56,7 +56,7 @@ async def update_user_role(request: Request, user_id: str):
     if not target_user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     
-    # Cannot change lider if not lider
+    # Cannot change user of same or higher level (unless it's yourself)
     admin_level = get_highest_role_level(admin.get("tags", []))
     target_level = get_highest_role_level(target_user.get("tags", []))
     
@@ -65,6 +65,11 @@ async def update_user_role(request: Request, user_id: str):
     
     old_tags = target_user.get("tags", [])
     new_tags = body.get("tags", old_tags)
+    
+    # Validate new tags - ensure no tag grants higher level than admin has
+    new_tags_level = get_highest_role_level(new_tags)
+    if new_tags_level > admin_level:
+        raise HTTPException(status_code=403, detail="Não pode atribuir tags de nível superior ao seu")
     
     await db.users.update_one({"user_id": user_id}, {"$set": {"tags": new_tags}})
     
