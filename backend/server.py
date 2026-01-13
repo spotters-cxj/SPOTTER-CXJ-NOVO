@@ -60,12 +60,24 @@ os.makedirs("/app/backend/uploads/memories", exist_ok=True)
 
 app.mount("/api/uploads", StaticFiles(directory="/app/backend/uploads"), name="uploads")
 
+# Add cache control headers
+@app.middleware("http")
+async def add_cache_control_headers(request, call_next):
+    response = await call_next(request)
+    # Don't cache API responses
+    if request.url.path.startswith("/api"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 logging.basicConfig(
