@@ -132,8 +132,8 @@ async def update_news(request: Request, news_id: str):
 
 @router.delete("/{news_id}")
 async def delete_news(request: Request, news_id: str):
-    """Delete news article (gestao+)"""
-    user = await require_gestao(request)
+    """Delete news article (jornalista+)"""
+    user = await require_news_permission(request)
     db = await get_db(request)
     
     # Get news before deleting
