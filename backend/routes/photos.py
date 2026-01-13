@@ -67,10 +67,6 @@ async def search_by_registration(request: Request, registration: str):
     ).sort("approved_at", -1).limit(50).to_list(50)
     
     return photos
-        query["author_id"] = author_id
-    
-    photos = await db.photos.find(query, {"_id": 0}).sort("approved_at", -1).limit(limit).to_list(limit)
-    return photos
 
 @router.get("/queue")
 async def get_queue_status(request: Request):
