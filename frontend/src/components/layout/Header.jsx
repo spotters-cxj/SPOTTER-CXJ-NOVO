@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, Instagram, Youtube, User, LogOut, Shield, Camera, Upload, Trophy, Users, Bell, Newspaper, Search, Sparkles, Home, Image, Award, ChevronDown, UserCircle, Settings, Plane } from 'lucide-react';
 import { siteConfig } from '../../data/mock';
+import { settingsApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
 import { NotificationBell } from '../ui/NotificationBell';
