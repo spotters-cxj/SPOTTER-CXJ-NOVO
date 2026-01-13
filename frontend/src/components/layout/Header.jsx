@@ -61,6 +61,18 @@ export const Header = () => {
     setIsMobileMenuOpen(false);
   }, [location]);
 
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await settingsApi.get();
+        setSettings(res.data);
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      }
+    };
+    loadSettings();
+  }, []);
+
   // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
