@@ -125,9 +125,26 @@ def upload_to_drive(file_path, file_name):
     media = MediaFileUpload(file_path, resumable=True)
     
     try:
+        # First, verify the folder exists and is accessible
+        try:
+            folder = service.files().get(
+                fileId=folder_id,
+                supportsAllDrives=True,
+                fields='id, name, owners'
+            ).execute()
+            print(f"Uploading to folder: {folder.get('name')}")
+        except Exception as folder_error:
+            raise Exception(
+                f"Não foi possível acessar a pasta do Google Drive. "
+                f"Verifique se a pasta foi compartilhada com a Service Account. "
+                f"Erro: {str(folder_error)}"
+            )
+        
+        # Upload the file
         file = service.files().create(
             body=file_metadata,
             media_body=media,
+            supportsAllDrives=True,
             fields='id, name, webViewLink'
         ).execute()
         
@@ -136,10 +153,11 @@ def upload_to_drive(file_path, file_name):
         error_message = str(e)
         if 'storageQuotaExceeded' in error_message or 'storage quota' in error_message.lower():
             raise Exception(
-                "A Service Account não tem cota de armazenamento. "
-                "SOLUÇÃO: Compartilhe a pasta do Google Drive com a Service Account "
-                "(email: backup-site-spotters@backup-spotters-cxj.iam.gserviceaccount.com) "
-                "e dê permissão de 'Editor'."
+                "Erro de cota de armazenamento. "
+                "A Service Account precisa de permissão de EDITOR na pasta do Google Drive. "
+                "Certifique-se de: 1) Compartilhar a pasta (não apenas um arquivo) "
+                "2) Dar permissão de Editor (não apenas Visualizador) "
+                "3) Email: backup-site-spotters@backup-spotters-cxj.iam.gserviceaccount.com"
             )
         raise
 
