@@ -30,8 +30,7 @@ next-env.d.ts
 dist/
 dist
 
-# Environment files (comprehensive coverage)
-
+# Sensitive credential files (NOT .env - those need to be tracked for deployment)
 *token.json*
 *credentials.json*
 
@@ -79,29 +78,5 @@ agenthub/agents/youtube/db
 # Mobile development
 android-sdk/
 
-# Environment files - REMOVED to allow .env files in repository for deployment
-# Note: .env files must be tracked for Emergent deployments to work
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
+# Note: .env files MUST be tracked for Emergent deployments to work correctly
+# DO NOT add *.env or .env to this file
