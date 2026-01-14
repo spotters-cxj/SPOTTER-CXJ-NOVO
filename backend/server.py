@@ -68,8 +68,9 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def startup_db_client():
     mongo_url = os.environ['MONGO_URL']
+    db_name = os.environ['DB_NAME']
     client = AsyncIOMotorClient(mongo_url)
-    app.state.db = client[os.environ.get('DB_NAME', 'spotters_cxj')]
+    app.state.db = client[db_name]
     app.state.mongo_client = client
     logger.info("Connected to MongoDB")
 
