@@ -90,26 +90,30 @@ export const CollaboratorCarousel = () => {
                 <TagBadgeList tags={member.tags} size="small" maxShow={2} />
               </div>
               
-              <div className="flex justify-center gap-3 mt-4" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-center gap-3 mt-4" onClick={(e) => e.preventDefault()}>
                 {member.instagram && (
-                  <a
-                    href={`https://instagram.com/${member.instagram.replace('@', '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-pink-400 hover:text-pink-300 transition-colors"
+                  <span
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open(`https://instagram.com/${member.instagram.replace('@', '')}`, '_blank');
+                    }}
+                    className="text-pink-400 hover:text-pink-300 transition-colors cursor-pointer"
                   >
                     <Instagram size={18} />
-                  </a>
+                  </span>
                 )}
                 {member.jetphotos && (
-                  <a
-                    href={member.jetphotos}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sky-400 hover:text-sky-300 transition-colors"
+                  <span
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open(member.jetphotos, '_blank');
+                    }}
+                    className="text-sky-400 hover:text-sky-300 transition-colors cursor-pointer"
                   >
                     <ExternalLink size={18} />
-                  </a>
+                  </span>
                 )}
               </div>
             </Link>
