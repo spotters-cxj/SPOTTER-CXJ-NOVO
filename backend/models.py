@@ -63,7 +63,7 @@ class UserBase(BaseModel):
 
 class User(UserBase):
     user_id: str
-    tags: List[str] = ["membro"]
+    tags: List[str] = ["spotter_cxj"]
     instagram: Optional[str] = None
     jetphotos: Optional[str] = None
     bio: Optional[str] = None
