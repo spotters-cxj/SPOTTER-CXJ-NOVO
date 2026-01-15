@@ -500,6 +500,51 @@ export const AdminPage = () => {
     }
   };
 
+  const handleDownloadLocalBackup = async (filename) => {
+    try {
+      const res = await backupApi.downloadLocal(filename);
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Download iniciado!');
+    } catch (error) {
+      toast.error('Erro ao baixar backup');
+    }
+  };
+
+  const handleDeleteLocalBackup = async (filename) => {
+    if (!window.confirm(`Tem certeza que deseja excluir o backup "${filename}"?`)) return;
+    
+    try {
+      await backupApi.deleteLocal(filename);
+      toast.success('Backup excluído!');
+      loadAllData();
+    } catch (error) {
+      toast.error('Erro ao excluir backup');
+    }
+  };
+
+  const handleTestEmail = async () => {
+    setBackupLoading(true);
+    try {
+      const res = await backupApi.testEmail();
+      if (res.data.success) {
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erro ao enviar email de teste');
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
   // Filter users
   const filteredUsers = users.filter(u => {
     const matchesSearch = !userSearch || 
