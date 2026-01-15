@@ -1,5 +1,5 @@
 import React from 'react';
-import { Crown, Shield, Star, Users, Camera, Award, CheckCircle } from 'lucide-react';
+import { Crown, Shield, Star, Users, Camera, Award, CheckCircle, Newspaper, Plane } from 'lucide-react';
 
 const tagConfig = {
   lider: {
@@ -32,10 +32,10 @@ const tagConfig = {
     className: 'tag-colaborador',
     icon: Star
   },
-  membro: {
-    label: 'Membro',
-    className: 'tag-membro',
-    icon: Users
+  spotter_cxj: {
+    label: 'Spotter CXJ',
+    className: 'tag-spotter',
+    icon: Camera
   },
   vip: {
     label: 'VIP',
@@ -46,6 +46,16 @@ const tagConfig = {
     label: 'Pódio',
     className: 'tag-podio',
     icon: Award
+  },
+  jornalista: {
+    label: 'Jornalista',
+    className: 'tag-jornalista',
+    icon: Newspaper
+  },
+  diretor_aeroporto: {
+    label: 'Diretor do Aeroporto',
+    className: 'tag-diretor',
+    icon: Plane
   }
 };
 
