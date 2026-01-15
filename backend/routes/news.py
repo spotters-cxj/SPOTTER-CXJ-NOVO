@@ -32,6 +32,33 @@ async def list_news(request: Request, limit: int = 20):
     
     return news
 
+@router.get("/drafts")
+async def list_drafts(request: Request, limit: int = 50):
+    """List draft news (gestao+)"""
+    user = await require_gestao(request)
+    db = await get_db(request)
+    
+    # List all unpublished news (drafts)
+    news = await db.news.find(
+        {"published": {"$ne": True}},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    return news
+
+@router.get("/all")
+async def list_all_news(request: Request, limit: int = 50):
+    """List all news including drafts (gestao+)"""
+    user = await require_gestao(request)
+    db = await get_db(request)
+    
+    news = await db.news.find(
+        {},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    return news
+
 @router.get("/{news_id}")
 async def get_news(request: Request, news_id: str):
     """Get single news article"""
