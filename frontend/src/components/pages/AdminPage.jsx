@@ -1296,56 +1296,45 @@ export const AdminPage = () => {
 
             {/* ==================== BACKUPS TAB ==================== */}
             <TabsContent value="backups" className="space-y-6">
-              {/* Backup Status */}
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Google Drive Backup */}
-                <div className="card-navy p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                      <Cloud className="w-6 h-6 text-blue-400" />
+              {/* Status Cards */}
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="card-navy p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                      <Clock className="w-5 h-5 text-blue-400" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-white">Backup Google Drive</h3>
-                      <p className="text-gray-400 text-sm">Envio automático para a nuvem</p>
+                      <div className="text-gray-400 text-xs">Backup Automático</div>
+                      <div className="text-white font-semibold">A cada 12 horas</div>
                     </div>
                   </div>
-                  
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400">Status:</span>
-                      <span className={backupStatus.google_drive_configured ? 'text-green-400' : 'text-red-400'}>
-                        {backupStatus.google_drive_configured ? '✓ Configurado' : '✗ Não configurado'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400">ID da Pasta:</span>
-                      <span className="text-gray-300 text-xs font-mono truncate max-w-[150px]" title={backupStatus.google_drive_folder_id}>
-                        {backupStatus.google_drive_folder_id || 'N/A'}
-                      </span>
-                    </div>
-                    {backupStatus.last_drive_backup && (
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-400">Último backup:</span>
-                        <span className="text-gray-300">
-                          {new Date(backupStatus.last_drive_backup.created_at).toLocaleString('pt-BR')}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <Button 
-                    onClick={handleGoogleDriveBackup} 
-                    disabled={backupLoading || !backupStatus.google_drive_configured}
-                    className="w-full btn-accent"
-                  >
-                    {backupLoading ? (
-                      <><Loader2 size={16} className="mr-2 animate-spin" />Enviando...</>
-                    ) : (
-                      <><Upload size={16} className="mr-2" />Enviar para Google Drive</>
-                    )}
-                  </Button>
                 </div>
+                <div className="card-navy p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                      <HardDrive className="w-5 h-5 text-green-400" />
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-xs">Backups Locais</div>
+                      <div className="text-white font-semibold">{backupStatus.local_backup_count || 0} arquivos ({backupStatus.local_backup_size_mb || 0} MB)</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="card-navy p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${backupStatus.email_notifications_configured ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                      <AlertCircle className={`w-5 h-5 ${backupStatus.email_notifications_configured ? 'text-green-400' : 'text-red-400'}`} />
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-xs">Notificações Email</div>
+                      <div className="text-white font-semibold">{backupStatus.email_notifications_configured ? '✓ Configurado' : '✗ Não configurado'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
+              {/* Backup Actions */}
+              <div className="grid md:grid-cols-2 gap-6">
                 {/* Manual Backup */}
                 <div className="card-navy p-6">
                   <div className="flex items-center gap-3 mb-4">
@@ -1358,40 +1347,98 @@ export const AdminPage = () => {
                     </div>
                   </div>
                   
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400">Formato:</span>
-                      <span className="text-gray-300">ZIP (Database + Fotos)</span>
-                    </div>
-                    {backupStatus.last_backup && (
-                      <>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-400">Último backup:</span>
-                          <span className="text-gray-300">
-                            {new Date(backupStatus.last_backup.created_at).toLocaleString('pt-BR')}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-400">Criado por:</span>
-                          <span className="text-gray-300">{backupStatus.last_backup.created_by_name}</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  
                   <Button 
                     onClick={handleManualBackup} 
                     disabled={backupLoading}
-                    variant="outline"
-                    className="w-full border-green-500/50 text-green-400 hover:bg-green-500/10"
+                    className="w-full bg-green-600 hover:bg-green-500"
                   >
                     {backupLoading ? (
                       <><Loader2 size={16} className="mr-2 animate-spin" />Criando...</>
                     ) : (
-                      <><Download size={16} className="mr-2" />Baixar Backup</>
+                      <><Download size={16} className="mr-2" />Baixar Backup Agora</>
                     )}
                   </Button>
                 </div>
+
+                {/* Email Test */}
+                <div className="card-navy p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                      <AlertCircle className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Testar Notificações</h3>
+                      <p className="text-gray-400 text-sm">{backupStatus.notification_email || 'Email não configurado'}</p>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    onClick={handleTestEmail} 
+                    disabled={backupLoading || !backupStatus.email_notifications_configured}
+                    variant="outline"
+                    className="w-full border-purple-500/50 text-purple-400 hover:bg-purple-500/10"
+                  >
+                    {backupLoading ? (
+                      <><Loader2 size={16} className="mr-2 animate-spin" />Enviando...</>
+                    ) : (
+                      <>Enviar Email de Teste</>
+                    )}
+                  </Button>
+                  {!backupStatus.email_notifications_configured && (
+                    <p className="text-yellow-400 text-xs mt-2">Configure SMTP_PASSWORD no .env</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Local Backups */}
+              <div className="card-navy p-6">
+                <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                  <HardDrive className="text-green-400" size={20} />
+                  Backups Locais no Servidor
+                </h2>
+                
+                {localBackups.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <HardDrive size={40} className="mx-auto mb-3 opacity-50" />
+                    <p>Nenhum backup local encontrado</p>
+                    <p className="text-xs mt-1">O primeiro backup será criado em alguns minutos</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {localBackups.map((backup, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-[#102a43] rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <HardDrive className="text-green-400" size={20} />
+                          <div>
+                            <div className="text-white text-sm font-medium">{backup.filename}</div>
+                            <div className="text-gray-500 text-xs">
+                              {new Date(backup.created_at).toLocaleString('pt-BR')} • {backup.size_mb} MB
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDownloadLocalBackup(backup.filename)}
+                            className="border-green-500/50 text-green-400 hover:bg-green-500/10"
+                          >
+                            <Download size={14} className="mr-1" />
+                            Baixar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteLocalBackup(backup.filename)}
+                            className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Backup History */}
@@ -1403,7 +1450,7 @@ export const AdminPage = () => {
                 
                 {backupHistory.length === 0 ? (
                   <div className="text-center py-12 text-gray-400">
-                    <HardDrive size={48} className="mx-auto mb-4 opacity-50" />
+                    <History size={48} className="mx-auto mb-4 opacity-50" />
                     <p>Nenhum backup realizado ainda</p>
                   </div>
                 ) : (
@@ -1427,21 +1474,23 @@ export const AdminPage = () => {
                             </td>
                             <td className="px-4 py-3">
                               <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                backup.type === 'google_drive' 
-                                  ? 'bg-blue-500/20 text-blue-400' 
-                                  : 'bg-green-500/20 text-green-400'
+                                backup.type === 'google_drive' ? 'bg-blue-500/20 text-blue-400' :
+                                backup.type === 'automatic' ? 'bg-purple-500/20 text-purple-400' :
+                                'bg-green-500/20 text-green-400'
                               }`}>
-                                {backup.type === 'google_drive' ? '☁️ Google Drive' : '💾 Download'}
+                                {backup.type === 'google_drive' ? '☁️ Google Drive' : 
+                                 backup.type === 'automatic' ? '⏰ Automático' : '💾 Manual'}
                               </span>
                             </td>
                             <td className="px-4 py-3">
                               <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                backup.status === 'success' 
-                                  ? 'bg-green-500/20 text-green-400' 
-                                  : 'bg-red-500/20 text-red-400'
+                                backup.status === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                               }`}>
                                 {backup.status === 'success' ? '✓ Sucesso' : '✗ Erro'}
                               </span>
+                              {backup.local_saved && !backup.google_drive_saved && (
+                                <span className="ml-1 text-yellow-400 text-xs">(Local OK)</span>
+                              )}
                             </td>
                             <td className="px-4 py-3 text-gray-300 text-sm">
                               {backup.created_by_name || 'Sistema'}
@@ -1449,17 +1498,10 @@ export const AdminPage = () => {
                             <td className="px-4 py-3 text-gray-400 text-sm">
                               {backup.error ? (
                                 <span className="text-red-400 text-xs" title={backup.error}>
-                                  {backup.error.substring(0, 50)}...
+                                  {backup.error.substring(0, 40)}...
                                 </span>
-                              ) : backup.drive_link ? (
-                                <a 
-                                  href={backup.drive_link} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-sky-400 hover:text-sky-300 text-xs"
-                                >
-                                  Ver no Drive →
-                                </a>
+                              ) : backup.local_path ? (
+                                <span className="text-green-400 text-xs">Salvo no servidor</span>
                               ) : (
                                 <span className="text-gray-500 text-xs">{backup.filename}</span>
                               )}
