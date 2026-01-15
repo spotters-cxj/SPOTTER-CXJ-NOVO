@@ -417,10 +417,20 @@ html {
   color: white;
 }
 
-.tag-membro {
+.tag-spotter {
   background: rgba(56, 189, 248, 0.2);
   color: #38bdf8;
   border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.tag-jornalista {
+  background: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);
+  color: white;
+}
+
+.tag-diretor {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
 }
 
 .tag-lider {
