@@ -11,7 +11,7 @@ const HIERARCHY_LEVELS = {
   produtor: 4,
   avaliador: 3,
   colaborador: 2,
-  membro: 1
+  spotter_cxj: 1
 };
 
 export const useAuth = () => {
