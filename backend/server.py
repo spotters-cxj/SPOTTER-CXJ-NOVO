@@ -9,7 +9,7 @@ from pathlib import Path
 
 # Import routes
 from routes import auth, photos, evaluation, members, news, notifications, ranking, admin, logs
-from routes import pages, leaders, settings, timeline, stats, gallery, memories, upload, backup
+from routes import pages, leaders, settings, timeline, stats, gallery, memories, upload, backup, aircraft
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -39,6 +39,7 @@ api_router.include_router(memories.router)
 api_router.include_router(upload.router)
 api_router.include_router(logs.router)
 api_router.include_router(backup.router)
+api_router.include_router(aircraft.router)
 
 @api_router.get("/")
 async def root():
@@ -74,6 +75,14 @@ async def startup_db_client():
     app.state.db = client[db_name]
     app.state.mongo_client = client
     logger.info("Connected to MongoDB")
+    
+    # Start backup scheduler
+    try:
+        from scheduler import start_backup_scheduler
+        start_backup_scheduler()
+        logger.info("Backup scheduler started (every 12 hours)")
+    except Exception as e:
+        logger.warning(f"Could not start backup scheduler: {e}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
