@@ -1,7 +1,13 @@
 import axios from 'axios';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+// Get backend URL from environment or use current origin
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
 const API = `${BACKEND_URL}/api`;
+
+// Debug log for troubleshooting
+if (typeof window !== 'undefined') {
+  console.log('API Configuration:', { BACKEND_URL, API, env: process.env.REACT_APP_BACKEND_URL });
+}
 
 const api = axios.create({
   baseURL: API,
@@ -9,7 +15,17 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 second timeout
 });
+
+// Add response interceptor for better error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error.config?.url, error.message);
+    return Promise.reject(error);
+  }
+);
 
 // Auth API
 export const authApi = {
