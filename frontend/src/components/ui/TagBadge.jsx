@@ -60,7 +60,7 @@ const tagConfig = {
 };
 
 export const TagBadge = ({ tag, showIcon = true, size = 'default' }) => {
-  const config = tagConfig[tag] || { label: tag, className: 'tag-membro', icon: Users };
+  const config = tagConfig[tag] || { label: tag, className: 'tag-spotter', icon: Users };
   const Icon = config.icon;
   
   const sizeClasses = {
@@ -87,7 +87,7 @@ export const TagBadgeList = ({ tags = [], size = 'default', maxShow = 3 }) => {
         <TagBadge key={i} tag={tag} size={size} />
       ))}
       {remaining > 0 && (
-        <span className="tag tag-membro text-xs">+{remaining}</span>
+        <span className="tag tag-spotter text-xs">+{remaining}</span>
       )}
     </div>
   );
