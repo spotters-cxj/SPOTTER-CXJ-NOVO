@@ -36,14 +36,24 @@ export const GalleryPage = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [photosRes, typesRes] = await Promise.all([
-        galleryApi.list({ aircraft_type: filterAircraft || undefined }),
-        galleryApi.getTypes()
-      ]);
-      setPhotos(photosRes.data);
-      setAircraftTypes(typesRes.data);
+      console.log('Loading gallery data...');
+      
+      const photosRes = await galleryApi.list({ aircraft_type: filterAircraft || undefined }).catch(err => {
+        console.error('Error fetching photos:', err);
+        return { data: [] };
+      });
+      
+      const typesRes = await galleryApi.getTypes().catch(err => {
+        console.error('Error fetching types:', err);
+        return { data: [] };
+      });
+      
+      console.log('Gallery loaded:', { photos: photosRes.data?.length, types: typesRes.data?.length });
+      setPhotos(photosRes.data || []);
+      setAircraftTypes(typesRes.data || []);
     } catch (error) {
       console.error('Error loading gallery:', error);
+      toast.error('Erro ao carregar galeria');
     } finally {
       setLoading(false);
     }
