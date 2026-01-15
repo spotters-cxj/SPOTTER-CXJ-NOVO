@@ -177,4 +177,13 @@ export const logsApi = {
   getStats: () => api.get('/logs/stats'),
 };
 
+// Backup API
+export const backupApi = {
+  getStatus: () => api.get('/backup/status'),
+  getHistory: (limit = 20) => api.get('/backup/history', { params: { limit } }),
+  getConfig: () => api.get('/backup/config'),
+  createGoogleDrive: () => api.post('/backup/google-drive', {}, { timeout: 120000 }), // 2 min timeout for upload
+  createManual: () => api.get('/backup/manual', { responseType: 'blob', timeout: 120000 }),
+};
+
 export default api;
