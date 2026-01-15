@@ -188,6 +188,7 @@ export const backupApi = {
   downloadLocal: (filename) => api.get(`/backup/local/download/${filename}`, { responseType: 'blob' }),
   deleteLocal: (filename) => api.delete(`/backup/local/${filename}`),
   testEmail: () => api.post('/backup/test-email'),
+  sendWeeklyReport: () => api.post('/backup/send-weekly-report'),
 };
 
 // Aircraft API
