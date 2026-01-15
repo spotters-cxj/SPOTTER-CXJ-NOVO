@@ -80,3 +80,7 @@ android-sdk/
 
 # Note: .env files MUST be tracked for Emergent deployments to work correctly
 # DO NOT add *.env or .env to this file
+-e 
+# Environment files
+*.env
+*.env.*
