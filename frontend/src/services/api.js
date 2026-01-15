@@ -182,8 +182,18 @@ export const backupApi = {
   getStatus: () => api.get('/backup/status'),
   getHistory: (limit = 20) => api.get('/backup/history', { params: { limit } }),
   getConfig: () => api.get('/backup/config'),
-  createGoogleDrive: () => api.post('/backup/google-drive', {}, { timeout: 120000 }), // 2 min timeout for upload
+  createGoogleDrive: () => api.post('/backup/google-drive', {}, { timeout: 120000 }),
   createManual: () => api.get('/backup/manual', { responseType: 'blob', timeout: 120000 }),
+  listLocal: () => api.get('/backup/local'),
+  downloadLocal: (filename) => api.get(`/backup/local/download/${filename}`, { responseType: 'blob' }),
+  deleteLocal: (filename) => api.delete(`/backup/local/${filename}`),
+  testEmail: () => api.post('/backup/test-email'),
+};
+
+// Aircraft API
+export const aircraftApi = {
+  lookup: (registration) => api.get('/aircraft/anac_lookup', { params: { registration } }),
+  quickLookup: (registration) => api.get(`/aircraft/quick_lookup/${registration}`),
 };
 
 export default api;
