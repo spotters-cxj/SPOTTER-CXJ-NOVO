@@ -25,41 +25,49 @@ Aplicativo web completo para a comunidade de entusiastas da aviação Spotters C
 - Timeline do aeroporto e marcos dos Spotters
 - Configurações de redes sociais e pagamentos
 - Logs de auditoria
-- ✅ **Sistema de Backups** (Nova implementação)
-  - Backup automático para Google Drive
-  - Backup manual para download local
-  - Histórico de backups
+- **Sistema de Backups completo**
 
 ### Sistema de Backup (Implementado em 15/01/2026)
-- **Google Drive Backup:** Upload automático para pasta configurada
-- **Backup Manual:** Download direto em formato ZIP
-- **Conteúdo do backup:** Database completo (JSON) + arquivos de fotos
+- ✅ **Backup Automático a cada 12 horas** - Scheduler rodando no backend
+- ✅ **Backup Google Drive** - Upload para pasta configurada
+- ✅ **Backup Manual** - Download direto em formato ZIP
+- ✅ **Histórico de Backups** - Visualização na aba Backups do admin
 - **ID da pasta Google Drive:** `103tuOyqiSzCDkdpVcWyHYKYXro3pG1_y`
+- **Nota:** A conta de serviço precisa de acesso "Editor" na pasta
 
-### Galeria e Fotos
-- Upload de fotos com metadados de aeronave
-- Sistema de avaliação com 5 critérios
-- Ranking público de fotos
-- Visualização por tipo de aeronave
+### Integração ANAC (Implementado em 15/01/2026)
+- ✅ **Consulta por matrícula** - Endpoint `/api/aircraft/anac_lookup`
+- ✅ **Quick lookup local** - Base de aeronaves comuns (GOL, LATAM, Azul)
+- ✅ **Botão de busca** na página de upload
+- Auto-preenchimento de modelo e companhia
 
-### Notícias
-- CRUD completo de notícias
-- ✅ Sistema de rascunhos (published: true/false)
-- Upload de imagens para notícias
+### Upload de Fotos (Melhorado em 15/01/2026)
+- ✅ **Campo de créditos** - Obrigatório quando não é foto própria
+- ✅ **Checkbox "Foto de minha autoria"**
+- ✅ **Consulta ANAC** por matrícula
+- ✅ Validação de créditos
+
+### Página "Minhas Fotos" (Melhorada em 15/01/2026)
+- ✅ **Navegação por abas** - "Enviar Foto" / "Minhas Fotos"
+- ✅ **Estatísticas** - Total, Aprovadas, Pendentes, Recusadas
+- ✅ **Cards detalhados** - Status, nota, data, rating público
+- ✅ **Comentários do avaliador** visíveis
+- ✅ **Créditos** exibidos quando aplicável
 
 ## Arquivos Principais
 
 ### Backend
-- `/app/backend/server.py` - Entry point
+- `/app/backend/server.py` - Entry point + scheduler startup
+- `/app/backend/scheduler.py` - Backup automático a cada 12h
 - `/app/backend/routes/backup.py` - Sistema de backup
+- `/app/backend/routes/aircraft.py` - Integração ANAC
+- `/app/backend/routes/photos.py` - Upload com créditos
 - `/app/backend/routes/members.py` - Hierarquia de membros
-- `/app/backend/routes/news.py` - Notícias e rascunhos
-- `/app/backend/models.py` - Modelos e hierarquia
 
 ### Frontend
-- `/app/frontend/src/components/pages/AdminPage.jsx` - Painel admin
-- `/app/frontend/src/components/ui/TagBadge.jsx` - Badges de tags
-- `/app/frontend/src/contexts/AuthContext.jsx` - Autenticação
+- `/app/frontend/src/components/pages/AdminPage.jsx` - Painel admin com backups
+- `/app/frontend/src/components/pages/UploadPage.jsx` - Upload melhorado
+- `/app/frontend/src/services/api.js` - APIs de backup e aircraft
 
 ## Configurações de Ambiente
 
@@ -74,23 +82,19 @@ GOOGLE_CREDENTIALS_PATH=/app/backend/google_credentials.json
 ## Tarefas Pendentes
 
 ### Alta Prioridade (P1)
-- [ ] Integração ANAC para lookup de aeronaves
-- [ ] Verificação do backup Google Drive após compartilhamento correto da pasta
-
-### Média Prioridade (P2)
-- [ ] Melhorias na página "Minhas Fotos"
-- [ ] Campo de créditos de foto obrigatório
-- [ ] Correção de links sociais nos perfis
+- [ ] Configurar Google Drive corretamente (shared drive ou permissões)
 
 ### Baixa Prioridade (P3)
-- [ ] Página de Liderança
+- [ ] Página de Liderança dedicada
 - [ ] Otimizações de performance (LazyImage)
+- [ ] Correção de links sociais nos perfis
 
 ## Notas Importantes
 
-1. **Deploy:** O site de produção precisa ser re-deployado para refletir as mudanças recentes
-2. **Backup Google Drive:** A conta de serviço precisa ter permissão de "Editor" na pasta compartilhada
-3. **Tags:** A tag "membro" foi completamente removida e substituída por "spotter_cxj"
+1. **Backup Automático:** Roda a cada 12 horas automaticamente
+2. **Google Drive:** Erro de quota em conta de serviço - usar shared drive
+3. **ANAC:** Usa scraping do site oficial + base local de fallback
+4. **Deploy:** Faça re-deploy para aplicar mudanças em produção
 
 ---
 Última atualização: 15/01/2026
