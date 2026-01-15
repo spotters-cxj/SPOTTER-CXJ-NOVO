@@ -169,9 +169,14 @@ export const Footer = () => {
             <p className="text-gray-500 text-sm">
               © {currentYear} Spotters CXJ. Todos os direitos reservados.
             </p>
-            <p className="text-gray-500 text-sm flex items-center gap-2">
-              Feito com <span className="text-red-500">♥</span> para a comunidade de spotters
-            </p>
+            <div className="flex items-center gap-4">
+              <p className="text-gray-500 text-sm flex items-center gap-2">
+                Feito com <span className="text-red-500">♥</span> para a comunidade de spotters
+              </p>
+              <span className="text-gray-600 text-xs font-mono bg-[#102a43] px-2 py-1 rounded">
+                v{settings?.site_version || '1.0.0'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
