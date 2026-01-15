@@ -27,9 +27,11 @@ const AVAILABLE_TAGS = [
   { value: 'produtor', label: 'Produtor', color: 'bg-blue-500', icon: '🎬' },
   { value: 'avaliador', label: 'Avaliador', color: 'bg-green-500', icon: '✅' },
   { value: 'colaborador', label: 'Colaborador', color: 'bg-pink-500', icon: '⭐' },
-  { value: 'membro', label: 'Membro', color: 'bg-gray-500', icon: '👤' },
+  { value: 'spotter_cxj', label: 'Spotter CXJ', color: 'bg-sky-500', icon: '📷' },
   { value: 'vip', label: 'VIP', color: 'bg-amber-500', icon: '💎' },
   { value: 'podio', label: 'Pódio', color: 'bg-orange-500', icon: '🏆' },
+  { value: 'jornalista', label: 'Jornalista', color: 'bg-cyan-500', icon: '📰' },
+  { value: 'diretor_aeroporto', label: 'Diretor do Aeroporto', color: 'bg-indigo-500', icon: '✈️' },
 ];
 
 export const AdminPage = () => {
