@@ -545,6 +545,23 @@ export const AdminPage = () => {
     }
   };
 
+  const handleSendWeeklyReport = async () => {
+    setBackupLoading(true);
+    toast.info('Gerando relatório semanal...');
+    try {
+      const res = await backupApi.sendWeeklyReport();
+      if (res.data.success) {
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erro ao enviar relatório');
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
   // Filter users
   const filteredUsers = users.filter(u => {
     const matchesSearch = !userSearch || 
