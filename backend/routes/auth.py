@@ -104,7 +104,7 @@ async def create_session(request: Request, response: Response):
         "email": user["email"],
         "name": user["name"],
         "picture": user.get("picture"),
-        "tags": user.get("tags", ["membro"]),
+        "tags": user.get("tags", ["spotter_cxj"]),
         "approved": user.get("approved", False),
         "is_vip": user.get("is_vip", False)
     }
@@ -136,7 +136,7 @@ async def register_email(request: Request):
         tags = ["lider", "admin"]
         approved = True
     else:
-        tags = ["membro"]
+        tags = ["spotter_cxj"]
         approved = False
     
     new_user = {
@@ -154,7 +154,7 @@ async def register_email(request: Request):
     
     await create_notification(
         db, user_id, "tag_assigned",
-        f"🎉 Bem-vindo ao Spotters CXJ! Você recebeu a tag: MEMBRO"
+        f"🎉 Bem-vindo ao Spotters CXJ! Você recebeu a tag: SPOTTER CXJ"
     )
     
     return {"message": "Usuário cadastrado com sucesso", "user_id": user_id}
