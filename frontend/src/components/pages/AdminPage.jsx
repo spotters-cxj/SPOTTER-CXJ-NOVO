@@ -1243,6 +1243,185 @@ export const AdminPage = () => {
                 </div>
               </div>
             </TabsContent>
+
+            {/* ==================== BACKUPS TAB ==================== */}
+            <TabsContent value="backups" className="space-y-6">
+              {/* Backup Status */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Google Drive Backup */}
+                <div className="card-navy p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                      <Cloud className="w-6 h-6 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Backup Google Drive</h3>
+                      <p className="text-gray-400 text-sm">Envio automático para a nuvem</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Status:</span>
+                      <span className={backupStatus.google_drive_configured ? 'text-green-400' : 'text-red-400'}>
+                        {backupStatus.google_drive_configured ? '✓ Configurado' : '✗ Não configurado'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">ID da Pasta:</span>
+                      <span className="text-gray-300 text-xs font-mono truncate max-w-[150px]" title={backupStatus.google_drive_folder_id}>
+                        {backupStatus.google_drive_folder_id || 'N/A'}
+                      </span>
+                    </div>
+                    {backupStatus.last_drive_backup && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-400">Último backup:</span>
+                        <span className="text-gray-300">
+                          {new Date(backupStatus.last_drive_backup.created_at).toLocaleString('pt-BR')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Button 
+                    onClick={handleGoogleDriveBackup} 
+                    disabled={backupLoading || !backupStatus.google_drive_configured}
+                    className="w-full btn-accent"
+                  >
+                    {backupLoading ? (
+                      <><Loader2 size={16} className="mr-2 animate-spin" />Enviando...</>
+                    ) : (
+                      <><Upload size={16} className="mr-2" />Enviar para Google Drive</>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Manual Backup */}
+                <div className="card-navy p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                      <Download className="w-6 h-6 text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Backup Manual</h3>
+                      <p className="text-gray-400 text-sm">Download direto do arquivo</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Formato:</span>
+                      <span className="text-gray-300">ZIP (Database + Fotos)</span>
+                    </div>
+                    {backupStatus.last_backup && (
+                      <>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-400">Último backup:</span>
+                          <span className="text-gray-300">
+                            {new Date(backupStatus.last_backup.created_at).toLocaleString('pt-BR')}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-400">Criado por:</span>
+                          <span className="text-gray-300">{backupStatus.last_backup.created_by_name}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  
+                  <Button 
+                    onClick={handleManualBackup} 
+                    disabled={backupLoading}
+                    variant="outline"
+                    className="w-full border-green-500/50 text-green-400 hover:bg-green-500/10"
+                  >
+                    {backupLoading ? (
+                      <><Loader2 size={16} className="mr-2 animate-spin" />Criando...</>
+                    ) : (
+                      <><Download size={16} className="mr-2" />Baixar Backup</>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Backup History */}
+              <div className="card-navy p-6">
+                <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                  <History className="text-sky-400" size={20} />
+                  Histórico de Backups
+                </h2>
+                
+                {backupHistory.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <HardDrive size={48} className="mx-auto mb-4 opacity-50" />
+                    <p>Nenhum backup realizado ainda</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-[#102a43]">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Data/Hora</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Tipo</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Criado por</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Detalhes</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#1a3a5c]">
+                        {backupHistory.map((backup, index) => (
+                          <tr key={backup.backup_id || index} className="hover:bg-[#102a43]/50">
+                            <td className="px-4 py-3 text-sm">
+                              <div className="text-white">{new Date(backup.created_at).toLocaleDateString('pt-BR')}</div>
+                              <div className="text-gray-500 text-xs">{new Date(backup.created_at).toLocaleTimeString('pt-BR')}</div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                backup.type === 'google_drive' 
+                                  ? 'bg-blue-500/20 text-blue-400' 
+                                  : 'bg-green-500/20 text-green-400'
+                              }`}>
+                                {backup.type === 'google_drive' ? '☁️ Google Drive' : '💾 Download'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                backup.status === 'success' 
+                                  ? 'bg-green-500/20 text-green-400' 
+                                  : 'bg-red-500/20 text-red-400'
+                              }`}>
+                                {backup.status === 'success' ? '✓ Sucesso' : '✗ Erro'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-gray-300 text-sm">
+                              {backup.created_by_name || 'Sistema'}
+                            </td>
+                            <td className="px-4 py-3 text-gray-400 text-sm">
+                              {backup.error ? (
+                                <span className="text-red-400 text-xs" title={backup.error}>
+                                  {backup.error.substring(0, 50)}...
+                                </span>
+                              ) : backup.drive_link ? (
+                                <a 
+                                  href={backup.drive_link} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-sky-400 hover:text-sky-300 text-xs"
+                                >
+                                  Ver no Drive →
+                                </a>
+                              ) : (
+                                <span className="text-gray-500 text-xs">{backup.filename}</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
       </section>
