@@ -588,6 +588,9 @@ export const AdminPage = () => {
               <TabsTrigger value="logs" className="data-[state=active]:bg-sky-600">
                 <History size={16} className="mr-2" />Logs
               </TabsTrigger>
+              <TabsTrigger value="backups" className="data-[state=active]:bg-sky-600">
+                <HardDrive size={16} className="mr-2" />Backups
+              </TabsTrigger>
             </TabsList>
 
             {/* ==================== MEMBERS TAB ==================== */}
