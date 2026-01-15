@@ -50,6 +50,11 @@ export const AdminPage = () => {
   const [evaluationQueue, setEvaluationQueue] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Backup states
+  const [backupStatus, setBackupStatus] = useState({});
+  const [backupHistory, setBackupHistory] = useState([]);
+  const [backupLoading, setBackupLoading] = useState(false);
+
   // Filter states
   const [userSearch, setUserSearch] = useState('');
   const [userTagFilter, setUserTagFilter] = useState('');
