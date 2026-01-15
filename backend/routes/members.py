@@ -71,7 +71,7 @@ async def get_hierarchy(request: Request):
         "produtores": [],
         "avaliadores": [],
         "colaboradores": [],
-        "membros": []
+        "spotters": []
     }
     
     for member in members:
@@ -89,7 +89,7 @@ async def get_hierarchy(request: Request):
         elif "colaborador" in tags:
             hierarchy["colaboradores"].append(member)
         else:
-            hierarchy["membros"].append(member)
+            hierarchy["spotters"].append(member)
     
     return hierarchy
 
