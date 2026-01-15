@@ -59,7 +59,7 @@ async def get_queue_status(request: Request):
 
 @router.get("/my")
 async def get_my_photos(request: Request):
-    """Get current user's photos"""
+    """Get current user's photos with evaluation details"""
     user = await get_current_user(request)
     db = await get_db(request)
     
@@ -67,6 +67,18 @@ async def get_my_photos(request: Request):
         {"author_id": user["user_id"]}, 
         {"_id": 0}
     ).sort("created_at", -1).to_list(100)
+    
+    # Add evaluation comments for each photo
+    for photo in photos:
+        # Get the latest evaluation for this photo
+        evaluation = await db.evaluations.find_one(
+            {"photo_id": photo["photo_id"]},
+            {"_id": 0, "comment": 1, "final_score": 1},
+            sort=[("created_at", -1)]
+        )
+        if evaluation:
+            photo["evaluation_comment"] = evaluation.get("comment")
+            photo["final_rating"] = evaluation.get("final_score")
     
     return photos
 
