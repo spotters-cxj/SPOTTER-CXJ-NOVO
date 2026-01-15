@@ -171,6 +171,8 @@ async def upload_photo(
         "public_rating_count": 0,
         "comments_count": 0,
         "views": 0,
+        "credits": credits if not is_own else None,
+        "is_own_photo": is_own,
         "created_at": datetime.now(timezone.utc)
     }
     
