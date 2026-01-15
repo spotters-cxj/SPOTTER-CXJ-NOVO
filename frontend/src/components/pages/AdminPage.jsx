@@ -56,6 +56,7 @@ export const AdminPage = () => {
   const [backupStatus, setBackupStatus] = useState({});
   const [backupHistory, setBackupHistory] = useState([]);
   const [backupLoading, setBackupLoading] = useState(false);
+  const [localBackups, setLocalBackups] = useState([]);
 
   // Filter states
   const [userSearch, setUserSearch] = useState('');
