@@ -1384,26 +1384,43 @@ export const AdminPage = () => {
                       <AlertCircle className="w-6 h-6 text-purple-400" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-white">Testar Notificações</h3>
+                      <h3 className="text-lg font-semibold text-white">Notificações por Email</h3>
                       <p className="text-gray-400 text-sm">{backupStatus.notification_email || 'Email não configurado'}</p>
                     </div>
                   </div>
                   
-                  <Button 
-                    onClick={handleTestEmail} 
-                    disabled={backupLoading || !backupStatus.email_notifications_configured}
-                    variant="outline"
-                    className="w-full border-purple-500/50 text-purple-400 hover:bg-purple-500/10"
-                  >
-                    {backupLoading ? (
-                      <><Loader2 size={16} className="mr-2 animate-spin" />Enviando...</>
-                    ) : (
-                      <>Enviar Email de Teste</>
-                    )}
-                  </Button>
+                  <div className="space-y-3">
+                    <Button 
+                      onClick={handleTestEmail} 
+                      disabled={backupLoading || !backupStatus.email_notifications_configured}
+                      variant="outline"
+                      className="w-full border-purple-500/50 text-purple-400 hover:bg-purple-500/10"
+                    >
+                      {backupLoading ? (
+                        <><Loader2 size={16} className="mr-2 animate-spin" />Enviando...</>
+                      ) : (
+                        <>🧪 Enviar Email de Teste</>
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      onClick={handleSendWeeklyReport} 
+                      disabled={backupLoading || !backupStatus.email_notifications_configured}
+                      variant="outline"
+                      className="w-full border-sky-500/50 text-sky-400 hover:bg-sky-500/10"
+                    >
+                      {backupLoading ? (
+                        <><Loader2 size={16} className="mr-2 animate-spin" />Gerando...</>
+                      ) : (
+                        <>📊 Enviar Relatório Semanal Agora</>
+                      )}
+                    </Button>
+                  </div>
+                  
                   {!backupStatus.email_notifications_configured && (
-                    <p className="text-yellow-400 text-xs mt-2">Configure SMTP_PASSWORD no .env</p>
+                    <p className="text-yellow-400 text-xs mt-3">Configure SMTP_PASSWORD no .env</p>
                   )}
+                  <p className="text-gray-500 text-xs mt-2">Relatório automático: todo Domingo às 10h</p>
                 </div>
               </div>
 
