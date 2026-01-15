@@ -5,28 +5,32 @@ const TAG_STYLES = {
   colaborador: 'tag-colaborador',
   vip: 'tag-vip',
   avaliador: 'tag-avaliador',
-  membro: 'tag-membro',
+  spotter_cxj: 'tag-spotter',
   lider: 'tag-lider',
   admin: 'tag-admin',
   gestao: 'tag-gestao',
   produtor: 'tag-produtor',
-  podio: 'tag-podio'
+  podio: 'tag-podio',
+  jornalista: 'tag-jornalista',
+  diretor_aeroporto: 'tag-diretor'
 };
 
 const TAG_LABELS = {
   colaborador: 'Colaborador',
   vip: 'VIP',
   avaliador: 'Avaliador',
-  membro: 'Membro',
+  spotter_cxj: 'Spotter CXJ',
   lider: 'Líder',
   admin: 'Admin',
   gestao: 'Gestão',
   produtor: 'Produtor',
-  podio: 'Pódio'
+  podio: 'Pódio',
+  jornalista: 'Jornalista',
+  diretor_aeroporto: 'Diretor do Aeroporto'
 };
 
 export const UserTag = ({ type, className }) => {
-  const style = TAG_STYLES[type] || TAG_STYLES.membro;
+  const style = TAG_STYLES[type] || TAG_STYLES.spotter_cxj;
   const label = TAG_LABELS[type] || type;
 
   return (
@@ -56,12 +60,12 @@ export const HIERARCHY_LEVELS = {
   produtor: 4,
   avaliador: 3,
   colaborador: 2,
-  membro: 1
+  spotter_cxj: 1
 };
 
 export const getHighestRole = (tags = []) => {
   let highest = 0;
-  let role = 'membro';
+  let role = 'spotter_cxj';
   
   tags.forEach(tag => {
     const level = HIERARCHY_LEVELS[tag] || 0;
