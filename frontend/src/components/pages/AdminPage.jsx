@@ -446,6 +446,55 @@ export const AdminPage = () => {
     }
   };
 
+  // ========== BACKUP FUNCTIONS ==========
+  const handleGoogleDriveBackup = async () => {
+    if (backupLoading) return;
+    setBackupLoading(true);
+    toast.info('Criando backup e enviando para Google Drive...');
+    
+    try {
+      const res = await backupApi.createGoogleDrive();
+      toast.success(res.data?.message || 'Backup enviado com sucesso!');
+      if (res.data?.drive_link) {
+        toast.success(`Link: ${res.data.drive_link}`);
+      }
+      loadAllData();
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || 'Erro ao criar backup';
+      toast.error(errorMsg);
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  const handleManualBackup = async () => {
+    if (backupLoading) return;
+    setBackupLoading(true);
+    toast.info('Criando backup para download...');
+    
+    try {
+      const res = await backupApi.createManual();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      link.setAttribute('download', `spotters_backup_${timestamp}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Backup baixado com sucesso!');
+      loadAllData();
+    } catch (error) {
+      toast.error('Erro ao criar backup para download');
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
   // Filter users
   const filteredUsers = users.filter(u => {
     const matchesSearch = !userSearch || 
