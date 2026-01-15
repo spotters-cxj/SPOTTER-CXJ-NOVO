@@ -113,7 +113,8 @@ export const AdminPage = () => {
         newsApi.list(50),
         evaluationApi.getQueue(),
         backupApi.getStatus(),
-        backupApi.getHistory()
+        backupApi.getHistory(),
+        backupApi.listLocal()
       ]);
 
       if (results[0].status === 'fulfilled') setUsers(results[0].value.data || []);
@@ -136,6 +137,7 @@ export const AdminPage = () => {
       if (results[11].status === 'fulfilled') setEvaluationQueue(results[11].value.data || []);
       if (results[12].status === 'fulfilled') setBackupStatus(results[12].value.data || {});
       if (results[13].status === 'fulfilled') setBackupHistory(results[13].value.data || []);
+      if (results[14].status === 'fulfilled') setLocalBackups(results[14].value.data || []);
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Erro ao carregar dados');
