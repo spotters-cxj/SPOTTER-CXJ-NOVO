@@ -81,11 +81,16 @@ async def upload_photo(
     airline: Optional[str] = Form(None),
     location: Optional[str] = Form(None),
     photo_date: str = Form(...),
+    credits: Optional[str] = Form(None),
+    is_own_photo: Optional[str] = Form("true"),
     file: UploadFile = File(...)
 ):
     """Upload a new photo"""
     user = await get_current_user(request)
     db = await get_db(request)
+    
+    # Convert is_own_photo string to boolean
+    is_own = is_own_photo.lower() == "true" if is_own_photo else True
     
     if not user.get("approved", False):
         raise HTTPException(status_code=403, detail="Usuário não aprovado para upload")
