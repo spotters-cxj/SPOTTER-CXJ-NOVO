@@ -1,11 +1,12 @@
 """
 Scheduled Tasks for Spotters CXJ
-Includes automatic backup every 12 hours with local storage and email notifications
+- Automatic backup every 12 hours
+- Weekly statistics report every Sunday
 """
 import asyncio
 import os
 import shutil
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from motor.motor_asyncio import AsyncIOMotorClient
 import logging
 
@@ -13,14 +14,13 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 BACKUP_INTERVAL_HOURS = 12
+REPORT_CHECK_INTERVAL_HOURS = 6  # Check every 6 hours if it's time for weekly report
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 DB_NAME = os.environ.get('DB_NAME', 'test_database')
-GOOGLE_DRIVE_FOLDER_ID = os.environ.get('GOOGLE_DRIVE_FOLDER_ID', '103tuOyqiSzCDkdpVcWyHYKYXro3pG1_y')
+GOOGLE_DRIVE_FOLDER_ID = os.environ.get('GOOGLE_DRIVE_FOLDER_ID', '')
 GOOGLE_CREDENTIALS_PATH = os.environ.get('GOOGLE_CREDENTIALS_PATH', '/app/backend/google_credentials.json')
-
-# Local backup directory
 LOCAL_BACKUP_DIR = "/app/backend/backups"
-MAX_LOCAL_BACKUPS = 10  # Keep last 10 backups
+MAX_LOCAL_BACKUPS = 10
 
 async def get_db():
     """Get database connection"""
@@ -52,18 +52,14 @@ async def create_backup_zip(db):
     os.makedirs(dump_dir, exist_ok=True)
     
     try:
-        # Export database to JSON
         collections = await export_database_to_json(db, dump_dir)
         
-        # Create ZIP with everything
         with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # Add JSON dumps
             for col_name in collections:
                 json_path = os.path.join(dump_dir, f"{col_name}.json")
                 if os.path.exists(json_path):
                     zipf.write(json_path, f"database/{col_name}.json")
             
-            # Add photos
             uploads_dir = "/app/backend/uploads"
             if os.path.exists(uploads_dir):
                 for root, dirs, files in os.walk(uploads_dir):
@@ -74,19 +70,14 @@ async def create_backup_zip(db):
         
         return backup_path, backup_name
     finally:
-        # Cleanup dump directory
         shutil.rmtree(dump_dir, ignore_errors=True)
 
 def save_backup_locally(backup_path: str, backup_name: str) -> str:
     """Save backup to local directory"""
     os.makedirs(LOCAL_BACKUP_DIR, exist_ok=True)
-    
     local_path = os.path.join(LOCAL_BACKUP_DIR, backup_name)
     shutil.copy2(backup_path, local_path)
-    
-    # Cleanup old backups (keep only MAX_LOCAL_BACKUPS)
     cleanup_old_backups()
-    
     return local_path
 
 def cleanup_old_backups():
@@ -101,10 +92,8 @@ def cleanup_old_backups():
                 full_path = os.path.join(LOCAL_BACKUP_DIR, f)
                 backups.append((full_path, os.path.getmtime(full_path)))
         
-        # Sort by modification time (newest first)
         backups.sort(key=lambda x: x[1], reverse=True)
         
-        # Remove old backups
         for backup_path, _ in backups[MAX_LOCAL_BACKUPS:]:
             os.remove(backup_path)
             logger.info(f"Removed old backup: {backup_path}")
@@ -119,7 +108,10 @@ def upload_to_google_drive(file_path: str, file_name: str):
     from googleapiclient.http import MediaFileUpload
     
     if not os.path.exists(GOOGLE_CREDENTIALS_PATH):
-        raise Exception(f"Credentials file not found: {GOOGLE_CREDENTIALS_PATH}")
+        raise Exception(f"Credentials file not found")
+    
+    if not GOOGLE_DRIVE_FOLDER_ID:
+        raise Exception("Google Drive folder ID not configured")
     
     credentials = service_account.Credentials.from_service_account_file(
         GOOGLE_CREDENTIALS_PATH,
@@ -133,11 +125,7 @@ def upload_to_google_drive(file_path: str, file_name: str):
         'parents': [GOOGLE_DRIVE_FOLDER_ID]
     }
     
-    media = MediaFileUpload(
-        file_path,
-        mimetype='application/zip',
-        resumable=True
-    )
+    media = MediaFileUpload(file_path, mimetype='application/zip', resumable=True)
     
     file = service.files().create(
         body=file_metadata,
@@ -155,11 +143,11 @@ async def perform_automatic_backup():
     local_backup_saved = False
     google_drive_success = False
     error_message = None
+    local_path = None
     
     try:
         logger.info("Starting automatic backup...")
         
-        # Create backup
         backup_path, backup_name = await create_backup_zip(db)
         logger.info(f"Backup created: {backup_name}")
         
@@ -174,13 +162,14 @@ async def perform_automatic_backup():
         
         # Try Google Drive upload
         try:
-            drive_file = upload_to_google_drive(backup_path, backup_name)
-            google_drive_success = True
-            logger.info(f"Backup uploaded to Google Drive: {drive_file.get('webViewLink')}")
+            if GOOGLE_DRIVE_FOLDER_ID:
+                drive_file = upload_to_google_drive(backup_path, backup_name)
+                google_drive_success = True
+                logger.info(f"Backup uploaded to Google Drive")
         except Exception as e:
             logger.warning(f"Google Drive upload failed: {e}")
             if not error_message:
-                error_message = f"Erro no Google Drive: {str(e)}"
+                error_message = f"Google Drive: {str(e)}"
         
         # Log result
         log_entry = {
@@ -195,10 +184,6 @@ async def perform_automatic_backup():
             "google_drive_saved": google_drive_success
         }
         
-        if google_drive_success:
-            log_entry["drive_file_id"] = drive_file.get('id')
-            log_entry["drive_link"] = drive_file.get('webViewLink')
-        
         if local_backup_saved:
             log_entry["local_path"] = local_path
         
@@ -207,18 +192,7 @@ async def perform_automatic_backup():
         
         await db.backup_logs.insert_one(log_entry)
         
-        # Send email notification if Google Drive failed but local succeeded
-        if local_backup_saved and not google_drive_success:
-            try:
-                from email_service import send_backup_failure_notification
-                send_backup_failure_notification(
-                    f"Google Drive falhou, mas o backup local foi salvo.\n\nErro: {error_message}\n\nBackup local: {local_path}",
-                    "automático"
-                )
-            except Exception as e:
-                logger.warning(f"Could not send email notification: {e}")
-        
-        # Send failure notification if local also failed
+        # Send email if failed
         if not local_backup_saved:
             try:
                 from email_service import send_backup_failure_notification
@@ -226,14 +200,13 @@ async def perform_automatic_backup():
             except Exception as e:
                 logger.warning(f"Could not send email notification: {e}")
         
-        logger.info(f"Automatic backup completed. Local: {local_backup_saved}, Google Drive: {google_drive_success}")
+        logger.info(f"Backup completed. Local: {local_backup_saved}, Drive: {google_drive_success}")
         return local_backup_saved
         
     except Exception as e:
         error_message = str(e)
         logger.error(f"Automatic backup failed: {error_message}")
         
-        # Log error
         try:
             await db.backup_logs.insert_one({
                 "backup_id": f"auto_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
@@ -248,25 +221,112 @@ async def perform_automatic_backup():
         except:
             pass
         
-        # Send failure notification
         try:
             from email_service import send_backup_failure_notification
             send_backup_failure_notification(error_message, "automático")
-        except Exception as email_error:
-            logger.warning(f"Could not send email notification: {email_error}")
+        except:
+            pass
         
         return False
     finally:
-        # Cleanup temp file
         if backup_path and os.path.exists(backup_path):
             os.remove(backup_path)
+
+async def collect_weekly_stats():
+    """Collect statistics for weekly report"""
+    db = await get_db()
+    
+    now = datetime.now(timezone.utc)
+    week_ago = now - timedelta(days=7)
+    
+    # Total counts
+    total_users = await db.users.count_documents({})
+    total_photos = await db.photos.count_documents({})
+    total_news = await db.news.count_documents({"published": True})
+    
+    # Pending counts
+    pending_photos = await db.photos.count_documents({"status": "pending"})
+    pending_users = await db.users.count_documents({"approved": False})
+    
+    # Weekly counts
+    new_users = await db.users.count_documents({"created_at": {"$gte": week_ago}})
+    new_photos = await db.photos.count_documents({"created_at": {"$gte": week_ago}})
+    photos_approved = await db.photos.count_documents({
+        "status": "approved",
+        "updated_at": {"$gte": week_ago}
+    })
+    photos_rejected = await db.photos.count_documents({
+        "status": "rejected", 
+        "updated_at": {"$gte": week_ago}
+    })
+    
+    # Top contributors this week
+    pipeline = [
+        {"$match": {"created_at": {"$gte": week_ago}}},
+        {"$group": {"_id": "$author_id", "count": {"$sum": 1}, "name": {"$first": "$author_name"}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 5}
+    ]
+    top_contributors_cursor = db.photos.aggregate(pipeline)
+    top_contributors = []
+    async for doc in top_contributors_cursor:
+        top_contributors.append({"name": doc.get("name", "N/A"), "count": doc.get("count", 0)})
+    
+    # Backup info
+    local_backup_count = 0
+    if os.path.exists(LOCAL_BACKUP_DIR):
+        local_backup_count = len([f for f in os.listdir(LOCAL_BACKUP_DIR) if f.endswith('.zip')])
+    
+    last_backup_doc = await db.backup_logs.find_one(
+        {"status": "success"},
+        {"_id": 0, "created_at": 1},
+        sort=[("created_at", -1)]
+    )
+    last_backup = "N/A"
+    if last_backup_doc:
+        last_backup = last_backup_doc["created_at"].strftime('%d/%m/%Y %H:%M')
+    
+    return {
+        "total_users": total_users,
+        "total_photos": total_photos,
+        "total_news": total_news,
+        "pending_photos": pending_photos,
+        "pending_users": pending_users,
+        "new_users": new_users,
+        "new_photos": new_photos,
+        "photos_approved": photos_approved,
+        "photos_rejected": photos_rejected,
+        "top_contributors": top_contributors,
+        "local_backups": local_backup_count,
+        "last_backup": last_backup
+    }
+
+async def send_weekly_report_task():
+    """Send weekly statistics report"""
+    try:
+        logger.info("Collecting weekly statistics...")
+        stats = await collect_weekly_stats()
+        
+        logger.info("Sending weekly report email...")
+        from email_service import send_weekly_report
+        result = send_weekly_report(stats)
+        
+        if result:
+            logger.info("Weekly report sent successfully!")
+        else:
+            logger.warning("Failed to send weekly report")
+            
+        return result
+    except Exception as e:
+        logger.error(f"Error sending weekly report: {e}")
+        return False
 
 async def backup_scheduler():
     """Run backup scheduler - backup every 12 hours"""
     logger.info(f"Backup scheduler started. Running every {BACKUP_INTERVAL_HOURS} hours.")
-    logger.info(f"Local backups will be saved to: {LOCAL_BACKUP_DIR}")
+    logger.info(f"Local backups saved to: {LOCAL_BACKUP_DIR}")
     
-    # Run first backup after 1 minute (to not block startup)
+    # Wait 1 minute before first backup
     await asyncio.sleep(60)
     
     while True:
@@ -275,16 +335,46 @@ async def backup_scheduler():
         except Exception as e:
             logger.error(f"Backup scheduler error: {str(e)}")
         
-        # Wait for next backup (12 hours)
         await asyncio.sleep(BACKUP_INTERVAL_HOURS * 60 * 60)
+
+async def weekly_report_scheduler():
+    """Run weekly report scheduler - sends report every Sunday at 10:00 AM"""
+    logger.info("Weekly report scheduler started. Reports sent every Sunday at 10:00 AM.")
+    
+    # Wait 2 minutes before starting checks
+    await asyncio.sleep(120)
+    
+    last_report_week = None
+    
+    while True:
+        try:
+            now = datetime.now()
+            current_week = now.isocalendar()[1]
+            
+            # Send report on Sunday (weekday 6) around 10:00 AM
+            if now.weekday() == 6 and 9 <= now.hour <= 11 and last_report_week != current_week:
+                logger.info("It's Sunday! Sending weekly report...")
+                await send_weekly_report_task()
+                last_report_week = current_week
+                
+        except Exception as e:
+            logger.error(f"Weekly report scheduler error: {str(e)}")
+        
+        # Check every 6 hours
+        await asyncio.sleep(REPORT_CHECK_INTERVAL_HOURS * 60 * 60)
 
 def start_backup_scheduler():
     """Start the backup scheduler in background"""
     loop = asyncio.get_event_loop()
     loop.create_task(backup_scheduler())
-    logger.info("Backup scheduler task created")
+    loop.create_task(weekly_report_scheduler())
+    logger.info("Backup and weekly report schedulers created")
+
+# Function to manually trigger weekly report (for testing)
+async def trigger_weekly_report():
+    """Manually trigger weekly report"""
+    return await send_weekly_report_task()
 
 if __name__ == "__main__":
-    # For testing
     logging.basicConfig(level=logging.INFO)
-    asyncio.run(perform_automatic_backup())
+    asyncio.run(trigger_weekly_report())
