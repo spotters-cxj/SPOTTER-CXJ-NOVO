@@ -269,6 +269,23 @@ async def test_email_notification(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro: {str(e)}")
 
+@router.post("/send-weekly-report")
+async def send_weekly_report_now(request: Request):
+    """Send weekly report immediately (gestao only)"""
+    await require_gestao(request)
+    
+    try:
+        from scheduler import trigger_weekly_report
+        import asyncio
+        result = await trigger_weekly_report()
+        
+        if result:
+            return {"success": True, "message": "Relatório semanal enviado!"}
+        else:
+            return {"success": False, "message": "Falha ao enviar relatório. Verifique as configurações de email."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro: {str(e)}")
+
 @router.get("/history")
 async def get_backup_history(request: Request, limit: int = 20):
     """Get backup history (gestao only)"""
