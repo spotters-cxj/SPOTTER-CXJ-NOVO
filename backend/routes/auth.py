@@ -63,7 +63,7 @@ async def create_session(request: Request, response: Response):
             tags = ["lider", "admin"]
             approved = True
         else:
-            tags = ["membro"]
+            tags = ["spotter_cxj"]
             approved = False
         
         new_user = {
@@ -82,7 +82,7 @@ async def create_session(request: Request, response: Response):
         # Welcome notification
         await create_notification(
             db, user_id, "tag_assigned",
-            f"🎉 Bem-vindo ao Spotters CXJ! Você recebeu a tag: MEMBRO"
+            f"🎉 Bem-vindo ao Spotters CXJ! Você recebeu a tag: SPOTTER CXJ"
         )
     
     session_token = f"session_{uuid.uuid4().hex}"
