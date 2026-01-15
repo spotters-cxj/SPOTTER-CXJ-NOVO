@@ -14,25 +14,39 @@ export const HomePage = () => {
   const [photos, setPhotos] = useState([]);
   const [stats, setStats] = useState({ members: "50+", photos: "5.000+", events: "30+", years: "8+" });
   const [podium, setPodium] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
+      
+      // Load each API independently to prevent one failure from blocking others
       try {
-        const [pageRes, settingsRes, photosRes, statsRes, podiumRes] = await Promise.all([
-          pagesApi.getPage('home'),
-          settingsApi.get(),
-          galleryApi.list({}),
-          statsApi.get(),
-          rankingApi.getPodium().catch(() => ({ data: { winners: [] } }))
-        ]);
-        setPageContent(pageRes.data);
-        setSettings(settingsRes.data);
-        setPhotos(photosRes.data.slice(0, 6));
-        setStats(statsRes.data);
-        setPodium(podiumRes.data?.winners || []);
-      } catch (error) {
-        console.error('Error loading home data:', error);
-      }
+        const pageRes = await pagesApi.getPage('home').catch(() => null);
+        if (pageRes?.data) setPageContent(pageRes.data);
+      } catch (e) { console.error('Error loading page:', e); }
+
+      try {
+        const settingsRes = await settingsApi.get().catch(() => null);
+        if (settingsRes?.data) setSettings(settingsRes.data);
+      } catch (e) { console.error('Error loading settings:', e); }
+
+      try {
+        const photosRes = await galleryApi.list({}).catch(() => null);
+        if (photosRes?.data) setPhotos(photosRes.data.slice(0, 6));
+      } catch (e) { console.error('Error loading photos:', e); }
+
+      try {
+        const statsRes = await statsApi.get().catch(() => null);
+        if (statsRes?.data) setStats(statsRes.data);
+      } catch (e) { console.error('Error loading stats:', e); }
+
+      try {
+        const podiumRes = await rankingApi.getPodium().catch(() => null);
+        if (podiumRes?.data?.winners) setPodium(podiumRes.data.winners);
+      } catch (e) { console.error('Error loading podium:', e); }
+
+      setLoading(false);
     };
     loadData();
   }, []);
