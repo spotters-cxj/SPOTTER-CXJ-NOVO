@@ -12,7 +12,9 @@ class UserRole(str, Enum):
     PRODUTOR = "produtor"
     AVALIADOR = "avaliador"
     COLABORADOR = "colaborador"
-    MEMBRO = "membro"
+    SPOTTER_CXJ = "spotter_cxj"
+    JORNALISTA = "jornalista"
+    DIRETOR_AEROPORTO = "diretor_aeroporto"
 
 class PhotoStatus(str, Enum):
     PENDING = "pending"
@@ -29,13 +31,16 @@ class NotificationType(str, Enum):
 
 # Hierarchy levels for permissions
 HIERARCHY_LEVELS = {
-    "lider": 7,
-    "admin": 6,
-    "gestao": 5,
-    "produtor": 4,
-    "avaliador": 3,
-    "colaborador": 2,
-    "membro": 1
+    "lider": 8,
+    "admin": 7,
+    "gestao": 6,
+    "produtor": 5,
+    "avaliador": 4,
+    "colaborador": 3,
+    "jornalista": 2,
+    "diretor_aeroporto": 2,
+    "spotter_cxj": 1,
+    "visitante": 0
 }
 
 def get_highest_role_level(tags: List[str]) -> int:
