@@ -9,13 +9,20 @@ router = APIRouter(prefix="/memories", tags=["memories"])
 async def get_db(request: Request):
     return request.app.state.db
 
-async def require_admin(request: Request):
+# Tags that can edit memories/recordações
+MEMORIES_EDITOR_TAGS = {"lider", "admin", "gestao", "jornalista", "diretor_aeroporto"}
+
+async def require_memories_editor(request: Request):
+    """Require user to be able to edit memories (lider, admin, gestao, jornalista, diretor_aeroporto)"""
     from routes.auth import get_current_user
-    from models import HIERARCHY_LEVELS, get_highest_role_level
     user = await get_current_user(request)
-    user_level = get_highest_role_level(user.get("tags", []))
-    if user_level < HIERARCHY_LEVELS["gestao"]:
-        raise HTTPException(status_code=403, detail="Gestao access required")
+    user_tags = set(user.get("tags", []))
+    
+    if not user_tags.intersection(MEMORIES_EDITOR_TAGS):
+        raise HTTPException(
+            status_code=403, 
+            detail="Acesso negado. Apenas líderes, admins, gestores, jornalistas e diretores podem editar recordações."
+        )
     return user
 
 @router.get("")
