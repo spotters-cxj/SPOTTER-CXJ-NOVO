@@ -262,8 +262,9 @@ export const Header = () => {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 text-gray-300 hover:text-white transition-colors"
+                className="lg:hidden p-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                 aria-label="Menu"
+                data-testid="mobile-menu-toggle"
               >
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
