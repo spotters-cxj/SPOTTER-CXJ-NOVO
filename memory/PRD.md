@@ -1,7 +1,7 @@
 # Spotters CXJ - Product Requirements Document
 
 ## Visão Geral
-Aplicativo web completo para a comunidade de entusiastas da aviação Spotters CXJ, baseada em Caxias do Sul.
+Aplicativo web completo para a comunidade de entusiastas da aviação Spotters CXJ.
 
 ## Stack Tecnológico
 - **Frontend:** React (CRACO/CRA), Tailwind CSS, Shadcn UI
@@ -11,71 +11,71 @@ Aplicativo web completo para a comunidade de entusiastas da aviação Spotters C
 
 ## Funcionalidades Implementadas
 
-### Sistema de Cache (16/01/2026)
-- ✅ **Backend:** Middleware de Cache-Control configurado
-  - HTML/API: `no-cache, no-store, must-revalidate`
-  - JS/CSS com hash: `public, max-age=31536000, immutable` (1 ano)
-  - Imagens: `public, max-age=86400` (1 dia)
-- ✅ **Frontend:** Meta tags anti-cache no index.html
-- ✅ **Static Files:** CachedStaticFiles class customizada
+### Sistema de Autenticação (Atualizado 16/01/2026)
+- ✅ **Sincronização de Token:** Token automaticamente anexado ao header `Authorization: Bearer`
+- ✅ **CORS Configurado:** Domínios permitidos explicitamente + credentials
+- ✅ **Tratamento de Erros:** Try/catch com mensagens detalhadas (domínio não autorizado, conexão interrompida)
+- ✅ **Limpeza de Estado:** Timeout de 10s + limpeza automática de localStorage/cookies
+- ✅ **Padronização de URL:** HTTPS forçado, www removido automaticamente
 
-### Sistema de Backup Completo
-- ✅ Backup Automático a cada 12 horas (salva localmente)
+### Sistema de Cache (16/01/2026)
+- ✅ HTML/API: `no-cache, no-store, must-revalidate`
+- ✅ JS/CSS com hash: cache de 1 ano (immutable)
+- ✅ Imagens: cache de 1 dia
+
+### Sistema de Backup
+- ✅ Backup Automático a cada 12 horas
 - ✅ Backup Manual com download direto
-- ✅ Gerenciamento de backups locais (download/exclusão)
-- ✅ Histórico de backups no painel admin
+- ✅ Gerenciamento de backups locais
+- ✅ Histórico de backups
 
 ### Relatório Semanal por Email
 - ✅ Scheduler configurado (todo Domingo às 10h)
-- ✅ Estatísticas: usuários, fotos, pendentes, top colaboradores
-- ✅ Botão para enviar relatório manualmente
-- ⚠️ **PENDENTE:** Configurar senha de app do Gmail correta
+- ⚠️ Email: Aguardando senha de app correta do Gmail
 
 ### Integração ANAC
 - ✅ Consulta por matrícula brasileira
-- ✅ Base local de aeronaves comuns
 - ✅ Auto-preenchimento no upload
 
 ### Upload de Fotos
-- ✅ Campo de créditos obrigatório para fotos de terceiros
+- ✅ Campo de créditos
 - ✅ Checkbox "Foto de minha autoria"
 - ✅ Consulta ANAC integrada
 
-### Página "Minhas Fotos"
-- ✅ Estatísticas: Total, Aprovadas, Pendentes, Recusadas
-- ✅ Comentários do avaliador visíveis
-- ✅ Nota final e rating público
+## Configuração de Autenticação
 
-## Configuração de Email (PENDENTE)
+### Frontend (`/app/frontend/src/contexts/AuthContext.jsx`)
+- Timeout de 10 segundos para login
+- Limpeza automática de localStorage e cookies em caso de erro
+- Normalização de URL (HTTPS, sem www)
+- Mensagens de erro detalhadas
 
-A senha de app fornecida (`kysb ajhv tjaf phcm`) foi rejeitada pelo Gmail.
-
-**Para corrigir:**
-1. Acesse: https://myaccount.google.com/apppasswords
-2. Verifique se a verificação em 2 etapas está ativada
-3. Crie uma NOVA senha de app
-4. Atualize em `/app/backend/.env`:
-   ```
-   SMTP_PASSWORD=nova_senha_aqui
-   ```
-5. Reinicie o backend
-
-## Arquivos de Configuração de Cache
+### Frontend (`/app/frontend/src/services/api.js`)
+- Interceptor de request: anexa token automaticamente
+- Interceptor de response: captura novos tokens
+- Evento customizado `auth-error` para erros 401
 
 ### Backend (`/app/backend/server.py`)
-- `CacheControlMiddleware`: Adiciona headers baseado no tipo de arquivo
-- `CachedStaticFiles`: Classe customizada para arquivos estáticos
+- CORS configurado com domínios específicos
+- Headers expostos: `X-Session-Token`
+- Preflight cache de 10 minutos
 
-### Frontend (`/app/frontend/public/index.html`)
-- Meta tags de cache control
+### Backend (`/app/backend/routes/auth.py`)
+- Token retornado no header `X-Session-Token`
+- Suporte a cookie e header Authorization
+- Mensagens de erro detalhadas em português
 
-## Arquivos Principais
+## Domínios Autorizados (CORS)
+- `https://planespot-admin.preview.emergentagent.com`
+- `https://spotterscxj.com.br`
+- `https://www.spotterscxj.com.br`
+- `http://localhost:3000`
+- `http://localhost:8001`
 
-- `/app/backend/server.py` - Entry point com middleware de cache
-- `/app/backend/scheduler.py` - Backup automático + relatório semanal
-- `/app/backend/email_service.py` - Serviço de notificações
-- `/app/backend/routes/backup.py` - APIs de backup
-- `/app/frontend/src/components/pages/AdminPage.jsx` - Painel admin
+## Próximos Passos
+1. Configurar senha de app do Gmail correta
+2. Re-deploy para produção
+3. Testar autenticação em produção
 
 ---
 Última atualização: 16/01/2026
