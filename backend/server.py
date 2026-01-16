@@ -25,7 +25,7 @@ CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*')
 if CORS_ORIGINS == '*':
     # Allow all origins but with specific handling
     ALLOWED_ORIGINS = [
-        "https://planespot-admin.preview.emergentagent.com",
+        "https://aircraft-finder-1.preview.emergentagent.com",
         "https://spotterscxj.com.br",
         "https://www.spotterscxj.com.br",
         "http://localhost:3000",

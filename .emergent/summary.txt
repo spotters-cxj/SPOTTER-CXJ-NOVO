@@ -1,0 +1,205 @@
+<analysis>
+**original_problem_statement:**
+The user wants to implement a comprehensive set of features, fixes, and optimizations for their Spotters CXJ application. The most critical rule is that no existing data should be lost.
+
+**PRODUCT REQUIREMENTS (Summary of user requests from this and previous session):**
+
+1.  **Production Site is Broken:** The live website is not working for public users. They cannot see the gallery, news, or stats, and the login process is broken. This is the most critical issue.
+2.  **Layout Adjustment:** Revert the application's layout to a previous modern style, specifically by implementing a new side-menu design as shown in user-provided screenshots and removing the YouTube link from the header.
+3.  **Backup System:** Implement a robust backup system with both automatic (to Google Drive and locally) and manual options accessible from the admin panel.
+4.  **Email Notifications:** Send email notifications to  when a backup fails. Also, implement a weekly statistics report sent via email.
+5.  **Tag System Overhaul:** Completely remove the old membro tag from all parts of the application.
+6.  **Authentication Flow:** Refactor the authentication to be fully compatible with Emergent's native Google Auth, including automatic token handling, CORS configuration, improved error handling, and state cleanup.
+7.  **Cache Control:** Implement proper anti-caching headers on the backend and frontend to ensure users always see the latest version of the site.
+8.  **ANAC Integration:** Implement a feature to look up aircraft data from the ANAC database using the registration number during photo upload.
+9.  **Photo Upload/Management Enhancements:**
+    *   Add a field for photo credits and a checkbox for My photo on the upload page.
+    *   Add a button for admins to dismiss/remove photos from the missing files list.
+    *   In the My Photos page, display the evaluator's comments and the final grade.
+10. **News Draft System:** Implement a feature to save news articles as drafts.
+
+**User's preferred language**:
+The user communicates primarily in **Portuguese (Brazil)**. The next agent MUST respond in Portuguese.
+
+**what currently exists?**
+The agent has implemented a massive number of features and fixes. A complete backup system has been created, allowing for manual backups, local automatic backups (every 12 hours), and attempted Google Drive integration. Email notifications for backup failures and a weekly statistics report have been set up via Gmail SMTP, though they are currently non-functional due to an authentication error. The agent also performed an extensive refactor to remove the legacy membro tag, implemented anti-cache headers, overhauled the authentication flow with Axios interceptors, added an ANAC aircraft lookup feature on the upload page, and included new photo credit fields.
+
+The core problem from the previous session remains: the **live production site is running old code**, and the user is likely unaware that all these new features are only visible in the preview environment.
+
+**Last working item**:
+-   **Last item agent was working:** The agent was modifying the frontend to match a new layout style requested by the user. This involved implementing a new mobile side-menu and removing a YouTube link from the header. The agent updated  and was adding custom styles to .
+-   **Status:** IN PROGRESS
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** screenshot tool
+-   **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+-   Issue 1: Production Website is Broken for Public Users (P0)
+-   Issue 2: Gmail SMTP Authentication Fails (P0)
+-   Issue 3: Google Drive Backup Fails Due to Quota (P1)
+
+**Issues Detail:**
+-   **Issue 1: Production Website is Broken for Public Users (P0)**
+    -   **Attempted fixes:** The previous agent fixed all underlying code issues in the preview environment. The current agent has added numerous new features, none of which are live. The problem is not the code, but that the deployed production environment is running an outdated version.
+    -   **Next debug checklist:**
+        1.  **STOP** all other development.
+        2.  **Communicate clearly to the user** in Portuguese that the preview environment is working correctly and contains all the new features and fixes.
+        3.  Explain that the issues on the live site () persist because it needs to be **re-deployed** with the latest code.
+        4.  Guide the user on how to trigger a new deployment through the Emergent platform.
+    -   **Why fix this issue and what will be achieved with the fix?** This is the highest priority issue. Fixing it will make the entire application functional for all users and will resolve the user's primary source of frustration by making all the completed work visible.
+    -   **Status:** BLOCKED (on user action to re-deploy)
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on other issue:** No
+
+-   **Issue 2: Gmail SMTP Authentication Fails (P0)**
+    -   **Attempted fixes:** The agent configured , , and  with the user-provided credentials ( and password ). Testing showed a  error. The agent tried removing spaces from the password, but the error persisted.
+    -   **Next debug checklist:**
+        1.  Verify the content of  to ensure the  is  (without spaces).
+        2.  Inform the user that the authentication is failing and the provided password is being rejected by Google.
+        3.  Ask the user to generate a **new App Password** from their Google Account security settings and provide it again, ensuring no spaces are added unless they are part of the password itself.
+        4.  Update the  file and re-test the email sending functionality.
+    -   **Why fix this issue and what will be achieved with the fix?** This will enable critical notifications for backup failures and the requested weekly reports.
+    -   **Status:** BLOCKED (on user providing a valid password)
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** backend
+    -   **Blocked on other issue:** No
+
+-   **Issue 3: Google Drive Backup Fails Due to Quota (P1)**
+    -   **Attempted fixes:** The agent identified the error is . A Local Backup feature was implemented as a reliable workaround.
+    -   **Next debug checklist:**
+        1.  Politely remind the user that Google Drive integration for service accounts is unreliable due to storage limitations.
+        2.  Confirm that the Local Backup and email notification system (once fixed) is an acceptable solution.
+        3.  (Optional) Re-confirm if the user shared their Google Drive folder with  as an Editor. If they did and it still fails, the issue is a hard limit from Google.
+    -   **Why fix this issue and what will be achieved with the fix?** To provide clarity on the backup situation and set the user's expectations about the limitations of the Google Drive integration.
+    -   **Status:** USER VERIFICATION PENDING
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** backend
+
+**In progress Task List**:
+-   **Task 1: Implement New Mobile Menu Style (P1)**
+    -   **Where to resume:** The agent has already updated . The next step is to finalize the required CSS styles in  to match the user's screenshots for the mobile side-menu, then test the visual appearance.
+    -   **What will be achieved with this?** Fulfills the user's specific UI/UX request for the site's navigation.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on something:** No
+
+**Upcoming and Future Tasks**
+*   **Upcoming Tasks:**
+    *   **(P1) Re-deploy Production Site:** Guide the user through re-deploying the application.
+    *   **(P2) My Photos Page Enhancements:** Update the UI to clearly display photo status, final grade, and evaluator comments.
+    *   **(P2) Fix Broken Social Links:** Debug and fix the Instagram and JetPhotos links on user profiles.
+*   **Future Tasks:**
+    *   **(P3) Create Leadership Page:** Create the frontend page/component for the Liderança section.
+    *   **(P3) Performance Optimizations:** Apply the  component more broadly across the application to improve load times.
+
+**Completed work in this session**
+-   **Backup & Notification System:**
+    -   Implemented a full backup system with a new  tab in the Admin Panel.
+    -   Created a scheduler () for automatic local backups every 12 hours.
+    -   Implemented local backup management (list, download, delete) via new API endpoints.
+    -   Set up an email service () for failure notifications and weekly reports (currently blocked by auth issue).
+-   **Membro Tag Removal:**
+    -   Performed a comprehensive, multi-file search and removal of the legacy membro tag across the entire frontend and backend.
+-   **Feature Implementation:**
+    -   **ANAC Integration:** Created  with BeautifulSoup to scrape aircraft data, integrated into the .
+    -   **Photo Credits:** Added Photo Credits and My Photo fields to the upload form and backend.
+-   **Core Improvements:**
+    -   **Authentication Flow:** Overhauled the auth system by adding an Axios interceptor in  for automatic Bearer token injection and strengthening the CORS and security dependency logic in the backend.
+    -   **Cache Control:** Added anti-cache headers via middleware in  and meta tags in .
+-   **UI/UX:**
+    -   Refactored  extensively to add new UI for backups, local files, and email testing.
+
+**Earlier issues found/mentioned but not fixed**
+None. The agent has addressed all previously known issues, though some are now blocked.
+
+**Known issue recurrence from previous fork**
+-   **Production vs. Preview Environment Confusion:** This is the most significant recurring issue. The user continues to report problems on the live site that are already fixed in the preview environment. The agent has failed to address this communication gap.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Backend:** FastAPI, Motor (async MongoDB), APScheduler (for background tasks), BeautifulSoup (for web scraping)
+-   **Frontend:** React, Tailwind CSS, Axios (with interceptors), Shadcn UI, Craco
+-   **Database:** MongoDB
+-   **Authentication:** JWT with Emergent-managed Google Auth.
+
+**key DB schema**
+-   **photos:** Added  and .
+-   **users:** The  tag is fully deprecated and removed.
+-   **news:** The  flag is used for the draft system.
+
+**changes in tech stack**
+-   **APScheduler:** Added for running scheduled tasks (backups, reports).
+-   **BeautifulSoup4:** Added for web scraping.
+
+**All files of reference**
+-   : Heavily modified to add scheduler, new routers, CORS middleware, and cache-control middleware.
+-   : Heavily modified to add local backup management, email testing, and report sending endpoints.
+-   : New file to manage all scheduled tasks (backups, reports).
+-   : New file to handle all email sending logic via Gmail SMTP.
+-   : New file for the ANAC lookup feature.
+-   : Significantly expanded with a Backups tab, logic for local backups, and email/report triggers.
+-   : Rewritten to improve error handling, add timeouts, and clean up state on login failure.
+-   : Rewritten to use an Axios interceptor for automatically attaching auth tokens to every request.
+-   : Modified to remove the YouTube link and is being updated to implement a new side-menu.
+-   : Rewritten to include ANAC lookup, photo credits, and author checkbox.
+-   : Updated with Google Drive, Gmail, and notification settings.
+
+**Areas that need refactoring**:
+-    has become an even larger monolith. It desperately needs to be broken down into smaller, manageable components for each admin section (Users, Photos, News, Backups, etc.).
+
+**key api endpoints**
+-   : Creates a database backup and saves it on the server's local disk.
+-   : Lists all available local backups.
+-   : Sends a test email notification.
+-   : Manually triggers the weekly report email.
+-   : Looks up aircraft data.
+-   : Exchanges a session ID for a JWT (now accepts token from  header).
+
+**Critical Info for New Agent**
+1.  **PRIORITY #1: ADDRESS THE DEPLOYMENT ISSUE.** Do not start any new feature or fix. Your first action must be to use  to clearly explain to the user that all the work is complete in the preview environment and they need to re-deploy to see the changes on their live website. This communication gap is the source of all recurring reports.
+2.  **GMAIL AUTH IS BLOCKED:** The email notification and report features are complete but non-functional because Google is rejecting the user-provided App Password (). You need to get a new, correct password from the user.
+3.  **DO NOT RE-FIX COMPLETED WORK:** The  tag removal, auth flow, cache headers, and backup system have been implemented. Do not attempt to fix them again unless a new, specific bug is found *after* the site has been successfully re-deployed.
+4.  **AdminPage.jsx is fragile:** This file is over 1500 lines long. Be extremely careful when making changes to it. Any further feature additions should ideally involve refactoring the relevant section into a separate component.
+
+**documents and test reports created in this job**
+-   /app/memory/PRD.md
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User (latest):** Provided screenshots of a desired mobile menu style and asked to remove the YouTube button from the header.
+2.  **User:** Requested to adjust the layout to the old, modern v1.0 style.
+3.  **User:** Requested a full refactor of the Emergent native auth flow.
+4.  **User:** Requested implementation of anti-cache headers.
+5.  **User:** Asked for clarification on the Gmail App Password format (agent was blocked).
+6.  **User:** Provided the Gmail App Password () and approved the weekly report feature.
+7.  **User:** Confirmed their Gmail is  and that backups should be saved on the server.
+8.  **User:** Asked for email notifications on backup failure and stated they do not have a Google Shared Drive.
+9.  **User:** Approved the previous set of features and requested automatic backups every 12h, ANAC integration, My Photos improvements, and a photo credit field.
+10. **User:** Provided a Google Drive Folder ID and requested automatic/manual backups.
+
+**Project Health Check:**
+-   **Broken:**
+    -   **Production Deployment:** The live site is completely out of sync and non-functional for public users.
+    -   **Email Integration:** All email features (notifications, reports) are failing due to a .
+-   **Mocked:** None.
+
+**3rd Party Integrations**
+-   **Google Drive API v3:** Used for backups. Unreliable due to service account storage quotas ( error). Does not use Emergent LLM Key.
+-   **Gmail SMTP:** Used for email notifications and reports. Currently **broken** due to authentication failure. Requires user-provided credentials.
+
+**Testing status**
+-   **Testing agent used after significant changes:** NO
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** None
+-   **Known regressions:** The live production environment is severely regressed as it does not contain any of the recent fixes or features.
+
+**Credentials to test flow:**
+-   **Admin Access:** Requires Google Authentication, so direct login is not possible. Test admin features via API calls or by guiding the user.
+-   **Gmail SMTP:** Credentials are in . The  is incorrect.
+-   **Google Drive:** Credentials are at . The integration is known to be faulty due to quota limits.
+
+**What agent forgot to execute**
+-   The agent completely failed to address the most critical issue from the previous handoff: communicating to the user about the discrepancy between the preview and production environments. Instead of pausing and clarifying, the agent dove into a long series of new feature requests, exacerbating the problem as the user remains unaware of all the completed work.
+</analysis>
