@@ -277,18 +277,20 @@ export const Header = () => {
         className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${
           isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
+        data-testid="mobile-menu-overlay"
       >
         {/* Backdrop */}
         <div 
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/70 backdrop-blur-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         />
         
         {/* Sidebar */}
         <div 
-          className={`absolute top-0 right-0 h-full w-72 bg-[#0a1929] border-l border-white/10 shadow-2xl transform transition-transform duration-300 ${
+          className={`absolute top-0 right-0 h-full w-[280px] mobile-sidebar border-l border-white/10 shadow-2xl transform transition-transform duration-300 ease-out ${
             isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
+          data-testid="mobile-sidebar"
         >
           {/* Sidebar Header */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -296,83 +298,114 @@ export const Header = () => {
               <img
                 src={siteConfig.logoRound}
                 alt="Spotters CXJ"
-                className="h-10 w-10 rounded-full object-cover border-2 border-sky-500/30"
+                className="h-11 w-11 rounded-full object-cover border-2 border-sky-500/40"
               />
               <div>
-                <span className="text-lg font-bold text-white">SPOTTERS</span>
+                <span className="text-lg font-bold text-white tracking-wide">SPOTTERS</span>
                 <span className="text-lg font-bold text-sky-400 ml-1">CXJ</span>
               </div>
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="p-2 text-gray-400 hover:text-white transition-colors"
+              className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+              data-testid="close-mobile-menu"
             >
               <X size={24} />
             </button>
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-4 space-y-1">
+          <nav className="p-3 space-y-1">
             {allNavLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-base font-medium transition-all ${
+                data-testid={`mobile-nav-${link.label.toLowerCase()}`}
+                className={`mobile-menu-item ${
                   location.pathname === link.path
-                    ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
-                    : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                    ? 'active'
+                    : 'text-gray-300'
                 }`}
               >
-                <link.icon size={22} />
-                {link.label}
+                <link.icon size={20} />
+                <span>{link.label}</span>
               </Link>
             ))}
             
-            {/* VIP Link */}
+            {/* Search Link */}
             <Link
-              to="/vip"
-              className="flex items-center gap-4 px-4 py-3.5 rounded-xl text-base font-medium vip-btn mt-4"
+              to="/buscar"
+              data-testid="mobile-nav-buscar"
+              className={`mobile-menu-item ${
+                location.pathname === '/buscar'
+                  ? 'active'
+                  : 'text-gray-300'
+              }`}
             >
-              <Sparkles size={22} />
-              Seja VIP
+              <Search size={20} />
+              <span>Buscar</span>
             </Link>
+            
+            {/* VIP Link */}
+            <div className="pt-3">
+              <Link
+                to="/vip"
+                data-testid="mobile-nav-vip"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold vip-btn"
+              >
+                <Sparkles size={20} />
+                <span>Seja VIP</span>
+              </Link>
+            </div>
           </nav>
 
           {/* User Actions in Sidebar */}
           {user && (
-            <div className="p-4 border-t border-white/10">
-              <Link to="/upload" className="flex items-center gap-4 px-4 py-3 text-gray-300 hover:text-white">
+            <div className="px-3 py-2 border-t border-white/10 mt-2">
+              <Link 
+                to="/upload" 
+                data-testid="mobile-nav-upload"
+                className="mobile-menu-item text-gray-300"
+              >
                 <Upload size={20} />
-                Enviar Foto
+                <span>Enviar Foto</span>
               </Link>
               {canEvaluate && (
-                <Link to="/avaliacao" className="flex items-center gap-4 px-4 py-3 text-green-400 hover:text-green-300">
+                <Link 
+                  to="/avaliacao" 
+                  data-testid="mobile-nav-avaliacao"
+                  className="mobile-menu-item text-green-400"
+                >
                   <Camera size={20} />
-                  Avaliar Fotos
+                  <span>Avaliar Fotos</span>
                 </Link>
               )}
               {isGestao && (
-                <Link to="/admin" className="flex items-center gap-4 px-4 py-3 text-sky-400 hover:text-sky-300">
+                <Link 
+                  to="/admin" 
+                  data-testid="mobile-nav-admin"
+                  className="mobile-menu-item text-sky-400"
+                >
                   <Shield size={20} />
-                  Painel Admin
+                  <span>Painel Admin</span>
                 </Link>
               )}
             </div>
           )}
 
           {/* Bottom Section */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-[#0a1929]">
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-[#071422]">
             {user ? (
               <div className="flex items-center justify-between">
-                <Link to={`/perfil/${user.user_id}`} className="flex items-center gap-3">
+                <Link to={`/perfil/${user.user_id}`} className="flex items-center gap-3 flex-1 min-w-0">
                   <img
                     src={user.picture || siteConfig.logoRound}
                     alt={user.name}
-                    className="w-10 h-10 rounded-full object-cover border border-white/20"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-white/20 flex-shrink-0"
                   />
-                  <div>
-                    <p className="text-white font-medium text-sm">{user.name}</p>
-                    <p className="text-gray-500 text-xs">{user.email}</p>
+                  <div className="min-w-0">
+                    <p className="text-white font-medium text-sm truncate">{user.name}</p>
+                    <p className="text-gray-500 text-xs truncate">{user.email}</p>
                   </div>
                 </Link>
                 <button
@@ -380,7 +413,8 @@ export const Header = () => {
                     setIsMobileMenuOpen(false);
                     logout();
                   }}
-                  className="p-2 text-gray-400 hover:text-white"
+                  className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 flex-shrink-0"
+                  data-testid="mobile-logout-btn"
                 >
                   <LogOut size={20} />
                 </button>
@@ -392,6 +426,7 @@ export const Header = () => {
                   login();
                 }}
                 className="w-full bg-sky-600 hover:bg-sky-500 text-white"
+                data-testid="mobile-login-btn"
               >
                 <User size={18} className="mr-2" />
                 Entrar com Google
@@ -403,7 +438,8 @@ export const Header = () => {
               href={instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 justify-center mt-4 text-gray-400 hover:text-pink-400 transition-colors"
+              className="flex items-center gap-2 justify-center mt-4 py-2 text-gray-400 hover:text-pink-400 transition-colors"
+              data-testid="mobile-instagram-link"
             >
               <Instagram size={18} />
               <span className="text-sm">@spotterscxj</span>
