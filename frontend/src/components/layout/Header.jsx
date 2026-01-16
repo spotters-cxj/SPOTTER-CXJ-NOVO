@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Instagram, User, LogOut, Shield, Camera, Upload, Bell, Home, Newspaper, Image, Trophy, Users, Plane, Info, Award, Search, ChevronDown, Sparkles, Album } from 'lucide-react';
+import { Menu, X, Instagram, Youtube, User, LogOut, Shield, Camera, Upload, Bell, Home, Newspaper, Image, Trophy, Users, Plane, Info, Award, Search, ChevronDown, Sparkles, Album } from 'lucide-react';
 import { siteConfig } from '../../data/mock';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
