@@ -13,9 +13,13 @@ Aplicativo web completo para a comunidade de entusiastas da aviação Spotters C
 
 ### UI/UX (Atualizado 16/01/2026)
 - ✅ **Menu Mobile Lateral:** Sidebar com animação slide-in da direita
+- ✅ **Barra de Rolagem:** Menu mobile com scroll para acessar todos os itens
 - ✅ **Itens de Navegação:** Ícones + texto, item ativo destacado em azul sky
-- ✅ **Botão VIP:** Efeito neon amarelo com brilho
-- ✅ **YouTube Removido:** Conforme solicitação do usuário
+- ✅ **Botão VIP:** Gradiente amarelo/laranja com efeito glow
+- ✅ **Botão Instagram:** Gradiente roxo/rosa (estilo da marca)
+- ✅ **Botão YouTube:** Gradiente vermelho (estilo da marca)
+- ✅ **Botão Entrar:** Gradiente azul vibrante
+- ✅ **YouTube Removido do Header:** Mas presente no menu mobile
 - ✅ **Responsividade:** Layout adaptável desktop/mobile
 - ✅ **Link Recordações:** Adicionado em ambos os menus (desktop dropdown e mobile sidebar)
 
