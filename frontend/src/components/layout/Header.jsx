@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Instagram, User, LogOut, Shield, Camera, Upload, Bell, Home, Newspaper, Image, Trophy, Users, Plane, Info, Award, Search, ChevronDown, Sparkles } from 'lucide-react';
+import { Menu, X, Instagram, User, LogOut, Shield, Camera, Upload, Bell, Home, Newspaper, Image, Trophy, Users, Plane, Info, Award, Search, ChevronDown, Sparkles, Album } from 'lucide-react';
 import { siteConfig } from '../../data/mock';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
@@ -18,6 +18,7 @@ const mainNavLinks = [
 // More menu items (dropdown on desktop, sidebar on mobile)
 const moreNavLinks = [
   { path: '/historia-aeroporto', label: 'Aeroporto', icon: Plane },
+  { path: '/recordacoes', label: 'Recordações', icon: Album },
   { path: '/informacoes', label: 'Sobre Nós', icon: Info },
   { path: '/historia-spotters', label: 'Créditos', icon: Award },
   { path: '/buscar', label: 'Buscar', icon: Search },
@@ -31,6 +32,7 @@ const allNavLinks = [
   { path: '/ranking', label: 'Ranking', icon: Trophy },
   { path: '/membros', label: 'Membros', icon: Users },
   { path: '/historia-aeroporto', label: 'Aeroporto', icon: Plane },
+  { path: '/recordacoes', label: 'Recordações', icon: Album },
   { path: '/informacoes', label: 'Sobre Nós', icon: Info },
   { path: '/historia-spotters', label: 'Créditos', icon: Award },
 ];
