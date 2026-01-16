@@ -17,6 +17,14 @@ Aplicativo web completo para a comunidade de entusiastas da aviação Spotters C
 - ✅ **Botão VIP:** Efeito neon amarelo com brilho
 - ✅ **YouTube Removido:** Conforme solicitação do usuário
 - ✅ **Responsividade:** Layout adaptável desktop/mobile
+- ✅ **Link Recordações:** Adicionado em ambos os menus (desktop dropdown e mobile sidebar)
+
+### Página de Recordações do Aeroporto
+- ✅ **Rota:** `/recordacoes`
+- ✅ **Funcionalidade:** Exibir fotos antigas e memórias do aeroporto
+- ✅ **Gerenciamento via Admin:** Seção no painel para criar/editar/excluir recordações
+- ✅ **Permissões expandidas:** Líderes, Admins, Gestores, Jornalistas e Diretores podem editar
+- ✅ **Layout flexível:** Suporte a imagens (esquerda, direita, centro) e destaques
 
 ### Sistema de Autenticação (Atualizado 16/01/2026)
 - ✅ **Sincronização de Token:** Token automaticamente anexado ao header `Authorization: Bearer`
