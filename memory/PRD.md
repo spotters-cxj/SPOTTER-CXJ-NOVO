@@ -11,6 +11,13 @@ Aplicativo web completo para a comunidade de entusiastas da aviação Spotters C
 
 ## Funcionalidades Implementadas
 
+### UI/UX (Atualizado 16/01/2026)
+- ✅ **Menu Mobile Lateral:** Sidebar com animação slide-in da direita
+- ✅ **Itens de Navegação:** Ícones + texto, item ativo destacado em azul sky
+- ✅ **Botão VIP:** Efeito neon amarelo com brilho
+- ✅ **YouTube Removido:** Conforme solicitação do usuário
+- ✅ **Responsividade:** Layout adaptável desktop/mobile
+
 ### Sistema de Autenticação (Atualizado 16/01/2026)
 - ✅ **Sincronização de Token:** Token automaticamente anexado ao header `Authorization: Bearer`
 - ✅ **CORS Configurado:** Domínios permitidos explicitamente + credentials
@@ -73,9 +80,14 @@ Aplicativo web completo para a comunidade de entusiastas da aviação Spotters C
 - `http://localhost:8001`
 
 ## Próximos Passos
-1. Configurar senha de app do Gmail correta
-2. Re-deploy para produção
-3. Testar autenticação em produção
+1. **Re-deploy para produção** - As mudanças estão no preview, o site de produção precisa ser re-deployado
+2. Configurar senha de app do Gmail correta para notificações por email
+3. Melhorias na página "Minhas Fotos" (exibir nota final e comentários)
+4. Corrigir links sociais quebrados (Instagram e JetPhotos nos perfis)
+
+## Tarefas Futuras
+- Criar página de Liderança
+- Otimizações de performance com LazyImage
 
 ---
 Última atualização: 16/01/2026
