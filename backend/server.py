@@ -1,7 +1,9 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Request, Response
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
@@ -17,6 +19,38 @@ load_dotenv(ROOT_DIR / '.env')
 app = FastAPI(title="Spotters CXJ API")
 
 os.makedirs("/app/backend/uploads", exist_ok=True)
+
+# Custom middleware for cache control
+class CacheControlMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        
+        path = request.url.path
+        
+        # No cache for HTML files and API responses
+        if path.endswith('.html') or path == '/' or not '.' in path.split('/')[-1]:
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        
+        # Long cache for hashed static files (JS, CSS with hash in filename)
+        elif any(ext in path for ext in ['.js', '.css']) and any(c.isdigit() for c in path):
+            # Files with content hash can be cached for 1 year
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        
+        # Short cache for images and other static files
+        elif any(path.endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico']):
+            response.headers["Cache-Control"] = "public, max-age=86400"  # 1 day
+        
+        # No cache for API routes
+        elif path.startswith('/api/'):
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+        
+        return response
+
+# Add cache control middleware
+app.add_middleware(CacheControlMiddleware)
 
 api_router = APIRouter(prefix="/api")
 
@@ -51,7 +85,26 @@ async def health_check():
 
 app.include_router(api_router)
 
-app.mount("/api/uploads", StaticFiles(directory="/app/backend/uploads"), name="uploads")
+# Custom static files class with cache control
+class CachedStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope) -> Response:
+        response = await super().get_response(path, scope)
+        
+        # Add appropriate cache headers based on file type
+        if path.endswith(('.js', '.css')):
+            # Check if file has content hash (contains numbers in filename)
+            if any(c.isdigit() for c in path):
+                response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+            else:
+                response.headers["Cache-Control"] = "public, max-age=3600"  # 1 hour
+        elif path.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg')):
+            response.headers["Cache-Control"] = "public, max-age=86400"  # 1 day
+        else:
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        
+        return response
+
+app.mount("/api/uploads", CachedStaticFiles(directory="/app/backend/uploads"), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
