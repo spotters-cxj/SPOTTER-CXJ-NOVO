@@ -1,18 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Instagram, Youtube, User, LogOut, Shield, Camera, Upload, Trophy, Users, Bell, Newspaper, Search, Sparkles } from 'lucide-react';
+import { Menu, X, Instagram, User, LogOut, Shield, Camera, Upload, Bell, Home, Newspaper, Image, Trophy, Users, Plane, Info, Award, Search, ChevronDown, Sparkles } from 'lucide-react';
 import { siteConfig } from '../../data/mock';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
 import { NotificationBell } from '../ui/NotificationBell';
 
-const navLinks = [
-  { path: '/', label: 'Início' },
-  { path: '/noticias', label: 'Notícias' },
-  { path: '/galeria', label: 'Galeria' },
-  { path: '/ranking', label: 'Ranking' },
-  { path: '/membros', label: 'Membros' },
+// Main navigation links (desktop)
+const mainNavLinks = [
+  { path: '/', label: 'Início', icon: Home },
+  { path: '/noticias', label: 'Notícias', icon: Newspaper },
+  { path: '/galeria', label: 'Galeria', icon: Image },
+  { path: '/ranking', label: 'Ranking', icon: Trophy },
+  { path: '/membros', label: 'Membros', icon: Users },
+];
+
+// More menu items (dropdown on desktop, sidebar on mobile)
+const moreNavLinks = [
+  { path: '/historia-aeroporto', label: 'Aeroporto', icon: Plane },
+  { path: '/informacoes', label: 'Sobre Nós', icon: Info },
+  { path: '/historia-spotters', label: 'Créditos', icon: Award },
   { path: '/buscar', label: 'Buscar', icon: Search },
+];
+
+// All links for mobile sidebar
+const allNavLinks = [
+  { path: '/', label: 'Início', icon: Home },
+  { path: '/noticias', label: 'Notícias', icon: Newspaper },
+  { path: '/galeria', label: 'Galeria', icon: Image },
+  { path: '/ranking', label: 'Ranking', icon: Trophy },
+  { path: '/membros', label: 'Membros', icon: Users },
+  { path: '/historia-aeroporto', label: 'Aeroporto', icon: Plane },
+  { path: '/informacoes', label: 'Sobre Nós', icon: Info },
+  { path: '/historia-spotters', label: 'Créditos', icon: Award },
 ];
 
 const HIERARCHY_LEVELS = {
@@ -28,6 +48,7 @@ const HIERARCHY_LEVELS = {
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const location = useLocation();
   const { user, login, logout, isAdmin, isGestao } = useAuth();
 
@@ -48,12 +69,19 @@ export const Header = () => {
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setIsMoreMenuOpen(false);
   }, [location]);
 
-  // Ensure YouTube URL is valid
-  const youtubeUrl = siteConfig.youtube?.startsWith('http') 
-    ? siteConfig.youtube 
-    : `https://youtube.com/${siteConfig.youtube || '@spotterscxj'}`;
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (isMoreMenuOpen && !e.target.closest('.more-menu-container')) {
+        setIsMoreMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [isMoreMenuOpen]);
 
   const instagramUrl = siteConfig.instagramUrl?.startsWith('http')
     ? siteConfig.instagramUrl
@@ -70,7 +98,7 @@ export const Header = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            {/* Logo - Round */}
+            {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
               <img
                 src={siteConfig.logoRound}
@@ -85,20 +113,55 @@ export const Header = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-1">
-              {navLinks.map((link) => (
+              {mainNavLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`nav-link px-3 py-2 text-sm font-medium flex items-center gap-1 ${
+                  className={`nav-link px-3 py-2 text-sm font-medium flex items-center gap-1.5 ${
                     location.pathname === link.path ? 'active' : ''
                   }`}
                 >
-                  {link.icon && <link.icon size={14} />}
+                  <link.icon size={16} />
                   {link.label}
                 </Link>
               ))}
               
-              {/* VIP Link - Neon outline golden */}
+              {/* More Dropdown */}
+              <div className="relative more-menu-container">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMoreMenuOpen(!isMoreMenuOpen);
+                  }}
+                  className={`nav-link px-3 py-2 text-sm font-medium flex items-center gap-1.5 ${
+                    moreNavLinks.some(l => location.pathname === l.path) ? 'active' : ''
+                  }`}
+                >
+                  Mais
+                  <ChevronDown size={14} className={`transition-transform ${isMoreMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isMoreMenuOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-[#0d2137] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50">
+                    {moreNavLinks.map((link) => (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        className={`flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 transition-colors ${
+                          location.pathname === link.path 
+                            ? 'text-sky-400 bg-sky-500/10' 
+                            : 'text-gray-300'
+                        }`}
+                      >
+                        <link.icon size={18} />
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* VIP Link */}
               <Link
                 to="/vip"
                 className="ml-2 px-4 py-1.5 rounded-lg vip-btn font-bold text-sm flex items-center gap-1"
@@ -124,7 +187,7 @@ export const Header = () => {
                     </Button>
                   </Link>
 
-                  {/* Evaluation Button (for avaliador+) */}
+                  {/* Evaluation Button */}
                   {canEvaluate && (
                     <Link to="/avaliacao">
                       <Button
@@ -143,8 +206,8 @@ export const Header = () => {
                 </>
               )}
 
-              {/* Social Links */}
-              <div className="hidden md:flex items-center gap-1">
+              {/* Instagram Only (removed YouTube) */}
+              <div className="hidden md:flex items-center">
                 <a
                   href={instagramUrl}
                   target="_blank"
@@ -153,15 +216,6 @@ export const Header = () => {
                   aria-label="Instagram"
                 >
                   <Instagram size={18} />
-                </a>
-                <a
-                  href={youtubeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                  aria-label="YouTube"
-                >
-                  <Youtube size={18} />
                 </a>
               </div>
 
@@ -189,7 +243,7 @@ export const Header = () => {
                     variant="ghost"
                     size="sm"
                     onClick={logout}
-                    className="text-gray-400 hover:text-white"
+                    className="hidden sm:flex text-gray-400 hover:text-white"
                   >
                     <LogOut size={18} />
                   </Button>
@@ -218,86 +272,145 @@ export const Header = () => {
         </div>
       </header>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="mobile-menu lg:hidden">
-          <nav className="flex flex-col items-center gap-4">
-            {navLinks.map((link) => (
+      {/* Mobile Sidebar Menu */}
+      <div 
+        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${
+          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        {/* Backdrop */}
+        <div 
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+        
+        {/* Sidebar */}
+        <div 
+          className={`absolute top-0 right-0 h-full w-72 bg-[#0a1929] border-l border-white/10 shadow-2xl transform transition-transform duration-300 ${
+            isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between p-4 border-b border-white/10">
+            <div className="flex items-center gap-3">
+              <img
+                src={siteConfig.logoRound}
+                alt="Spotters CXJ"
+                className="h-10 w-10 rounded-full object-cover border-2 border-sky-500/30"
+              />
+              <div>
+                <span className="text-lg font-bold text-white">SPOTTERS</span>
+                <span className="text-lg font-bold text-sky-400 ml-1">CXJ</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="p-4 space-y-1">
+            {allNavLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-xl font-medium transition-colors ${
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-base font-medium transition-all ${
                   location.pathname === link.path
-                    ? 'text-sky-400'
-                    : 'text-gray-300 hover:text-white'
+                    ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
+                    : 'text-gray-300 hover:bg-white/5 hover:text-white'
                 }`}
               >
+                <link.icon size={22} />
                 {link.label}
               </Link>
             ))}
             
-            {/* VIP Link Mobile - Neon outline */}
+            {/* VIP Link */}
             <Link
               to="/vip"
-              className="px-6 py-2 rounded-lg vip-btn font-bold text-xl flex items-center gap-2"
+              className="flex items-center gap-4 px-4 py-3.5 rounded-xl text-base font-medium vip-btn mt-4"
             >
-              <Sparkles size={20} />
+              <Sparkles size={22} />
               Seja VIP
             </Link>
-            
-            {user && (
-              <>
-                <Link to="/upload" className="text-xl font-medium text-gray-300 hover:text-white">
-                  Enviar Foto
-                </Link>
-                {canEvaluate && (
-                  <Link to="/avaliacao" className="text-xl font-medium text-green-400">
-                    Avaliar Fotos
-                  </Link>
-                )}
-              </>
-            )}
-            
-            {isGestao && (
-              <Link to="/admin" className="text-xl font-medium text-sky-400">
-                Painel Admin
-              </Link>
-            )}
           </nav>
-          
-          <div className="flex items-center gap-6 mt-8">
+
+          {/* User Actions in Sidebar */}
+          {user && (
+            <div className="p-4 border-t border-white/10">
+              <Link to="/upload" className="flex items-center gap-4 px-4 py-3 text-gray-300 hover:text-white">
+                <Upload size={20} />
+                Enviar Foto
+              </Link>
+              {canEvaluate && (
+                <Link to="/avaliacao" className="flex items-center gap-4 px-4 py-3 text-green-400 hover:text-green-300">
+                  <Camera size={20} />
+                  Avaliar Fotos
+                </Link>
+              )}
+              {isGestao && (
+                <Link to="/admin" className="flex items-center gap-4 px-4 py-3 text-sky-400 hover:text-sky-300">
+                  <Shield size={20} />
+                  Painel Admin
+                </Link>
+              )}
+            </div>
+          )}
+
+          {/* Bottom Section */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-[#0a1929]">
+            {user ? (
+              <div className="flex items-center justify-between">
+                <Link to={`/perfil/${user.user_id}`} className="flex items-center gap-3">
+                  <img
+                    src={user.picture || siteConfig.logoRound}
+                    alt={user.name}
+                    className="w-10 h-10 rounded-full object-cover border border-white/20"
+                  />
+                  <div>
+                    <p className="text-white font-medium text-sm">{user.name}</p>
+                    <p className="text-gray-500 text-xs">{user.email}</p>
+                  </div>
+                </Link>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    logout();
+                  }}
+                  className="p-2 text-gray-400 hover:text-white"
+                >
+                  <LogOut size={20} />
+                </button>
+              </div>
+            ) : (
+              <Button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  login();
+                }}
+                className="w-full bg-sky-600 hover:bg-sky-500 text-white"
+              >
+                <User size={18} className="mr-2" />
+                Entrar com Google
+              </Button>
+            )}
+
+            {/* Instagram Link */}
             <a
               href={instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-pink-400 transition-colors"
+              className="flex items-center gap-2 justify-center mt-4 text-gray-400 hover:text-pink-400 transition-colors"
             >
-              <Instagram size={28} />
-            </a>
-            <a
-              href={youtubeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-red-500 transition-colors"
-            >
-              <Youtube size={28} />
+              <Instagram size={18} />
+              <span className="text-sm">@spotterscxj</span>
             </a>
           </div>
-
-          {!user && (
-            <Button
-              onClick={() => {
-                setIsMobileMenuOpen(false);
-                login();
-              }}
-              className="mt-8 bg-sky-600 hover:bg-sky-500 text-white"
-            >
-              <User size={18} className="mr-2" />
-              Entrar com Google
-            </Button>
-          )}
         </div>
-      )}
+      </div>
     </>
   );
 };
