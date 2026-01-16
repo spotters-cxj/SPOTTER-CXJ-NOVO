@@ -336,20 +336,6 @@ export const Header = () => {
               </Link>
             ))}
             
-            {/* Search Link */}
-            <Link
-              to="/buscar"
-              data-testid="mobile-nav-buscar"
-              className={`mobile-menu-item ${
-                location.pathname === '/buscar'
-                  ? 'active'
-                  : 'text-gray-300'
-              }`}
-            >
-              <Search size={20} />
-              <span>Buscar</span>
-            </Link>
-            
             {/* VIP Link */}
             <div className="pt-3">
               <Link
