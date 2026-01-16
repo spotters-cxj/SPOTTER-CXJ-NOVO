@@ -62,11 +62,19 @@ export const Header = () => {
 
   const canEvaluate = getUserLevel() >= HIERARCHY_LEVELS.avaliador;
 
+  // Optimized scroll handler with passive listener
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -77,8 +85,9 @@ export const Header = () => {
 
   // Close menu when clicking outside
   useEffect(() => {
+    if (!isMoreMenuOpen) return;
     const handleClickOutside = (e) => {
-      if (isMoreMenuOpen && !e.target.closest('.more-menu-container')) {
+      if (!e.target.closest('.more-menu-container')) {
         setIsMoreMenuOpen(false);
       }
     };
