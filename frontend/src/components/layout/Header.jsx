@@ -35,6 +35,7 @@ const allNavLinks = [
   { path: '/recordacoes', label: 'Recordações', icon: Album },
   { path: '/informacoes', label: 'Sobre Nós', icon: Info },
   { path: '/historia-spotters', label: 'Créditos', icon: Award },
+  { path: '/buscar', label: 'Buscar', icon: Search },
 ];
 
 const HIERARCHY_LEVELS = {
