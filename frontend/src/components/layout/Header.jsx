@@ -291,13 +291,13 @@ export const Header = () => {
         
         {/* Sidebar */}
         <div 
-          className={`absolute top-0 right-0 h-full w-[280px] mobile-sidebar border-l border-white/10 shadow-2xl transform transition-transform duration-300 ease-out ${
+          className={`absolute top-0 right-0 h-full w-[280px] mobile-sidebar border-l border-white/10 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${
             isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
           data-testid="mobile-sidebar"
         >
-          {/* Sidebar Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
+          {/* Sidebar Header - Fixed */}
+          <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
             <div className="flex items-center gap-3">
               <img
                 src={siteConfig.logoRound}
@@ -318,73 +318,103 @@ export const Header = () => {
             </button>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="p-3 space-y-1">
-            {allNavLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                data-testid={`mobile-nav-${link.label.toLowerCase()}`}
-                className={`mobile-menu-item ${
-                  location.pathname === link.path
-                    ? 'active'
-                    : 'text-gray-300'
-                }`}
-              >
-                <link.icon size={20} />
-                <span>{link.label}</span>
-              </Link>
-            ))}
-            
-            {/* VIP Link */}
-            <div className="pt-3">
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-sky-500/30 scrollbar-track-transparent">
+            {/* Navigation Links */}
+            <nav className="p-3 space-y-1">
+              {allNavLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  data-testid={`mobile-nav-${link.label.toLowerCase()}`}
+                  className={`mobile-menu-item ${
+                    location.pathname === link.path
+                      ? 'active'
+                      : 'text-gray-300'
+                  }`}
+                >
+                  <link.icon size={20} />
+                  <span>{link.label}</span>
+                </Link>
+              ))}
+            </nav>
+
+            {/* User Actions in Sidebar */}
+            {user && (
+              <div className="px-3 py-2 border-t border-white/10">
+                <Link 
+                  to="/upload" 
+                  data-testid="mobile-nav-upload"
+                  className="mobile-menu-item text-gray-300"
+                >
+                  <Upload size={20} />
+                  <span>Enviar Foto</span>
+                </Link>
+                {canEvaluate && (
+                  <Link 
+                    to="/avaliacao" 
+                    data-testid="mobile-nav-avaliacao"
+                    className="mobile-menu-item text-green-400"
+                  >
+                    <Camera size={20} />
+                    <span>Avaliar Fotos</span>
+                  </Link>
+                )}
+                {isGestao && (
+                  <Link 
+                    to="/admin" 
+                    data-testid="mobile-nav-admin"
+                    className="mobile-menu-item text-sky-400"
+                  >
+                    <Shield size={20} />
+                    <span>Painel Admin</span>
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {/* VIP Button - Highlighted */}
+            <div className="px-3 pt-3 pb-2">
               <Link
                 to="/vip"
                 data-testid="mobile-nav-vip"
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold vip-btn"
+                className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-base font-bold mobile-vip-btn"
               >
-                <Sparkles size={20} />
+                <Sparkles size={22} />
                 <span>Seja VIP</span>
               </Link>
             </div>
-          </nav>
 
-          {/* User Actions in Sidebar */}
-          {user && (
-            <div className="px-3 py-2 border-t border-white/10 mt-2">
-              <Link 
-                to="/upload" 
-                data-testid="mobile-nav-upload"
-                className="mobile-menu-item text-gray-300"
-              >
-                <Upload size={20} />
-                <span>Enviar Foto</span>
-              </Link>
-              {canEvaluate && (
-                <Link 
-                  to="/avaliacao" 
-                  data-testid="mobile-nav-avaliacao"
-                  className="mobile-menu-item text-green-400"
+            {/* Social Media Section */}
+            <div className="px-3 pb-3">
+              <p className="text-xs text-gray-500 uppercase tracking-wider px-4 mb-2">Redes Sociais</p>
+              <div className="space-y-2">
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium mobile-instagram-btn"
+                  data-testid="mobile-instagram-btn"
                 >
-                  <Camera size={20} />
-                  <span>Avaliar Fotos</span>
-                </Link>
-              )}
-              {isGestao && (
-                <Link 
-                  to="/admin" 
-                  data-testid="mobile-nav-admin"
-                  className="mobile-menu-item text-sky-400"
+                  <Instagram size={20} />
+                  <span>Instagram</span>
+                </a>
+                <a
+                  href={siteConfig.youtubeUrl || "https://youtube.com/@spotterscxj"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium mobile-youtube-btn"
+                  data-testid="mobile-youtube-btn"
                 >
-                  <Shield size={20} />
-                  <span>Painel Admin</span>
-                </Link>
-              )}
+                  <Youtube size={20} />
+                  <span>YouTube</span>
+                </a>
+              </div>
             </div>
-          )}
+          </div>
 
-          {/* Bottom Section */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-[#071422]">
+          {/* Bottom Section - Fixed */}
+          <div className="flex-shrink-0 p-4 border-t border-white/10 bg-[#071422]">
             {user ? (
               <div className="flex items-center justify-between">
                 <Link to={`/perfil/${user.user_id}`} className="flex items-center gap-3 flex-1 min-w-0">
@@ -410,30 +440,18 @@ export const Header = () => {
                 </button>
               </div>
             ) : (
-              <Button
+              <button
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   login();
                 }}
-                className="w-full bg-sky-600 hover:bg-sky-500 text-white"
+                className="w-full mobile-login-btn flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white font-semibold"
                 data-testid="mobile-login-btn"
               >
-                <User size={18} className="mr-2" />
-                Entrar com Google
-              </Button>
+                <User size={18} />
+                <span>Entrar com Google</span>
+              </button>
             )}
-
-            {/* Instagram Link */}
-            <a
-              href={instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 justify-center mt-4 py-2 text-gray-400 hover:text-pink-400 transition-colors"
-              data-testid="mobile-instagram-link"
-            >
-              <Instagram size={18} />
-              <span className="text-sm">@spotterscxj</span>
-            </a>
           </div>
         </div>
       </div>
