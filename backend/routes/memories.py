@@ -34,8 +34,8 @@ async def list_memories(request: Request):
 
 @router.post("")
 async def create_memory(request: Request, memory: MemoryCreate):
-    """Create new memory (admin only)"""
-    await require_admin(request)
+    """Create new memory (lider, admin, gestao, jornalista, diretor_aeroporto)"""
+    await require_memories_editor(request)
     db = await get_db(request)
     
     memory_data = memory.dict()
@@ -48,8 +48,8 @@ async def create_memory(request: Request, memory: MemoryCreate):
 
 @router.put("/{memory_id}")
 async def update_memory(request: Request, memory_id: str, update: MemoryUpdate):
-    """Update memory (admin only)"""
-    await require_admin(request)
+    """Update memory (lider, admin, gestao, jornalista, diretor_aeroporto)"""
+    await require_memories_editor(request)
     db = await get_db(request)
     
     existing = await db.memories.find_one({"memory_id": memory_id}, {"_id": 0})
@@ -65,8 +65,8 @@ async def update_memory(request: Request, memory_id: str, update: MemoryUpdate):
 
 @router.delete("/{memory_id}")
 async def delete_memory(request: Request, memory_id: str):
-    """Delete memory (admin only)"""
-    await require_admin(request)
+    """Delete memory (lider, admin, gestao, jornalista, diretor_aeroporto)"""
+    await require_memories_editor(request)
     db = await get_db(request)
     
     result = await db.memories.delete_one({"memory_id": memory_id})
