@@ -4,85 +4,78 @@
 Aplicativo web completo para a comunidade de entusiastas da aviação Spotters CXJ, baseada em Caxias do Sul.
 
 ## Stack Tecnológico
-- **Frontend:** React, Tailwind CSS, Shadcn UI
+- **Frontend:** React (CRACO/CRA), Tailwind CSS, Shadcn UI
 - **Backend:** FastAPI (Python)
 - **Database:** MongoDB
 - **Auth:** Emergent Google OAuth
 
 ## Funcionalidades Implementadas
 
-### Sistema de Backup Completo (15/01/2026)
-- ✅ **Backup Automático a cada 12 horas** - Salva no servidor + tenta Google Drive
-- ✅ **Backup Manual** - Download direto pelo painel admin
-- ✅ **Backups Locais** - Armazenados em `/app/backend/backups` (últimos 10)
-- ✅ **Notificações por Email** - Alerta quando backup falha
-- ✅ **Histórico de Backups** - Visualização completa no admin
-- ✅ **Gerenciamento de Backups Locais** - Download e exclusão pelo painel
+### Sistema de Cache (16/01/2026)
+- ✅ **Backend:** Middleware de Cache-Control configurado
+  - HTML/API: `no-cache, no-store, must-revalidate`
+  - JS/CSS com hash: `public, max-age=31536000, immutable` (1 ano)
+  - Imagens: `public, max-age=86400` (1 dia)
+- ✅ **Frontend:** Meta tags anti-cache no index.html
+- ✅ **Static Files:** CachedStaticFiles class customizada
 
-### Integração ANAC (15/01/2026)
+### Sistema de Backup Completo
+- ✅ Backup Automático a cada 12 horas (salva localmente)
+- ✅ Backup Manual com download direto
+- ✅ Gerenciamento de backups locais (download/exclusão)
+- ✅ Histórico de backups no painel admin
+
+### Relatório Semanal por Email
+- ✅ Scheduler configurado (todo Domingo às 10h)
+- ✅ Estatísticas: usuários, fotos, pendentes, top colaboradores
+- ✅ Botão para enviar relatório manualmente
+- ⚠️ **PENDENTE:** Configurar senha de app do Gmail correta
+
+### Integração ANAC
 - ✅ Consulta por matrícula brasileira
 - ✅ Base local de aeronaves comuns
-- ✅ Auto-preenchimento no formulário de upload
+- ✅ Auto-preenchimento no upload
 
-### Upload de Fotos Melhorado (15/01/2026)
+### Upload de Fotos
 - ✅ Campo de créditos obrigatório para fotos de terceiros
 - ✅ Checkbox "Foto de minha autoria"
 - ✅ Consulta ANAC integrada
-- ✅ Validação de créditos
 
-### Página "Minhas Fotos" (15/01/2026)
+### Página "Minhas Fotos"
 - ✅ Estatísticas: Total, Aprovadas, Pendentes, Recusadas
 - ✅ Comentários do avaliador visíveis
 - ✅ Nota final e rating público
-- ✅ Interface com abas
 
-### Sistema de Usuários
-- Hierarquia: Líder > Admin > Gestão > Produtor > Avaliador > Colaborador > Spotter CXJ
-- Tags: Jornalista, Diretor do Aeroporto, VIP, Pódio
-- Tag "membro" completamente removida
+## Configuração de Email (PENDENTE)
 
-## Configurações de Email
+A senha de app fornecida (`kysb ajhv tjaf phcm`) foi rejeitada pelo Gmail.
 
-### Para ativar notificações por email:
-
-1. **Criar senha de app do Gmail:**
-   - Acesse: https://myaccount.google.com/apppasswords
-   - Faça login com spotterscxj@gmail.com
-   - Crie uma nova senha de app (nome: "Spotters Backup")
-   - Copie a senha de 16 caracteres
-
-2. **Configurar no .env:**
+**Para corrigir:**
+1. Acesse: https://myaccount.google.com/apppasswords
+2. Verifique se a verificação em 2 etapas está ativada
+3. Crie uma NOVA senha de app
+4. Atualize em `/app/backend/.env`:
    ```
-   SMTP_EMAIL=spotterscxj@gmail.com
-   SMTP_PASSWORD=xxxx xxxx xxxx xxxx  # Senha de app (16 caracteres)
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=587
-   NOTIFICATION_EMAIL=spotterscxj@gmail.com
+   SMTP_PASSWORD=nova_senha_aqui
    ```
+5. Reinicie o backend
 
-3. **Reiniciar o backend** após configurar
+## Arquivos de Configuração de Cache
 
-4. **Testar** usando o botão "Enviar Email de Teste" no painel admin
+### Backend (`/app/backend/server.py`)
+- `CacheControlMiddleware`: Adiciona headers baseado no tipo de arquivo
+- `CachedStaticFiles`: Classe customizada para arquivos estáticos
+
+### Frontend (`/app/frontend/public/index.html`)
+- Meta tags de cache control
 
 ## Arquivos Principais
 
-### Backend
-- `/app/backend/scheduler.py` - Backup automático a cada 12h
+- `/app/backend/server.py` - Entry point com middleware de cache
+- `/app/backend/scheduler.py` - Backup automático + relatório semanal
 - `/app/backend/email_service.py` - Serviço de notificações
 - `/app/backend/routes/backup.py` - APIs de backup
-- `/app/backend/routes/aircraft.py` - Integração ANAC
-- `/app/backend/routes/photos.py` - Upload com créditos
-
-### Frontend
 - `/app/frontend/src/components/pages/AdminPage.jsx` - Painel admin
-- `/app/frontend/src/components/pages/UploadPage.jsx` - Upload melhorado
-
-## Notas Importantes
-
-1. **Backup automático:** Roda a cada 12h, salva localmente + tenta Google Drive
-2. **Google Drive:** Não funciona com conta de serviço sem Shared Drive
-3. **Backups locais:** Mantém os últimos 10 backups automaticamente
-4. **Email:** Requer senha de app do Gmail (não a senha normal)
 
 ---
-Última atualização: 15/01/2026
+Última atualização: 16/01/2026
