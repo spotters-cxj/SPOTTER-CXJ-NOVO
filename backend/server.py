@@ -20,6 +20,20 @@ app = FastAPI(title="Spotters CXJ API")
 
 os.makedirs("/app/backend/uploads", exist_ok=True)
 
+# Get allowed origins from environment or use defaults
+CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*')
+if CORS_ORIGINS == '*':
+    # Allow all origins but with specific handling
+    ALLOWED_ORIGINS = [
+        "https://planespot-admin.preview.emergentagent.com",
+        "https://spotterscxj.com.br",
+        "https://www.spotterscxj.com.br",
+        "http://localhost:3000",
+        "http://localhost:8001",
+    ]
+else:
+    ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ORIGINS.split(',')]
+
 # Custom middleware for cache control
 class CacheControlMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -35,12 +49,11 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
         
         # Long cache for hashed static files (JS, CSS with hash in filename)
         elif any(ext in path for ext in ['.js', '.css']) and any(c.isdigit() for c in path):
-            # Files with content hash can be cached for 1 year
             response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
         
-        # Short cache for images and other static files
+        # Short cache for images
         elif any(path.endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico']):
-            response.headers["Cache-Control"] = "public, max-age=86400"  # 1 day
+            response.headers["Cache-Control"] = "public, max-age=86400"
         
         # No cache for API routes
         elif path.startswith('/api/'):
@@ -51,6 +64,29 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
 
 # Add cache control middleware
 app.add_middleware(CacheControlMiddleware)
+
+# Configure CORS with explicit settings for authentication
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS if CORS_ORIGINS != '*' else ["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "X-Session-ID",
+        "Accept",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers",
+    ],
+    expose_headers=[
+        "X-Session-Token",
+        "Content-Disposition",
+    ],
+    max_age=600,  # Cache preflight requests for 10 minutes
+)
 
 api_router = APIRouter(prefix="/api")
 
@@ -90,29 +126,19 @@ class CachedStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope) -> Response:
         response = await super().get_response(path, scope)
         
-        # Add appropriate cache headers based on file type
         if path.endswith(('.js', '.css')):
-            # Check if file has content hash (contains numbers in filename)
             if any(c.isdigit() for c in path):
                 response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
             else:
-                response.headers["Cache-Control"] = "public, max-age=3600"  # 1 hour
+                response.headers["Cache-Control"] = "public, max-age=3600"
         elif path.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg')):
-            response.headers["Cache-Control"] = "public, max-age=86400"  # 1 day
+            response.headers["Cache-Control"] = "public, max-age=86400"
         else:
             response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         
         return response
 
 app.mount("/api/uploads", CachedStaticFiles(directory="/app/backend/uploads"), name="uploads")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -128,6 +154,7 @@ async def startup_db_client():
     app.state.db = client[db_name]
     app.state.mongo_client = client
     logger.info("Connected to MongoDB")
+    logger.info(f"CORS Origins: {ALLOWED_ORIGINS if CORS_ORIGINS != '*' else 'All origins'}")
     
     # Start backup scheduler
     try:
