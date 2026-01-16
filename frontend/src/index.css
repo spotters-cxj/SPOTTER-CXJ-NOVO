@@ -775,6 +775,55 @@ html {
   .podium-place.third .podium-block { height: 60px; }
 }
 
+/* Mobile Sidebar Menu Styles */
+.mobile-sidebar {
+  background: linear-gradient(180deg, #0a1929 0%, #071422 100%);
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-menu-item.active {
+  background: #0ea5e9;
+  color: white;
+  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+}
+
+.mobile-menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0.5rem 0;
+}
+
+/* Navigation link styles for desktop */
+.nav-link {
+  color: #9ca3af;
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+}
+
+.nav-link:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link.active {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+}
+
 @layer base {
   :root {
     --background: 0 0% 0%;
