@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request, Depends
 from typing import List
 from models import User, UserUpdate, HIERARCHY_LEVELS, get_highest_role_level
-from routes.auth import get_current_user
 from routes.logs import create_audit_log, get_client_ip
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -11,8 +10,8 @@ async def get_db(request: Request):
 
 async def require_admin(request: Request):
     """Require admin level or higher"""
-    from routes.auth import get_current_user as get_user
-    user = await get_user(request)
+    from routes.auth import get_current_user_from_request
+    user = await get_current_user_from_request(request)
     user_level = get_highest_role_level(user.get("tags", []))
     if user_level < HIERARCHY_LEVELS["admin"]:
         raise HTTPException(status_code=403, detail="Acesso restrito a administradores")
@@ -20,8 +19,8 @@ async def require_admin(request: Request):
 
 async def require_lider(request: Request):
     """Require lider level"""
-    from routes.auth import get_current_user as get_user
-    user = await get_user(request)
+    from routes.auth import get_current_user_from_request
+    user = await get_current_user_from_request(request)
     user_level = get_highest_role_level(user.get("tags", []))
     if user_level < HIERARCHY_LEVELS["lider"]:
         raise HTTPException(status_code=403, detail="Acesso restrito a líderes")
