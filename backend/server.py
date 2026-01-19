@@ -23,53 +23,59 @@ os.makedirs("/app/backend/uploads", exist_ok=True)
 
 # Get allowed origins from environment or use defaults
 CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*')
+
+# IMPORTANT:
+# - If allow_credentials=True, we MUST NOT use allow_origins=["*"]
+# - Therefore we always build an explicit allowlist.
 if CORS_ORIGINS == '*':
-    # Allow all origins but with specific handling
     ALLOWED_ORIGINS = [
         "https://newsflow-events.preview.emergentagent.com",
         "https://spotterscxj.com.br",
         "https://www.spotterscxj.com.br",
+        # Emergent deployment host (your API is on this domain in production)
+        "https://deploy-app-22.emergent.host",
         "http://localhost:3000",
         "http://localhost:8001",
     ]
 else:
-    ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ORIGINS.split(',')]
+    ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ORIGINS.split(',') if origin.strip()]
 
 # Custom middleware for cache control
 class CacheControlMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
-        
+
         path = request.url.path
-        
+
         # No cache for HTML files and API responses
         if path.endswith('.html') or path == '/' or not '.' in path.split('/')[-1]:
             response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
-        
+
         # Long cache for hashed static files (JS, CSS with hash in filename)
         elif any(ext in path for ext in ['.js', '.css']) and any(c.isdigit() for c in path):
             response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
-        
+
         # Short cache for images
         elif any(path.endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico']):
             response.headers["Cache-Control"] = "public, max-age=86400"
-        
+
         # No cache for API routes
         elif path.startswith('/api/'):
             response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
             response.headers["Pragma"] = "no-cache"
-        
+
         return response
 
 # Add cache control middleware
 app.add_middleware(CacheControlMiddleware)
 
 # Configure CORS with explicit settings for authentication
+# NOTE: We always use explicit origins (no "*") because credentials are enabled.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS if CORS_ORIGINS != '*' else ["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=[
@@ -127,7 +133,7 @@ app.include_router(api_router)
 class CachedStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope) -> Response:
         response = await super().get_response(path, scope)
-        
+
         if path.endswith(('.js', '.css')):
             if any(c.isdigit() for c in path):
                 response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
@@ -137,7 +143,7 @@ class CachedStaticFiles(StaticFiles):
             response.headers["Cache-Control"] = "public, max-age=86400"
         else:
             response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        
+
         return response
 
 app.mount("/api/uploads", CachedStaticFiles(directory="/app/backend/uploads"), name="uploads")
@@ -156,8 +162,8 @@ async def startup_db_client():
     app.state.db = client[db_name]
     app.state.mongo_client = client
     logger.info("Connected to MongoDB")
-    logger.info(f"CORS Origins: {ALLOWED_ORIGINS if CORS_ORIGINS != '*' else 'All origins'}")
-    
+    logger.info(f"CORS Origins (explicit): {ALLOWED_ORIGINS}")
+
     # Start backup scheduler
     try:
         from scheduler import start_backup_scheduler
