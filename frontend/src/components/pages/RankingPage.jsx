@@ -392,8 +392,21 @@ export const RankingPage = () => {
                       </div>
                     </div>
 
+                    {/* Not authenticated message */}
+                    {!isAuthenticated && selectedEvent.computed_status === 'active' && (
+                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6">
+                        <div className="flex items-center gap-2 text-blue-400">
+                          <AlertCircle size={20} />
+                          <span className="font-medium">Faça login para votar</span>
+                        </div>
+                        <p className="text-blue-200/80 mt-1 text-sm">
+                          Você precisa estar logado para participar desta votação.
+                        </p>
+                      </div>
+                    )}
+
                     {/* Permission message */}
-                    {eventPermission && !eventPermission.can_vote && !eventPermission.has_voted && (
+                    {isAuthenticated && eventPermission && !eventPermission.can_vote && !eventPermission.has_voted && (
                       <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-6">
                         <div className="flex items-center gap-2 text-amber-400">
                           <AlertCircle size={20} />
