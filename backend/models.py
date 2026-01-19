@@ -199,6 +199,10 @@ class Notification(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
 
 # News Models
+class NewsStatus(str, Enum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+
 class NewsBase(BaseModel):
     title: str
     content: str
@@ -210,28 +214,84 @@ class News(NewsBase):
     news_id: str = Field(default_factory=lambda: f"news_{uuid.uuid4().hex[:8]}")
     author_id: str
     author_name: str
-    published: bool = True
+    status: str = NewsStatus.PUBLISHED  # draft or published
+    scheduled_at: Optional[datetime] = None  # Data/hora agendada para publicação
+    published: bool = True  # Mantido para compatibilidade
     created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
 
 class NewsCreate(NewsBase):
-    pass
+    status: str = NewsStatus.PUBLISHED
+    scheduled_at: Optional[datetime] = None
 
 # Event Models
+class EventType(str, Enum):
+    PHOTO = "photo"  # Votação de fotos
+    POLL = "poll"    # Enquete com opções
+
+class EventStatus(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    ENDED = "ended"
+
+class PollOption(BaseModel):
+    option_id: str = Field(default_factory=lambda: f"opt_{uuid.uuid4().hex[:6]}")
+    text: str
+    votes_count: int = 0
+
 class Event(BaseModel):
     event_id: str = Field(default_factory=lambda: f"event_{uuid.uuid4().hex[:8]}")
     title: str
     description: Optional[str] = None
+    event_type: str = EventType.PHOTO  # photo ou poll
+    # Configuração de permissões de voto
+    allowed_tags: List[str] = []  # Tags que podem votar (vazio = ninguém pode votar)
+    allow_visitors: bool = False  # Visitante NÃO pode votar por padrão
+    # Datas
     start_date: datetime
     end_date: datetime
-    voting_enabled: bool = True
+    # Status e configurações
+    active: bool = True
+    show_results_live: bool = False  # Mostrar resultados em tempo real
+    # Para votação de fotos
+    photo_ids: List[str] = []  # IDs das fotos participantes
+    # Para enquetes
+    poll_options: List[PollOption] = []  # Opções da enquete
+    # Metadados
+    created_by_id: str = ""
+    created_by_name: str = ""
     created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
+    updated_at: Optional[datetime] = None
 
 class EventVote(BaseModel):
     vote_id: str = Field(default_factory=lambda: f"vote_{uuid.uuid4().hex[:8]}")
     event_id: str
-    photo_id: str
     user_id: str
+    user_name: str
+    # Para votação de foto
+    photo_id: Optional[str] = None
+    # Para enquete
+    option_id: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
+
+# Helper function para verificar permissão de voto em evento
+def can_vote_in_event(user_tags: List[str], event_allowed_tags: List[str], allow_visitors: bool) -> bool:
+    """Verifica se o usuário pode votar no evento baseado nas tags"""
+    if not user_tags:
+        return False
+    
+    # Se o usuário é apenas visitante
+    is_visitor_only = user_tags == ["visitante"] or (len(user_tags) == 1 and "visitante" in user_tags)
+    
+    # Se é visitante, só pode votar se allow_visitors for True
+    if is_visitor_only:
+        return allow_visitors
+    
+    # Se não há tags permitidas configuradas, ninguém pode votar
+    if not event_allowed_tags:
+        return False
+    
+    # Verifica se o usuário tem alguma tag permitida
+    return any(tag in event_allowed_tags for tag in user_tags)
 
 # Queue Settings
 class QueueSettings(BaseModel):
