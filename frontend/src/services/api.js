@@ -1,11 +1,27 @@
 import axios from 'axios';
 
-// ✅ Sempre usa a mesma origem do site (ex: https://spotterscxj.com.br/api)
-const API = `${window.location.origin}/api`;
+// Sempre usar o mesmo domínio do site em produção.
+// Isso evita CORS e evita puxar a URL do emergent host.
+const BACKEND_URL =
+  (typeof window !== 'undefined' && window.location.origin)
+    ? window.location.origin
+    : 'https://spotterscxj.com.br';
 
-// Debug
+const normalizeBackendUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+    parsed.hostname = parsed.hostname.replace(/^www\./, '');
+    return parsed.toString().replace(/\/$/, '');
+  } catch (e) {
+    return url;
+  }
+};
+
+const API = `${normalizeBackendUrl(BACKEND_URL)}/api`;
+
 if (typeof window !== 'undefined') {
   console.log('API Configuration:', {
+    BACKEND_URL: normalizeBackendUrl(BACKEND_URL),
     API,
     origin: window.location.origin
   });
@@ -14,31 +30,28 @@ if (typeof window !== 'undefined') {
 const api = axios.create({
   baseURL: API,
   withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
   timeout: 15000,
 });
 
-// Request interceptor - attach auth token if exists
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth_token') || localStorage.getItem('session_token');
+    const token =
+      localStorage.getItem('auth_token') || localStorage.getItem('session_token');
+
     if (token && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - auth errors
 api.interceptors.response.use(
   (response) => {
     const newToken = response.headers?.['x-session-token'];
-    if (newToken) {
-      localStorage.setItem('auth_token', newToken);
-    }
+    if (newToken) localStorage.setItem('auth_token', newToken);
     return response;
   },
   (error) => {
@@ -55,9 +68,14 @@ api.interceptors.response.use(
     if (status === 401) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('session_token');
-
-      if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
-        window.dispatchEvent(new CustomEvent('auth-error', { detail: { status, url } }));
+      if (
+        typeof window !== 'undefined' &&
+        !window.location.pathname.includes('/auth') &&
+        !window.location.pathname.includes('/login')
+      ) {
+        window.dispatchEvent(
+          new CustomEvent('auth-error', { detail: { status, url } })
+        );
       }
     }
 
@@ -65,7 +83,7 @@ api.interceptors.response.use(
   }
 );
 
-// Auth API
+// Auth
 export const authApi = {
   createSession: (sessionId) => api.post('/auth/session', { session_id: sessionId }),
   getMe: () => api.get('/auth/me'),
@@ -74,7 +92,7 @@ export const authApi = {
   login: (data) => api.post('/auth/login', data),
 };
 
-// Admin API
+// Admin
 export const adminApi = {
   getUsers: () => api.get('/admin/users'),
   updateUserRole: (userId, role) => api.put(`/admin/users/${userId}/role`, { role }),
@@ -83,14 +101,14 @@ export const adminApi = {
   updateUserTags: (userId, tags) => api.put(`/admin/users/${userId}/tags`, { tags }),
 };
 
-// Pages API
+// Pages
 export const pagesApi = {
   getPage: (slug) => api.get(`/pages/${slug}`),
   updatePage: (slug, data) => api.put(`/pages/${slug}`, data),
   listPages: () => api.get('/pages'),
 };
 
-// Leaders API
+// Leaders
 export const leadersApi = {
   list: () => api.get('/leaders'),
   create: (data) => api.post('/leaders', data),
@@ -98,13 +116,13 @@ export const leadersApi = {
   delete: (id) => api.delete(`/leaders/${id}`),
 };
 
-// Settings API
+// Settings
 export const settingsApi = {
   get: () => api.get('/settings'),
   update: (data) => api.put('/settings', data),
 };
 
-// Memories/Recordações API
+// Memories
 export const memoriesApi = {
   list: () => api.get('/memories'),
   create: (data) => api.post('/memories', data),
@@ -112,23 +130,23 @@ export const memoriesApi = {
   delete: (id) => api.delete(`/memories/${id}`),
 };
 
-// Gallery API
+// Gallery (✅ adiciona getTypes e upload)
 export const galleryApi = {
   list: (params) => api.get('/gallery', { params }),
   getById: (id) => api.get(`/gallery/${id}`),
+  getTypes: () => api.get('/gallery/types'),
+  upload: (formData) =>
+    api.post('/gallery/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    }),
   rate: (id, rating) => api.post(`/gallery/${id}/rate`, { rating }),
   delete: (id) => api.delete(`/gallery/${id}`),
   resubmit: (id) => api.post(`/gallery/${id}/resubmit`),
   listAdmin: (params) => api.get('/gallery/admin/all', { params }),
-  // ⚠️ Upload de foto normalmente é /photos (mantive abaixo também)
-  upload: (formData) =>
-    api.post('/photos', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 60000,
-    }),
 };
 
-// Timeline API
+// Timeline
 export const timelineApi = {
   getAirport: () => api.get('/timeline/airport'),
   createAirport: (data) => api.post('/timeline/airport', data),
@@ -140,13 +158,13 @@ export const timelineApi = {
   deleteSpotters: (id) => api.delete(`/timeline/spotters/${id}`),
 };
 
-// Stats API
+// Stats
 export const statsApi = {
   get: () => api.get('/stats'),
   update: (data) => api.put('/stats', data),
 };
 
-// Photos API
+// Photos
 export const photosApi = {
   upload: (formData) =>
     api.post('/photos', formData, {
@@ -157,7 +175,7 @@ export const photosApi = {
   getQueue: () => api.get('/photos/queue'),
 };
 
-// Ranking API
+// Ranking (✅ garante que existe getPodium e getPhotos)
 export const rankingApi = {
   get: () => api.get('/ranking'),
   getWeekly: () => api.get('/ranking/weekly'),
@@ -167,9 +185,10 @@ export const rankingApi = {
   getTop3: () => api.get('/ranking/top3'),
 };
 
-// Events API
+// Events
 export const eventsApi = {
-  list: (includeEnded = false) => api.get('/events', { params: { include_ended: includeEnded } }),
+  list: (includeEnded = false) =>
+    api.get('/events', { params: { include_ended: includeEnded } }),
   getById: (id) => api.get(`/events/${id}`),
   getResults: (id) => api.get(`/events/${id}/results`),
   checkPermission: (id) => api.get(`/events/${id}/check-permission`),
@@ -182,13 +201,13 @@ export const eventsApi = {
   getAvailablePhotos: () => api.get('/events/photos/available'),
 };
 
-// Evaluation API
+// Evaluation
 export const evaluationApi = {
   getQueue: () => api.get('/evaluation/queue'),
   evaluate: (photoId, data) => api.post(`/evaluation/${photoId}`, data),
 };
 
-// News API
+// News
 export const newsApi = {
   list: (limit = 10) => api.get('/news', { params: { limit } }),
   getById: (id) => api.get(`/news/${id}`),
@@ -201,7 +220,7 @@ export const newsApi = {
   publish: (id) => api.post(`/news/${id}/publish`),
 };
 
-// Members API
+// Members
 export const membersApi = {
   list: () => api.get('/members'),
   getById: (id) => api.get(`/members/${id}`),
@@ -210,37 +229,40 @@ export const membersApi = {
   updateProfile: (data) => api.put('/members/profile', data),
 };
 
-// Notifications API
+// Notifications
 export const notificationsApi = {
   list: () => api.get('/notifications'),
   markRead: (id) => api.put(`/notifications/${id}/read`),
   markAllRead: () => api.put('/notifications/read-all'),
 };
 
-// Audit Logs API
+// Logs
 export const logsApi = {
   list: (params) => api.get('/logs', { params }),
   getActions: () => api.get('/logs/actions'),
   getStats: () => api.get('/logs/stats'),
 };
 
-// Backup API
+// Backup
 export const backupApi = {
   getStatus: () => api.get('/backup/status'),
   getHistory: (limit = 20) => api.get('/backup/history', { params: { limit } }),
   getConfig: () => api.get('/backup/config'),
   createGoogleDrive: () => api.post('/backup/google-drive', {}, { timeout: 120000 }),
-  createManual: () => api.get('/backup/manual', { responseType: 'blob', timeout: 120000 }),
+  createManual: () =>
+    api.get('/backup/manual', { responseType: 'blob', timeout: 120000 }),
   listLocal: () => api.get('/backup/local'),
-  downloadLocal: (filename) => api.get(`/backup/local/download/${filename}`, { responseType: 'blob' }),
+  downloadLocal: (filename) =>
+    api.get(`/backup/local/download/${filename}`, { responseType: 'blob' }),
   deleteLocal: (filename) => api.delete(`/backup/local/${filename}`),
   testEmail: () => api.post('/backup/test-email'),
   sendWeeklyReport: () => api.post('/backup/send-weekly-report'),
 };
 
-// Aircraft API
+// Aircraft
 export const aircraftApi = {
-  lookup: (registration) => api.get('/aircraft/anac_lookup', { params: { registration } }),
+  lookup: (registration) =>
+    api.get('/aircraft/anac_lookup', { params: { registration } }),
   quickLookup: (registration) => api.get(`/aircraft/quick_lookup/${registration}`),
 };
 
