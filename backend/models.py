@@ -79,7 +79,7 @@ class UserBase(BaseModel):
 
 class User(UserBase):
     user_id: str
-    tags: List[str] = ["spotter_cxj"]
+    tags: List[str] = ["visitante"]  # Novos usuários começam como visitantes
     instagram: Optional[str] = None
     jetphotos: Optional[str] = None
     bio: Optional[str] = None
