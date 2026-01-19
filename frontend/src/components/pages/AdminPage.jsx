@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 
 // Available tags
 const AVAILABLE_TAGS = [
+  { value: 'visitante', label: 'Visitante', color: 'bg-gray-500', icon: '👁️' },
   { value: 'lider', label: 'Líder', color: 'bg-yellow-500', icon: '👑' },
   { value: 'admin', label: 'Admin', color: 'bg-red-500', icon: '🛡️' },
   { value: 'gestao', label: 'Gestão', color: 'bg-purple-500', icon: '📊' },
