@@ -21,11 +21,34 @@ export const RankingPage = () => {
   const [eventResults, setEventResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [votingLoading, setVotingLoading] = useState(false);
+  const [votedEvents, setVotedEvents] = useState(new Set()); // Track voted events
 
   useEffect(() => {
     loadRankings();
     loadEvents();
   }, []);
+
+  // Check vote status for all events when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && events.length > 0) {
+      checkVotedEvents();
+    }
+  }, [isAuthenticated, events]);
+
+  const checkVotedEvents = async () => {
+    const voted = new Set();
+    for (const event of events) {
+      try {
+        const res = await eventsApi.checkPermission(event.event_id);
+        if (res.data?.has_voted) {
+          voted.add(event.event_id);
+        }
+      } catch (error) {
+        // Ignore errors for individual checks
+      }
+    }
+    setVotedEvents(voted);
+  };
 
   const loadRankings = async () => {
     try {
