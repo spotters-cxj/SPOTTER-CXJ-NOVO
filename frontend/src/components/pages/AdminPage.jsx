@@ -5,12 +5,13 @@ import {
   Image, FileText, UserCheck, UserX, Crown, Clock, BarChart3, Calendar, History, 
   Search, Filter, Tag, Newspaper, CreditCard, Instagram, Youtube, Eye, EyeOff,
   ChevronDown, ChevronUp, AlertCircle, CheckCircle, XCircle, Plane, MapPin,
-  HardDrive, Cloud, Download, Upload, Loader2
+  HardDrive, Cloud, Download, Upload, Loader2, Vote, BarChart2, CalendarClock
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
   adminApi, leadersApi, pagesApi, settingsApi, memoriesApi, galleryApi, 
-  timelineApi, statsApi, logsApi, newsApi, membersApi, evaluationApi, photosApi, backupApi 
+  timelineApi, statsApi, logsApi, newsApi, membersApi, evaluationApi, photosApi, backupApi,
+  eventsApi 
 } from '../../services/api';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -52,6 +53,10 @@ export const AdminPage = () => {
   const [news, setNews] = useState([]);
   const [evaluationQueue, setEvaluationQueue] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Events states
+  const [events, setEvents] = useState([]);
+  const [availablePhotos, setAvailablePhotos] = useState([]);
 
   // Backup states
   const [backupStatus, setBackupStatus] = useState({});
@@ -73,6 +78,7 @@ export const AdminPage = () => {
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showNewsModal, setShowNewsModal] = useState(false);
+  const [showEventModal, setShowEventModal] = useState(false);
   const [editingLeader, setEditingLeader] = useState(null);
   const [editingMemory, setEditingMemory] = useState(null);
   const [editingPage, setEditingPage] = useState(null);
@@ -80,6 +86,7 @@ export const AdminPage = () => {
   const [editingMilestone, setEditingMilestone] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [editingNews, setEditingNews] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
 
   // Form states
   const [leaderForm, setLeaderForm] = useState({ name: '', role: '', instagram: '', photo_url: '', order: 0 });
@@ -90,7 +97,11 @@ export const AdminPage = () => {
   const [timelineForm, setTimelineForm] = useState({ year: '', description: '', order: 0 });
   const [milestoneForm, setMilestoneForm] = useState({ year: '', title: '', description: '', order: 0 });
   const [userForm, setUserForm] = useState({ tags: [], is_vip: false, approved: false, instagram: '', jetphotos: '' });
-  const [newsForm, setNewsForm] = useState({ title: '', content: '', location: '', image: '', references: '', published: true });
+  const [newsForm, setNewsForm] = useState({ title: '', content: '', location: '', image: '', references: '', status: 'published', scheduled_at: '' });
+  const [eventForm, setEventForm] = useState({
+    title: '', description: '', event_type: 'photo', allowed_tags: [], allow_visitors: false,
+    start_date: '', end_date: '', active: true, show_results_live: false, photo_ids: [], poll_options: []
+  });
 
   useEffect(() => {
     if (isGestao) {
