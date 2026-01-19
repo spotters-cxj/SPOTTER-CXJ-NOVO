@@ -26,7 +26,7 @@ async def get_current_user_optional(request: Request):
     try:
         from routes.auth import get_current_user_from_request
         return await get_current_user_from_request(request)
-    except:
+    except Exception:
         return None
 
 async def require_gestao(request: Request):
