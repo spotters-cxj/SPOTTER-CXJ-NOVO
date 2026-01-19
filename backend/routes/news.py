@@ -149,7 +149,7 @@ async def create_news(request: Request):
             scheduled_at = body["scheduled_at"]
             if isinstance(scheduled_at, str):
                 scheduled_at = datetime.fromisoformat(scheduled_at.replace('Z', '+00:00'))
-        except:
+        except Exception:
             scheduled_at = None
     
     # Se tem agendamento futuro, status deve ser draft até publicação
