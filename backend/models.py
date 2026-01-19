@@ -353,6 +353,7 @@ class AuditLogAction(str, Enum):
     SETTINGS_CHANGE = "settings_change"
     LOGIN = "login"
     LOGOUT = "logout"
+    RESUBMIT = "resubmit"  # Foto reenviada para avaliação
 
 class AuditLog(BaseModel):
     log_id: str = Field(default_factory=lambda: f"log_{uuid.uuid4().hex[:12]}")
