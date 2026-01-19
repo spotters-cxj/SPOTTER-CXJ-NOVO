@@ -12,8 +12,8 @@ async def get_db(request: Request):
     return request.app.state.db
 
 async def get_current_user(request: Request):
-    from routes.auth import get_current_user as auth_get_user
-    return await auth_get_user(request)
+    from routes.auth import get_current_user_from_request
+    return await get_current_user_from_request(request)
 
 async def require_evaluator(request: Request):
     """Require avaliador level or higher"""
@@ -270,37 +270,3 @@ async def get_evaluator_history(request: Request, evaluator_id: str):
         score_distribution = {}
     
     return enriched_evaluations
-
-
-@router.get("/evaluator/{evaluator_id}/history")
-async def get_evaluator_history(request: Request, evaluator_id: str):
-    """Get evaluation history for a specific evaluator (public)"""
-    db = await get_db(request)
-    
-    # Get all evaluations by this evaluator
-    evaluations = await db.photo_evaluations.find(
-        {"evaluator_id": evaluator_id},
-        {"_id": 0}
-    ).sort("created_at", -1).limit(100).to_list(100)
-    
-    # Enrich with photo info
-    result = []
-    for evaluation in evaluations:
-        photo = await db.photos.find_one(
-            {"photo_id": evaluation.get("photo_id")},
-            {"_id": 0, "title": 1, "url": 1, "author_name": 1, "status": 1}
-        )
-        
-        result.append({
-            "evaluation_id": evaluation.get("evaluation_id"),
-            "photo_id": evaluation.get("photo_id"),
-            "photo_title": photo.get("title") if photo else "Foto removida",
-            "photo_url": photo.get("url") if photo else None,
-            "photo_author": photo.get("author_name") if photo else "Desconhecido",
-            "score": evaluation.get("final_score", 0),
-            "comment": evaluation.get("comment"),
-            "result": photo.get("status") if photo else "unknown",
-            "evaluated_at": evaluation.get("created_at")
-        })
-    
-    return result

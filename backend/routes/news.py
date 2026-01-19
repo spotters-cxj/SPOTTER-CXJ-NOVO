@@ -10,8 +10,8 @@ async def get_db(request: Request):
     return request.app.state.db
 
 async def get_current_user(request: Request):
-    from routes.auth import get_current_user as auth_get_user
-    return await auth_get_user(request)
+    from routes.auth import get_current_user_from_request
+    return await get_current_user_from_request(request)
 
 async def require_gestao(request: Request):
     user = await get_current_user(request)

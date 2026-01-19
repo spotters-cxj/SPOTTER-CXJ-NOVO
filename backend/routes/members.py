@@ -10,8 +10,8 @@ async def get_db(request: Request):
     return request.app.state.db
 
 async def get_current_user(request: Request):
-    from routes.auth import get_current_user as auth_get_user
-    return await auth_get_user(request)
+    from routes.auth import get_current_user_from_request
+    return await get_current_user_from_request(request)
 
 async def require_admin(request: Request):
     user = await get_current_user(request)
@@ -71,6 +71,7 @@ async def get_hierarchy(request: Request):
         "produtores": [],
         "avaliadores": [],
         "colaboradores": [],
+        "membros": [],
         "spotters": []
     }
     
@@ -88,8 +89,10 @@ async def get_hierarchy(request: Request):
             hierarchy["avaliadores"].append(member)
         elif "colaborador" in tags:
             hierarchy["colaboradores"].append(member)
-        else:
+        elif "spotter_cxj" in tags:
             hierarchy["spotters"].append(member)
+        else:
+            hierarchy["membros"].append(member)
     
     return hierarchy
 
