@@ -364,7 +364,7 @@ async def list_all_photos_admin(request: Request, status: Optional[str] = None, 
     List all photos for admin panel with status information.
     Includes: publicada, em avaliação, reenviada.
     """
-    user = await require_gestao(request)
+    _ = await require_gestao(request)  # Verify permission
     db = await get_db(request)
     
     # Build query
