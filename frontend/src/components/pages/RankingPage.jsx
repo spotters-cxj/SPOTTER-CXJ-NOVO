@@ -110,6 +110,9 @@ export const RankingPage = () => {
       await eventsApi.vote(selectedEvent.event_id, voteData);
       toast.success('Voto registrado com sucesso!');
       
+      // Add to voted events set
+      setVotedEvents(prev => new Set([...prev, selectedEvent.event_id]));
+      
       // Refresh event data
       await handleSelectEvent(selectedEvent);
       await loadEvents();
