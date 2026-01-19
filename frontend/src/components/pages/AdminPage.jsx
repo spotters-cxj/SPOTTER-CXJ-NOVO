@@ -236,18 +236,24 @@ export const AdminPage = () => {
       location: newsItem?.location || '',
       image: newsItem?.image || '',
       references: newsItem?.references || '',
-      published: newsItem?.published ?? true
+      status: newsItem?.status || (newsItem?.published ? 'published' : 'draft'),
+      scheduled_at: newsItem?.scheduled_at ? new Date(newsItem.scheduled_at).toISOString().slice(0, 16) : ''
     });
     setShowNewsModal(true);
   };
 
   const handleSaveNews = async () => {
     try {
+      const dataToSave = {
+        ...newsForm,
+        scheduled_at: newsForm.scheduled_at ? new Date(newsForm.scheduled_at).toISOString() : null
+      };
+      
       if (editingNews?.news_id) {
-        await newsApi.update(editingNews.news_id, newsForm);
+        await newsApi.update(editingNews.news_id, dataToSave);
         toast.success('Notícia atualizada');
       } else {
-        await newsApi.create(newsForm);
+        await newsApi.create(dataToSave);
         toast.success('Notícia criada');
       }
       setShowNewsModal(false);
@@ -255,6 +261,16 @@ export const AdminPage = () => {
       loadAllData();
     } catch (error) {
       toast.error('Erro ao salvar notícia');
+    }
+  };
+
+  const handlePublishNews = async (newsId) => {
+    try {
+      await newsApi.publish(newsId);
+      toast.success('Notícia publicada');
+      loadAllData();
+    } catch (error) {
+      toast.error('Erro ao publicar notícia');
     }
   };
 
@@ -267,6 +283,97 @@ export const AdminPage = () => {
     } catch (error) {
       toast.error('Erro ao excluir notícia');
     }
+  };
+
+  // ========== EVENTS MANAGEMENT ==========
+  const handleEditEvent = (eventItem) => {
+    setEditingEvent(eventItem);
+    setEventForm({
+      title: eventItem?.title || '',
+      description: eventItem?.description || '',
+      event_type: eventItem?.event_type || 'photo',
+      allowed_tags: eventItem?.allowed_tags || [],
+      allow_visitors: eventItem?.allow_visitors || false,
+      start_date: eventItem?.start_date ? new Date(eventItem.start_date).toISOString().slice(0, 16) : '',
+      end_date: eventItem?.end_date ? new Date(eventItem.end_date).toISOString().slice(0, 16) : '',
+      active: eventItem?.active ?? true,
+      show_results_live: eventItem?.show_results_live || false,
+      photo_ids: eventItem?.photo_ids || [],
+      poll_options: eventItem?.poll_options || []
+    });
+    setShowEventModal(true);
+  };
+
+  const handleSaveEvent = async () => {
+    try {
+      const dataToSave = {
+        ...eventForm,
+        start_date: eventForm.start_date ? new Date(eventForm.start_date).toISOString() : null,
+        end_date: eventForm.end_date ? new Date(eventForm.end_date).toISOString() : null
+      };
+      
+      if (editingEvent?.event_id) {
+        await eventsApi.update(editingEvent.event_id, dataToSave);
+        toast.success('Evento atualizado');
+      } else {
+        await eventsApi.create(dataToSave);
+        toast.success('Evento criado');
+      }
+      setShowEventModal(false);
+      setEditingEvent(null);
+      loadAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erro ao salvar evento');
+    }
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    if (!window.confirm('Excluir este evento? Todos os votos serão perdidos.')) return;
+    try {
+      await eventsApi.delete(eventId);
+      toast.success('Evento excluído');
+      loadAllData();
+    } catch (error) {
+      toast.error('Erro ao excluir evento');
+    }
+  };
+
+  const toggleEventTag = (tag) => {
+    const currentTags = eventForm.allowed_tags || [];
+    if (currentTags.includes(tag)) {
+      setEventForm({ ...eventForm, allowed_tags: currentTags.filter(t => t !== tag) });
+    } else {
+      setEventForm({ ...eventForm, allowed_tags: [...currentTags, tag] });
+    }
+  };
+
+  const toggleEventPhoto = (photoId) => {
+    const currentPhotos = eventForm.photo_ids || [];
+    if (currentPhotos.includes(photoId)) {
+      setEventForm({ ...eventForm, photo_ids: currentPhotos.filter(p => p !== photoId) });
+    } else {
+      setEventForm({ ...eventForm, photo_ids: [...currentPhotos, photoId] });
+    }
+  };
+
+  const addPollOption = () => {
+    setEventForm({
+      ...eventForm,
+      poll_options: [...eventForm.poll_options, { text: '' }]
+    });
+  };
+
+  const updatePollOption = (index, text) => {
+    const newOptions = [...eventForm.poll_options];
+    newOptions[index] = { ...newOptions[index], text };
+    setEventForm({ ...eventForm, poll_options: newOptions });
+  };
+
+  const removePollOption = (index) => {
+    setEventForm({
+      ...eventForm,
+      poll_options: eventForm.poll_options.filter((_, i) => i !== index)
+    });
   };
 
   // ========== STATS ==========
