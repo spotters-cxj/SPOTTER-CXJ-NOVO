@@ -2,10 +2,12 @@
 Scheduled Tasks for Spotters CXJ
 - Automatic backup every 12 hours
 - Weekly statistics report every Sunday
+- Scheduled news publication every 5 minutes
 """
 import asyncio
 import os
 import shutil
+import uuid
 from datetime import datetime, timezone, timedelta
 from motor.motor_asyncio import AsyncIOMotorClient
 import logging
