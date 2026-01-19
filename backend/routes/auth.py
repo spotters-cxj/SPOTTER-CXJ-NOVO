@@ -181,7 +181,7 @@ async def create_session(request: Request, response: Response):
         "email": user["email"],
         "name": user["name"],
         "picture": user.get("picture"),
-        "tags": user.get("tags", ["spotter_cxj"]),
+        "tags": user.get("tags", ["visitante"]),
         "approved": user.get("approved", False),
         "is_vip": user.get("is_vip", False)
     }
@@ -221,7 +221,8 @@ async def register_email(request: Request):
         tags = ["lider", "admin"]
         approved = True
     else:
-        tags = ["spotter_cxj"]
+        # Novos usuários começam como visitantes
+        tags = ["visitante"]
         approved = False
     
     new_user = {
@@ -239,10 +240,10 @@ async def register_email(request: Request):
     
     await create_notification(
         db, user_id, "tag_assigned",
-        f"🎉 Bem-vindo ao Spotters CXJ! Você recebeu a tag: SPOTTER CXJ"
+        f"🎉 Bem-vindo ao Spotters CXJ! Você é um VISITANTE. Aguarde aprovação de um administrador para obter uma tag e poder interagir no site."
     )
     
-    logger.info(f"New user registered: {user_id}")
+    logger.info(f"New user registered as visitante: {user_id}")
     return {"message": "Usuário cadastrado com sucesso", "user_id": user_id}
 
 @router.post("/login")
