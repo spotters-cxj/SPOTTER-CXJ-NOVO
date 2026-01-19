@@ -104,7 +104,7 @@ export const AdminPage = () => {
       const results = await Promise.allSettled([
         adminApi.getUsers(),
         leadersApi.list(),
-        galleryApi.list({}),
+        galleryApi.listAdmin({}),  // Changed to use admin endpoint with status info
         memoriesApi.list(),
         settingsApi.get(),
         statsApi.get(),
