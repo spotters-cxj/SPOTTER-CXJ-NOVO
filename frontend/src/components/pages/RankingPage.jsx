@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Camera, Star, Medal, TrendingUp, Calendar, Vote, CheckCircle, Clock, AlertCircle, BarChart2, Image } from 'lucide-react';
+import {
+  Trophy, Camera, Calendar, Vote, CheckCircle, Clock, AlertCircle, BarChart2, Image
+} from 'lucide-react';
 import { rankingApi, eventsApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { Podium } from '../ui/Podium';
-import { StarRatingDisplay } from '../ui/StarRating';
 import { TagBadgeList } from '../ui/TagBadge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
 
 export const RankingPage = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [photoRanking, setPhotoRanking] = useState([]);
   const [userRanking, setUserRanking] = useState([]);
   const [podium, setPodium] = useState([]);
@@ -21,7 +22,16 @@ export const RankingPage = () => {
   const [eventResults, setEventResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [votingLoading, setVotingLoading] = useState(false);
-  const [votedEvents, setVotedEvents] = useState(new Set()); // Track voted events
+  const [votedEvents, setVotedEvents] = useState(new Set());
+
+  // ✅ Sempre usa o mesmo domínio do site
+  const backendOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+
+  const getAssetUrl = (url) => {
+    if (!url) return url;
+    if (url.startsWith('/api')) return `${backendOrigin}${url}`;
+    return url;
+  };
 
   useEffect(() => {
     loadRankings();
@@ -35,19 +45,15 @@ export const RankingPage = () => {
       for (const event of events) {
         try {
           const res = await eventsApi.checkPermission(event.event_id);
-          if (res.data?.has_voted) {
-            voted.add(event.event_id);
-          }
-        } catch (error) {
-          // Ignore errors for individual checks
+          if (res.data?.has_voted) voted.add(event.event_id);
+        } catch {
+          // ignore
         }
       }
       setVotedEvents(voted);
     };
 
-    if (isAuthenticated && events.length > 0) {
-      checkVotedEvents();
-    }
+    if (isAuthenticated && events.length > 0) checkVotedEvents();
   }, [isAuthenticated, events]);
 
   const loadRankings = async () => {
@@ -59,6 +65,7 @@ export const RankingPage = () => {
         rankingApi.getPodium(),
         rankingApi.getTop3()
       ]);
+
       setPhotoRanking(photosRes.data || []);
       setUserRanking(usersRes.data || []);
       setPodium(podiumRes.data?.winners || []);
@@ -83,8 +90,7 @@ export const RankingPage = () => {
     setSelectedEvent(event);
     setEventPermission(null);
     setEventResults(null);
-    
-    // Check permission
+
     try {
       const permRes = await eventsApi.checkPermission(event.event_id);
       setEventPermission(permRes.data);
@@ -92,8 +98,7 @@ export const RankingPage = () => {
       console.error('Error checking permission:', error);
       setEventPermission({ can_vote: false, reason: 'Erro ao verificar permissão' });
     }
-    
-    // Load results if available
+
     try {
       const resultsRes = await eventsApi.getResults(event.event_id);
       setEventResults(resultsRes.data);
@@ -104,16 +109,14 @@ export const RankingPage = () => {
 
   const handleVote = async (voteData) => {
     if (!selectedEvent) return;
-    
+
     setVotingLoading(true);
     try {
       await eventsApi.vote(selectedEvent.event_id, voteData);
       toast.success('Voto registrado com sucesso!');
-      
-      // Add to voted events set
+
       setVotedEvents(prev => new Set([...prev, selectedEvent.event_id]));
-      
-      // Refresh event data
+
       await handleSelectEvent(selectedEvent);
       await loadEvents();
     } catch (error) {
@@ -126,9 +129,9 @@ export const RankingPage = () => {
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR', { 
-      day: '2-digit', 
-      month: '2-digit', 
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -138,12 +141,24 @@ export const RankingPage = () => {
   const getEventStatusBadge = (event) => {
     const status = event.computed_status;
     if (status === 'upcoming') {
-      return <span className="flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs"><Clock size={12} />Em breve</span>;
-    } else if (status === 'ended') {
-      return <span className="flex items-center gap-1 px-2 py-1 bg-gray-500/20 text-gray-400 rounded text-xs"><CheckCircle size={12} />Encerrado</span>;
-    } else {
-      return <span className="flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs"><Vote size={12} />Em votação</span>;
+      return (
+        <span className="flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
+          <Clock size={12} />Em breve
+        </span>
+      );
     }
+    if (status === 'ended') {
+      return (
+        <span className="flex items-center gap-1 px-2 py-1 bg-gray-500/20 text-gray-400 rounded text-xs">
+          <CheckCircle size={12} />Encerrado
+        </span>
+      );
+    }
+    return (
+      <span className="flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">
+        <Vote size={12} />Em votação
+      </span>
+    );
   };
 
   if (loading) {
@@ -182,15 +197,13 @@ export const RankingPage = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* ==================== USERS TAB ==================== */}
+          {/* USERS TAB */}
           <TabsContent value="users">
-            {/* Podium */}
             <div className="glass-card p-8 mb-8">
               <h2 className="text-xl font-bold text-white text-center mb-6">🏆 Top 3 Fotógrafos</h2>
               <Podium winners={podium} />
             </div>
 
-            {/* Full ranking */}
             <div className="glass-card overflow-hidden">
               <table className="w-full">
                 <thead className="bg-white/5">
@@ -203,8 +216,8 @@ export const RankingPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {userRanking.map((user, index) => (
-                    <tr key={user.user_id} className="hover:bg-white/5 transition-colors">
+                  {userRanking.map((u, index) => (
+                    <tr key={u.user_id} className="hover:bg-white/5 transition-colors">
                       <td className="px-4 py-3">
                         <span className={`font-bold ${
                           index === 0 ? 'text-yellow-400' :
@@ -218,26 +231,27 @@ export const RankingPage = () => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <img
-                            src={user.picture || '/logo-spotters-round.png'}
-                            alt={user.author_name}
+                            src={u.picture || '/logo-spotters-round.png'}
+                            alt={u.author_name}
                             className="w-10 h-10 rounded-full object-cover"
                           />
-                          <span className="text-white font-medium">{user.author_name}</span>
+                          <span className="text-white font-medium">{u.author_name}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="text-sky-400 font-semibold">{user.total_photos}</span>
+                        <span className="text-sky-400 font-semibold">{u.total_photos}</span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="text-yellow-400">⭐ {user.average_rating?.toFixed(1) || '0.0'}</span>
+                        <span className="text-yellow-400">⭐ {u.average_rating?.toFixed(1) || '0.0'}</span>
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell">
-                        <TagBadgeList tags={user.tags} size="small" maxShow={2} />
+                        <TagBadgeList tags={u.tags} size="small" maxShow={2} />
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+
               {userRanking.length === 0 && (
                 <div className="text-center py-12 text-gray-400">
                   <Trophy size={48} className="mx-auto mb-4 opacity-50" />
@@ -247,16 +261,12 @@ export const RankingPage = () => {
             </div>
           </TabsContent>
 
-          {/* ==================== PHOTOS TAB ==================== */}
+          {/* PHOTOS TAB */}
           <TabsContent value="photos">
-            {/* Top 3 Photos */}
             {top3Photos.length > 0 && (
               <div className="grid md:grid-cols-3 gap-6 mb-8">
                 {top3Photos.map((photo, index) => (
-                  <div
-                    key={photo.photo_id}
-                    className="glass-card overflow-hidden relative"
-                  >
+                  <div key={photo.photo_id} className="glass-card overflow-hidden relative">
                     <div className={`absolute top-3 left-3 z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
                       index === 0 ? 'bg-yellow-500 text-black' :
                       index === 1 ? 'bg-gray-400 text-black' :
@@ -264,11 +274,13 @@ export const RankingPage = () => {
                     }`}>
                       {index + 1}
                     </div>
+
                     <img
-                      src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url}
+                      src={getAssetUrl(photo.url)}
                       alt={photo.title}
                       className="w-full h-48 object-cover"
                     />
+
                     <div className="p-4">
                       <h3 className="text-white font-semibold">{photo.title}</h3>
                       <p className="text-gray-400 text-sm">{photo.aircraft_model}</p>
@@ -282,7 +294,6 @@ export const RankingPage = () => {
               </div>
             )}
 
-            {/* Photo list */}
             <div className="glass-card overflow-hidden">
               <table className="w-full">
                 <thead className="bg-white/5">
@@ -310,19 +321,15 @@ export const RankingPage = () => {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <img
-                            src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url}
+                            src={getAssetUrl(photo.url)}
                             alt={photo.title}
                             className="w-16 h-12 rounded object-cover"
                           />
                           <span className="text-white font-medium line-clamp-1">{photo.title}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 hidden md:table-cell text-gray-400">
-                        {photo.aircraft_model}
-                      </td>
-                      <td className="px-4 py-3 hidden sm:table-cell text-gray-400">
-                        {photo.author_name}
-                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell text-gray-400">{photo.aircraft_model}</td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-gray-400">{photo.author_name}</td>
                       <td className="px-4 py-3 text-center">
                         <span className="text-yellow-400">⭐ {photo.public_rating?.toFixed(1) || '0.0'}</span>
                         <span className="text-gray-500 text-xs ml-1">({photo.public_rating_count || 0})</span>
@@ -331,6 +338,7 @@ export const RankingPage = () => {
                   ))}
                 </tbody>
               </table>
+
               {photoRanking.length === 0 && (
                 <div className="text-center py-12 text-gray-400">
                   <Camera size={48} className="mx-auto mb-4 opacity-50" />
@@ -340,16 +348,15 @@ export const RankingPage = () => {
             </div>
           </TabsContent>
 
-          {/* ==================== EVENTS TAB ==================== */}
+          {/* EVENTS TAB */}
           <TabsContent value="events">
             <div className="grid lg:grid-cols-3 gap-6">
-              {/* Events list */}
               <div className="lg:col-span-1 space-y-4">
                 <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                   <Calendar size={20} className="text-sky-400" />
                   Eventos Ativos
                 </h2>
-                
+
                 {events.length === 0 ? (
                   <div className="glass-card p-8 text-center">
                     <Calendar size={48} className="mx-auto mb-4 text-gray-500 opacity-50" />
@@ -367,7 +374,6 @@ export const RankingPage = () => {
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <h3 className="text-white font-semibold">{event.title}</h3>
-                          {/* Voted badge indicator */}
                           {votedEvents.has(event.event_id) && (
                             <span className="flex items-center gap-1 px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs">
                               <CheckCircle size={10} />
@@ -377,7 +383,9 @@ export const RankingPage = () => {
                         </div>
                         {getEventStatusBadge(event)}
                       </div>
+
                       <p className="text-gray-400 text-sm line-clamp-2 mb-2">{event.description}</p>
+
                       <div className="flex items-center gap-4 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
                           {event.event_type === 'photo' ? <Image size={12} /> : <BarChart2 size={12} />}
@@ -390,7 +398,6 @@ export const RankingPage = () => {
                 )}
               </div>
 
-              {/* Event details */}
               <div className="lg:col-span-2">
                 {!selectedEvent ? (
                   <div className="glass-card p-12 text-center">
@@ -400,7 +407,6 @@ export const RankingPage = () => {
                   </div>
                 ) : (
                   <div className="glass-card p-6">
-                    {/* Event header */}
                     <div className="flex items-start justify-between mb-6">
                       <div>
                         <h2 className="text-2xl font-bold text-white mb-2">{selectedEvent.title}</h2>
@@ -409,7 +415,6 @@ export const RankingPage = () => {
                       {getEventStatusBadge(selectedEvent)}
                     </div>
 
-                    {/* Event info */}
                     <div className="flex flex-wrap gap-4 mb-6 text-sm">
                       <div className="bg-[#102a43] rounded-lg px-4 py-2">
                         <span className="text-gray-400">Início: </span>
@@ -427,7 +432,6 @@ export const RankingPage = () => {
                       </div>
                     </div>
 
-                    {/* Not authenticated message */}
                     {!isAuthenticated && selectedEvent.computed_status === 'active' && (
                       <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6">
                         <div className="flex items-center gap-2 text-blue-400">
@@ -440,7 +444,6 @@ export const RankingPage = () => {
                       </div>
                     )}
 
-                    {/* Permission denied message - friendly */}
                     {isAuthenticated && eventPermission && !eventPermission.can_vote && !eventPermission.has_voted && (
                       <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-6">
                         <div className="flex items-center gap-2 text-amber-400">
@@ -453,7 +456,6 @@ export const RankingPage = () => {
                       </div>
                     )}
 
-                    {/* Already voted badge - prominent indicator */}
                     {eventPermission?.has_voted && (
                       <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
                         <div className="flex items-center gap-3">
@@ -473,7 +475,6 @@ export const RankingPage = () => {
                       </div>
                     )}
 
-                    {/* Voting section - only shows if user CAN vote */}
                     {selectedEvent.computed_status === 'active' && eventPermission?.can_vote && (
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -482,7 +483,6 @@ export const RankingPage = () => {
                         </h3>
 
                         {selectedEvent.event_type === 'photo' ? (
-                          /* Photo voting */
                           <div className="grid sm:grid-cols-2 gap-4">
                             {selectedEvent.photos?.map((photo) => (
                               <div
@@ -490,7 +490,7 @@ export const RankingPage = () => {
                                 className="bg-[#0a1929] rounded-lg overflow-hidden border border-[#1a3a5c] hover:border-sky-500/50 transition-all"
                               >
                                 <img
-                                  src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url}
+                                  src={getAssetUrl(photo.url)}
                                   alt={photo.title}
                                   className="w-full h-40 object-cover"
                                 />
@@ -509,7 +509,6 @@ export const RankingPage = () => {
                             ))}
                           </div>
                         ) : (
-                          /* Poll voting */
                           <div className="space-y-3">
                             {selectedEvent.poll_options?.map((option) => (
                               <button
@@ -526,7 +525,6 @@ export const RankingPage = () => {
                       </div>
                     )}
 
-                    {/* Results section */}
                     {eventResults?.results_available && (
                       <div>
                         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -538,7 +536,6 @@ export const RankingPage = () => {
                         </h3>
 
                         {selectedEvent.event_type === 'photo' ? (
-                          /* Photo results */
                           <div className="space-y-4">
                             {eventResults.results?.map((result, index) => (
                               <div key={result.photo_id} className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]">
@@ -552,7 +549,7 @@ export const RankingPage = () => {
                                     #{index + 1}
                                   </span>
                                   <img
-                                    src={result.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${result.url}` : result.url}
+                                    src={getAssetUrl(result.url)}
                                     alt={result.title}
                                     className="w-20 h-14 object-cover rounded"
                                   />
@@ -569,12 +566,12 @@ export const RankingPage = () => {
                             ))}
                           </div>
                         ) : (
-                          /* Poll results */
                           <div className="space-y-3">
-                            {eventResults.results?.map((result, index) => {
-                              const percentage = eventResults.total_votes > 0 
-                                ? Math.round((result.votes / eventResults.total_votes) * 100) 
+                            {eventResults.results?.map((result) => {
+                              const percentage = eventResults.total_votes > 0
+                                ? Math.round((result.votes / eventResults.total_votes) * 100)
                                 : 0;
+
                               return (
                                 <div key={result.option_id} className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]">
                                   <div className="flex justify-between items-center mb-2">
@@ -582,10 +579,8 @@ export const RankingPage = () => {
                                     <span className="text-sky-400 font-semibold">{result.votes} votos ({percentage}%)</span>
                                   </div>
                                   <div className="h-2 bg-[#1a3a5c] rounded-full overflow-hidden">
-                                    <div 
-                                      className={`h-full rounded-full transition-all ${
-                                        index === 0 ? 'bg-yellow-500' : 'bg-sky-500'
-                                      }`}
+                                    <div
+                                      className="h-full rounded-full transition-all bg-sky-500"
                                       style={{ width: `${percentage}%` }}
                                     />
                                   </div>
@@ -597,13 +592,13 @@ export const RankingPage = () => {
                       </div>
                     )}
 
-                    {/* Results not available message */}
                     {eventResults && !eventResults.results_available && (
                       <div className="bg-[#102a43] rounded-lg p-6 text-center">
                         <Clock size={32} className="mx-auto mb-3 text-gray-500" />
                         <p className="text-gray-400">{eventResults.message}</p>
                       </div>
                     )}
+
                   </div>
                 )}
               </div>
