@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Camera, Calendar, User, Plane, Search, Filter, X, Upload } from 'lucide-react';
 import { galleryApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 export const GalleryPage = () => {
   const { user } = useAuth();
   const [photos, setPhotos] = useState([]);
-  const [aircraftTypes, setAircraftTypes] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAircraft, setFilterAircraft] = useState('');
@@ -31,26 +30,23 @@ export const GalleryPage = () => {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterAircraft]);
 
   const loadData = async () => {
     try {
       setLoading(true);
       console.log('Loading gallery data...');
-      
-      const photosRes = await galleryApi.list({ aircraft_type: filterAircraft || undefined }).catch(err => {
-        console.error('Error fetching photos:', err);
-        return { data: [] };
-      });
-      
-      const typesRes = await galleryApi.getTypes().catch(err => {
-        console.error('Error fetching types:', err);
-        return { data: [] };
-      });
-      
-      console.log('Gallery loaded:', { photos: photosRes.data?.length, types: typesRes.data?.length });
+
+      const photosRes = await galleryApi
+        .list({ aircraft_type: filterAircraft || undefined })
+        .catch((err) => {
+          console.error('Error fetching photos:', err);
+          return { data: [] };
+        });
+
+      console.log('Gallery loaded:', { photos: photosRes.data?.length });
       setPhotos(photosRes.data || []);
-      setAircraftTypes(typesRes.data || []);
     } catch (error) {
       console.error('Error loading gallery:', error);
       toast.error('Erro ao carregar galeria');
@@ -59,18 +55,45 @@ export const GalleryPage = () => {
     }
   };
 
-  const filteredPhotos = photos.filter(photo => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    return photo.description?.toLowerCase().includes(term) ||
-           photo.aircraft_model?.toLowerCase().includes(term) ||
-           photo.author_name?.toLowerCase().includes(term) ||
-           photo.registration?.toLowerCase().includes(term);
-  });
+  // Derive aircraft types from photos (no extra API needed)
+  const aircraftTypes = useMemo(() => {
+    const set = new Set();
+    (photos || []).forEach((p) => {
+      const t = p?.aircraft_type?.trim();
+      if (t) set.add(t);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [photos]);
+
+  const filteredPhotos = useMemo(() => {
+    return (photos || []).filter((photo) => {
+      const matchesSearch = (() => {
+        if (!searchTerm) return true;
+        const term = searchTerm.toLowerCase();
+        return (
+          photo.description?.toLowerCase().includes(term) ||
+          photo.aircraft_model?.toLowerCase().includes(term) ||
+          photo.author_name?.toLowerCase().includes(term) ||
+          photo.registration?.toLowerCase().includes(term)
+        );
+      })();
+
+      const matchesFilter = (() => {
+        if (!filterAircraft) return true;
+        return (photo.aircraft_type || '') === filterAircraft;
+      })();
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [photos, searchTerm, filterAircraft]);
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    try {
+      return new Date(dateString).toLocaleDateString('pt-BR');
+    } catch {
+      return '';
+    }
   };
 
   const handleUpload = async (e) => {
@@ -91,14 +114,17 @@ export const GalleryPage = () => {
       formData.append('airline', uploadData.airline || '');
       formData.append('date', uploadData.date);
 
+      // ⚠️ Se o seu backend usa /photos para upload e não /gallery/upload,
+      // este método pode não existir. Mantive conforme seu código original.
       await galleryApi.upload(formData);
+
       toast.success('Foto enviada com sucesso!');
       setShowUploadModal(false);
       setUploadFile(null);
       setUploadData({ description: '', aircraft_model: '', aircraft_type: '', registration: '', airline: '', date: '' });
       loadData();
     } catch (error) {
-      const msg = error.response?.data?.detail || 'Erro ao enviar foto';
+      const msg = error?.response?.data?.detail || 'Erro ao enviar foto';
       toast.error(msg);
     } finally {
       setUploading(false);
@@ -117,11 +143,20 @@ export const GalleryPage = () => {
     }
   };
 
+  const getBackendBase = () => {
+    // Vite env
+    const v = (import.meta?.env?.VITE_BACKEND_URL || '').trim();
+    if (v) return v.replace(/\/$/, '');
+    return window.location.origin;
+  };
+
   const getPhotoUrl = (photo) => {
-    if (photo.url?.startsWith('/api')) {
-      return `${process.env.REACT_APP_BACKEND_URL}${photo.url}`;
+    const url = photo?.url || '';
+    if (!url) return '';
+    if (url.startsWith('/api')) {
+      return `${getBackendBase()}${url}`;
     }
-    return photo.url;
+    return url;
   };
 
   return (
@@ -138,7 +173,7 @@ export const GalleryPage = () => {
               <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">Galeria de Fotos</h1>
               <p className="text-gray-300 text-lg">Os melhores registros da nossa comunidade de spotters</p>
             </div>
-            
+
             {user?.approved && (
               <Button onClick={() => setShowUploadModal(true)} className="btn-accent">
                 <Upload size={18} className="mr-2" />
@@ -163,6 +198,7 @@ export const GalleryPage = () => {
                 className="pl-10 bg-[#0a1929] border-[#1a3a5c] text-white placeholder-gray-500"
               />
             </div>
+
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <select
@@ -171,11 +207,12 @@ export const GalleryPage = () => {
                 className="pl-10 pr-8 py-2 bg-[#0a1929] border border-[#1a3a5c] rounded-lg text-white appearance-none cursor-pointer min-w-[200px]"
               >
                 <option value="">Todas as aeronaves</option>
-                {aircraftTypes.map(type => (
+                {aircraftTypes.map((type) => (
                   <option key={type} value={type}>{type}</option>
                 ))}
               </select>
             </div>
+
             {(searchTerm || filterAircraft) && (
               <Button
                 variant="ghost"
@@ -196,7 +233,7 @@ export const GalleryPage = () => {
           <p className="text-gray-400 mb-8">
             Mostrando {filteredPhotos.length} {filteredPhotos.length === 1 ? 'foto' : 'fotos'}
           </p>
-          
+
           {loading ? (
             <div className="text-center py-20">
               <div className="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -262,6 +299,7 @@ export const GalleryPage = () => {
                   {selectedPhoto.description}
                 </DialogDescription>
               </DialogHeader>
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                 <div className="bg-[#102a43] rounded-lg p-4">
                   <p className="text-xs text-gray-400 mb-1">Matrícula</p>
@@ -280,12 +318,10 @@ export const GalleryPage = () => {
                   <p className="text-white font-medium">{selectedPhoto.author_name}</p>
                 </div>
               </div>
+
               {(user?.role === 'admin_principal' || user?.role === 'admin_authorized' || user?.user_id === selectedPhoto.author_id) && (
                 <div className="mt-4 flex justify-end">
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleDeletePhoto(selectedPhoto.photo_id)}
-                  >
+                  <Button variant="destructive" onClick={() => handleDeletePhoto(selectedPhoto.photo_id)}>
                     Excluir Foto
                   </Button>
                 </div>
@@ -304,6 +340,7 @@ export const GalleryPage = () => {
               Preencha todos os campos obrigatórios (*) para enviar sua foto.
             </DialogDescription>
           </DialogHeader>
+
           <form onSubmit={handleUpload} className="space-y-4 mt-4">
             <div
               className="border-2 border-dashed border-[#1a3a5c] rounded-lg p-6 text-center cursor-pointer hover:border-sky-500/50 transition-colors"
@@ -314,8 +351,9 @@ export const GalleryPage = () => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => setUploadFile(e.target.files[0])}
+                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
               />
+
               {uploadFile ? (
                 <div>
                   <Camera className="w-10 h-10 text-sky-400 mx-auto mb-2" />
@@ -330,51 +368,54 @@ export const GalleryPage = () => {
                 </div>
               )}
             </div>
-            
+
             <Input
               placeholder="Descrição da foto *"
               value={uploadData.description}
-              onChange={(e) => setUploadData({...uploadData, description: e.target.value})}
+              onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
               className="bg-[#102a43] border-[#1a3a5c] text-white"
               required
             />
             <Input
               placeholder="Modelo da aeronave * (ex: Boeing 737-800)"
               value={uploadData.aircraft_model}
-              onChange={(e) => setUploadData({...uploadData, aircraft_model: e.target.value})}
+              onChange={(e) => setUploadData({ ...uploadData, aircraft_model: e.target.value })}
               className="bg-[#102a43] border-[#1a3a5c] text-white"
               required
             />
+
             <select
               value={uploadData.aircraft_type}
-              onChange={(e) => setUploadData({...uploadData, aircraft_type: e.target.value})}
+              onChange={(e) => setUploadData({ ...uploadData, aircraft_type: e.target.value })}
               className="w-full px-3 py-2 bg-[#102a43] border border-[#1a3a5c] rounded-lg text-white"
               required
             >
               <option value="">Selecione o tipo de aeronave *</option>
-              {aircraftTypes.map(type => (
+              {aircraftTypes.map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
+
             <Input
               placeholder="Matrícula (ex: PR-GXJ)"
               value={uploadData.registration}
-              onChange={(e) => setUploadData({...uploadData, registration: e.target.value})}
+              onChange={(e) => setUploadData({ ...uploadData, registration: e.target.value })}
               className="bg-[#102a43] border-[#1a3a5c] text-white"
             />
             <Input
               placeholder="Companhia aérea"
               value={uploadData.airline}
-              onChange={(e) => setUploadData({...uploadData, airline: e.target.value})}
+              onChange={(e) => setUploadData({ ...uploadData, airline: e.target.value })}
               className="bg-[#102a43] border-[#1a3a5c] text-white"
             />
             <Input
               type="date"
               value={uploadData.date}
-              onChange={(e) => setUploadData({...uploadData, date: e.target.value})}
+              onChange={(e) => setUploadData({ ...uploadData, date: e.target.value })}
               className="bg-[#102a43] border-[#1a3a5c] text-white"
               required
             />
+
             <Button type="submit" className="w-full btn-accent" disabled={uploading}>
               {uploading ? 'Enviando...' : 'Enviar Foto'}
             </Button>
@@ -400,7 +441,9 @@ export const GalleryPage = () => {
           <div className="max-w-4xl mx-auto px-4 text-center">
             <div className="card-navy p-8">
               <h3 className="text-xl font-semibold text-white mb-3">Quer compartilhar suas fotos?</h3>
-              <p className="text-gray-400">Faça login com sua conta Google para solicitar acesso e enviar suas melhores fotos.</p>
+              <p className="text-gray-400">
+                Faça login com sua conta Google para solicitar acesso e enviar suas melhores fotos.
+              </p>
             </div>
           </div>
         </section>
