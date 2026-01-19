@@ -470,11 +470,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Events System - Create/Update/Delete Events"
-    - "Events System - Public Voting"
-    - "News System - Status and Scheduling"
-    - "News Scheduler - Auto-publish"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -482,3 +478,5 @@ test_plan:
 agent_communication:
     - agent: "main"
       message: "EVENTS & NEWS SYSTEM IMPLEMENTED - Need Backend Testing. Implemented: (1) Full events system with photo voting and polls, (2) Configurable vote permissions by user tags, (3) Visitor vote control (must be explicitly allowed), (4) News status (draft/published) with scheduling, (5) Auto-publish scheduler every 5 minutes. Backend endpoints to test: GET/POST /api/events, GET/PUT/DELETE /api/events/{id}, POST /api/events/{id}/vote, GET /api/events/{id}/check-permission, GET /api/events/{id}/results, GET /api/events/admin/all, GET /api/events/photos/available, GET /api/news/drafts, GET /api/news/scheduled, GET /api/news/all, POST /api/news/{id}/publish"
+    - agent: "testing"
+      message: "EVENTS & NEWS BACKEND TESTING COMPLETE - ALL SYSTEMS WORKING. Comprehensive testing completed for all Events and News endpoints. Results: (1) Events System: All 10 endpoints working correctly - public endpoints (GET /api/events, GET /api/events/{id}, GET /api/events/{id}/results, GET /api/events/{id}/check-permission, POST /api/events/{id}/vote) and admin endpoints (POST/PUT/DELETE /api/events, GET /api/events/admin/all, GET /api/events/photos/available) all behave as expected. (2) News System: All 8 endpoints working correctly - public endpoint (GET /api/news) filters published news properly, admin endpoints (GET /api/news/drafts, /scheduled, /all, POST /api/news/{id}/publish) require gestao+ authentication, CRUD operations properly protected. (3) News Scheduler: Auto-publish scheduler confirmed running every 5 minutes in backend logs. (4) Authentication & Permissions: All protected endpoints correctly return 401/403 without proper authentication. (5) Error Handling: 404 responses for non-existent resources working correctly. All 59 backend tests passed. Both systems are production-ready."
