@@ -628,3 +628,28 @@ async def list_available_photos(request: Request):
     ).sort("created_at", -1).limit(200).to_list(200)
     
     return photos
+
+
+@router.get("/{event_id}/votes")
+async def list_event_votes(request: Request, event_id: str):
+    """Listar votos de um evento (gestao+) - para consultas administrativas"""
+    await require_gestao(request)
+    db = await get_db(request)
+    
+    # Verificar se evento existe
+    event = await db.events.find_one({"event_id": event_id}, {"_id": 0})
+    if not event:
+        raise HTTPException(status_code=404, detail="Evento não encontrado")
+    
+    # Buscar todos os votos do evento
+    votes = await db.event_votes.find(
+        {"event_id": event_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(1000)
+    
+    return {
+        "event_id": event_id,
+        "event_title": event.get("title"),
+        "total_votes": len(votes),
+        "votes": votes
+    }
