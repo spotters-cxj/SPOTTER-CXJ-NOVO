@@ -172,9 +172,9 @@ async def upload_photo(
 @router.delete("/{photo_id}")
 async def delete_photo(request: Request, photo_id: str):
     """Delete photo (admin or photo author)"""
-    from routes.auth import get_current_user
+    from routes.auth import get_current_user_from_request
     from models import HIERARCHY_LEVELS, get_highest_role_level
-    user = await get_current_user(request)
+    user = await get_current_user_from_request(request)
     db = await get_db(request)
     
     # Try to find in gallery first
