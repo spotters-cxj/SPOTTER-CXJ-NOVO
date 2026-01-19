@@ -63,6 +63,7 @@ export const AdminPage = () => {
   const [userSearch, setUserSearch] = useState('');
   const [userTagFilter, setUserTagFilter] = useState('');
   const [logFilters, setLogFilters] = useState({ action: '', entity_type: '', admin_id: '' });
+  const [photoStatusFilter, setPhotoStatusFilter] = useState('');
 
   // Modal states
   const [showLeaderModal, setShowLeaderModal] = useState(false);
