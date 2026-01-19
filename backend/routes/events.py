@@ -619,7 +619,7 @@ async def list_all_events_admin(request: Request):
 @router.get("/photos/available")
 async def list_available_photos(request: Request):
     """Listar fotos aprovadas disponíveis para eventos (gestao+)"""
-    user = await require_gestao(request)
+    await require_gestao(request)
     db = await get_db(request)
     
     photos = await db.photos.find(
