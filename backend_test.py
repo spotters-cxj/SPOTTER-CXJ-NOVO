@@ -399,6 +399,88 @@ def main():
         else:
             result.failure(f"{method} {endpoint}", f"Expected 401/403, got: {response.get('status_code', 'Error')}")
     
+    # 6. NEW USER PERMISSIONS AND GALLERY FEATURES TESTS
+    print("\n🔐 TESTING NEW USER PERMISSIONS & GALLERY FEATURES")
+    print("-" * 40)
+    
+    # Test Gallery Admin Endpoint (should return 401 without auth)
+    response = test_endpoint("GET", "/gallery/admin/all", expected_status=401, description="Gallery admin endpoint without auth")
+    if response.get("success"):
+        result.success("GET /api/gallery/admin/all (no auth)", "Correctly returned 401 Unauthorized")
+    else:
+        result.failure("GET /api/gallery/admin/all (no auth)", f"Expected 401, got: {response.get('status_code', 'Error')}")
+    
+    # Test Photo Resubmit Endpoint (should return 401 without auth)
+    # Using a dummy photo_id since we're testing auth, not functionality
+    response = test_endpoint("POST", "/gallery/dummy_photo_id/resubmit", expected_status=401, description="Photo resubmit without auth")
+    if response.get("success"):
+        result.success("POST /api/gallery/{photo_id}/resubmit (no auth)", "Correctly returned 401 Unauthorized")
+    else:
+        result.failure("POST /api/gallery/{photo_id}/resubmit (no auth)", f"Expected 401, got: {response.get('status_code', 'Error')}")
+    
+    # Test Visitor Restrictions - Photos Upload (should return 401/403 without auth)
+    print("\n👤 TESTING VISITOR RESTRICTIONS")
+    print("-" * 40)
+    
+    # Test photo upload without auth (should return 401)
+    try:
+        test_file_content = b"fake image content"
+        files = {'file': ('test.jpg', test_file_content, 'image/jpeg')}
+        form_data = {
+            'title': 'Test Photo',
+            'description': 'Test description',
+            'aircraft_model': 'Boeing 737',
+            'aircraft_type': 'Boeing',
+            'photo_date': '2024-01-01'
+        }
+        
+        response = requests.post(f"{API_URL}/photos", data=form_data, files=files, timeout=10)
+        
+        if response.status_code == 401:
+            result.success("POST /api/photos (no auth)", "Correctly returned 401 Unauthorized")
+        elif response.status_code == 403:
+            result.success("POST /api/photos (no auth)", "Correctly returned 403 Forbidden (visitor restriction)")
+        else:
+            result.failure("POST /api/photos (no auth)", f"Expected 401/403, got: {response.status_code}")
+            
+    except Exception as e:
+        result.failure("POST /api/photos (no auth)", f"Error testing photo upload: {str(e)}")
+    
+    # Test photo rating without auth (should return 401)
+    response = test_endpoint("POST", "/photos/dummy_photo_id/rate", expected_status=401, 
+                           data={"rating": 5}, description="Photo rating without auth")
+    if response.get("success"):
+        result.success("POST /api/photos/{id}/rate (no auth)", "Correctly returned 401 Unauthorized")
+    else:
+        result.failure("POST /api/photos/{id}/rate (no auth)", f"Expected 401, got: {response.get('status_code', 'Error')}")
+    
+    # Test photo comment without auth (should return 401)
+    response = test_endpoint("POST", "/photos/dummy_photo_id/comment", expected_status=401,
+                           data={"content": "Test comment"}, description="Photo comment without auth")
+    if response.get("success"):
+        result.success("POST /api/photos/{id}/comment (no auth)", "Correctly returned 401 Unauthorized")
+    else:
+        result.failure("POST /api/photos/{id}/comment (no auth)", f"Expected 401, got: {response.get('status_code', 'Error')}")
+    
+    # 7. VERIFY EXISTING PUBLIC ENDPOINTS STILL WORK
+    print("\n✅ VERIFYING EXISTING PUBLIC ENDPOINTS STILL WORK")
+    print("-" * 40)
+    
+    # Re-test key public endpoints to ensure they still work
+    public_endpoints_recheck = [
+        ("GET", "/", "API root"),
+        ("GET", "/health", "Health check"),
+        ("GET", "/gallery", "Gallery photos"),
+        ("GET", "/gallery/types", "Aircraft types")
+    ]
+    
+    for method, endpoint, description in public_endpoints_recheck:
+        response = test_endpoint(method, endpoint, description=f"Recheck {description}")
+        if response.get("success"):
+            result.success(f"RECHECK {method} {endpoint}", f"{description} still working correctly")
+        else:
+            result.failure(f"RECHECK {method} {endpoint}", f"{description} failed: {response.get('status_code', 'Error')}")
+    
     # Final summary
     success = result.summary()
     return 0 if success else 1
