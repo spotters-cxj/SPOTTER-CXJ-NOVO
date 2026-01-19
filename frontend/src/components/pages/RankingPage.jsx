@@ -362,10 +362,19 @@ export const RankingPage = () => {
                       onClick={() => handleSelectEvent(event)}
                       className={`glass-card p-4 cursor-pointer transition-all hover:border-sky-500/50 ${
                         selectedEvent?.event_id === event.event_id ? 'border-sky-500 bg-sky-500/10' : ''
-                      }`}
+                      } ${votedEvents.has(event.event_id) ? 'border-green-500/30' : ''}`}
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-white font-semibold">{event.title}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-white font-semibold">{event.title}</h3>
+                          {/* Voted badge indicator */}
+                          {votedEvents.has(event.event_id) && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs">
+                              <CheckCircle size={10} />
+                              Votou
+                            </span>
+                          )}
+                        </div>
                         {getEventStatusBadge(event)}
                       </div>
                       <p className="text-gray-400 text-sm line-clamp-2 mb-2">{event.description}</p>
