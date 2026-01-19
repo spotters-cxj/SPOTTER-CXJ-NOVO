@@ -23,6 +23,7 @@ class PhotoStatus(str, Enum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
+    RESUBMITTED = "resubmitted"  # Foto reenviada para avaliação
 
 class NotificationType(str, Enum):
     PHOTO_SENT = "photo_sent"
