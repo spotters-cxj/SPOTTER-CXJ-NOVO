@@ -345,7 +345,7 @@ async def get_current_user(request: Request, response: Response):
         "email": user["email"],
         "name": user["name"],
         "picture": user.get("picture"),
-        "tags": user.get("tags", ["spotter_cxj"]),
+        "tags": user.get("tags", ["visitante"]),
         "approved": user.get("approved", False),
         "is_vip": user.get("is_vip", False),
         "instagram": user.get("instagram"),
