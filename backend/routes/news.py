@@ -32,19 +32,26 @@ async def list_news(request: Request, limit: int = 20):
     now = datetime.now(timezone.utc)
     
     # Buscar notícias publicadas (compatível com formato antigo e novo)
+    # Usando $and para combinar as condições corretamente
     news = await db.news.find(
         {
-            "$or": [
-                # Formato novo: status = published
-                {"status": NewsStatus.PUBLISHED},
-                # Formato antigo: published = True (e sem status definido ou não é draft)
-                {"published": True, "status": {"$ne": NewsStatus.DRAFT}}
-            ],
-            # Excluir notícias agendadas para o futuro
-            "$or": [
-                {"scheduled_at": {"$exists": False}},
-                {"scheduled_at": None},
-                {"scheduled_at": {"$lte": now}}
+            "$and": [
+                {
+                    "$or": [
+                        # Formato novo: status = published
+                        {"status": NewsStatus.PUBLISHED},
+                        # Formato antigo: published = True (e sem status definido ou não é draft)
+                        {"published": True, "status": {"$ne": NewsStatus.DRAFT}}
+                    ]
+                },
+                {
+                    # Excluir notícias agendadas para o futuro
+                    "$or": [
+                        {"scheduled_at": {"$exists": False}},
+                        {"scheduled_at": None},
+                        {"scheduled_at": {"$lte": now}}
+                    ]
+                }
             ]
         },
         {"_id": 0}
@@ -55,7 +62,7 @@ async def list_news(request: Request, limit: int = 20):
 @router.get("/drafts")
 async def list_drafts(request: Request, limit: int = 50):
     """List draft news (gestao+)"""
-    user = await require_gestao(request)
+    await require_gestao(request)
     db = await get_db(request)
     
     # List all draft news
