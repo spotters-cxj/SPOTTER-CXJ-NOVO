@@ -588,6 +588,12 @@ export const AdminPage = () => {
   const pendingUsers = users.filter(u => !u.approved);
   const approvedUsers = users.filter(u => u.approved);
 
+  // Filter photos by status
+  const filteredPhotos = photos.filter(p => {
+    if (!photoStatusFilter) return true;
+    return p.display_status === photoStatusFilter;
+  });
+
   // Action labels for logs
   const actionLabels = {
     create: { label: 'Criação', color: 'bg-green-500/20 text-green-400' },
@@ -597,6 +603,7 @@ export const AdminPage = () => {
     reject: { label: 'Rejeição', color: 'bg-orange-500/20 text-orange-400' },
     tag_change: { label: 'Alteração Tag', color: 'bg-purple-500/20 text-purple-400' },
     settings_change: { label: 'Config.', color: 'bg-yellow-500/20 text-yellow-400' },
+    resubmit: { label: 'Reenvio', color: 'bg-blue-500/20 text-blue-400' },
   };
 
   const entityLabels = {
