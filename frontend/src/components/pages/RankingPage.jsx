@@ -30,25 +30,25 @@ export const RankingPage = () => {
 
   // Check vote status for all events when user is authenticated
   useEffect(() => {
+    const checkVotedEvents = async () => {
+      const voted = new Set();
+      for (const event of events) {
+        try {
+          const res = await eventsApi.checkPermission(event.event_id);
+          if (res.data?.has_voted) {
+            voted.add(event.event_id);
+          }
+        } catch (error) {
+          // Ignore errors for individual checks
+        }
+      }
+      setVotedEvents(voted);
+    };
+
     if (isAuthenticated && events.length > 0) {
       checkVotedEvents();
     }
   }, [isAuthenticated, events]);
-
-  const checkVotedEvents = async () => {
-    const voted = new Set();
-    for (const event of events) {
-      try {
-        const res = await eventsApi.checkPermission(event.event_id);
-        if (res.data?.has_voted) {
-          voted.add(event.event_id);
-        }
-      } catch (error) {
-        // Ignore errors for individual checks
-      }
-    }
-    setVotedEvents(voted);
-  };
 
   const loadRankings = async () => {
     try {
