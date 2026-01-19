@@ -405,33 +405,40 @@ export const RankingPage = () => {
                       </div>
                     )}
 
-                    {/* Permission message */}
+                    {/* Permission denied message - friendly */}
                     {isAuthenticated && eventPermission && !eventPermission.can_vote && !eventPermission.has_voted && (
                       <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-6">
                         <div className="flex items-center gap-2 text-amber-400">
                           <AlertCircle size={20} />
-                          <span className="font-medium">Informação</span>
+                          <span className="font-medium">Votação restrita</span>
                         </div>
                         <p className="text-amber-200/80 mt-1 text-sm">
-                          {eventPermission.reason || 'Você não pode votar neste evento.'}
+                          Você não tem permissão para votar neste evento. Esta votação está disponível apenas para categorias específicas de membros.
                         </p>
                       </div>
                     )}
 
-                    {/* Already voted message */}
+                    {/* Already voted badge - prominent indicator */}
                     {eventPermission?.has_voted && (
                       <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
-                        <div className="flex items-center gap-2 text-green-400">
-                          <CheckCircle size={20} />
-                          <span className="font-medium">Voto registrado</span>
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
+                            <CheckCircle size={24} className="text-green-400" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-green-400 font-semibold">Você já votou neste evento</span>
+                              <span className="px-2 py-0.5 bg-green-500/30 text-green-300 text-xs rounded-full">Voto registrado</span>
+                            </div>
+                            <p className="text-green-200/70 text-sm mt-1">
+                              Obrigado por participar! Seu voto foi contabilizado com sucesso.
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-green-200/80 mt-1 text-sm">
-                          Você já votou neste evento. Obrigado por participar!
-                        </p>
                       </div>
                     )}
 
-                    {/* Voting section */}
+                    {/* Voting section - only shows if user CAN vote */}
                     {selectedEvent.computed_status === 'active' && eventPermission?.can_vote && (
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
