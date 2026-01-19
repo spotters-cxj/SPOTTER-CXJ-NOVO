@@ -581,7 +581,7 @@ async def delete_event(request: Request, event_id: str):
 @router.get("/admin/all")
 async def list_all_events_admin(request: Request):
     """Listar todos os eventos para administração (gestao+)"""
-    user = await require_gestao(request)
+    await require_gestao(request)
     db = await get_db(request)
     
     events = await db.events.find(
