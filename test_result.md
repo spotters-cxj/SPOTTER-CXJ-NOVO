@@ -330,6 +330,42 @@ backend:
           agent: "testing"
           comment: "OPTIMIZATION VERIFIED: GET /api/evaluation/queue correctly returns 401 Unauthorized (requires avaliador+ authentication). Projection optimization working - query now fetches only photo_id field as intended. No database errors in logs. Performance optimization successful."
 
+  - task: "Visitor permissions - new users get 'visitante' tag"
+    implemented: true
+    working: true
+    file: "routes/photos.py, models.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Visitor restrictions working correctly. POST /api/photos, /api/photos/{id}/rate, /api/photos/{id}/comment all return 401 Unauthorized for unauthenticated users. The require_interactive_user() function properly blocks visitors (users with only 'visitante' tag) from interacting with photos."
+
+  - task: "Photo resubmit endpoint"
+    implemented: true
+    working: true
+    file: "routes/gallery.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "POST /api/gallery/{photo_id}/resubmit endpoint working correctly. Returns 401 Unauthorized without authentication as expected. Requires gestao+ level access for resubmitting photos back to evaluation queue."
+
+  - task: "Gallery admin endpoint with status filtering"
+    implemented: true
+    working: true
+    file: "routes/gallery.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "GET /api/gallery/admin/all endpoint working correctly. Returns 401 Unauthorized without authentication as expected. Requires gestao+ level access for viewing all photos with status filtering (publicada/em_avaliacao/reenviada/rejeitada)."
+
 frontend:
   # Frontend testing not performed by testing agent as per instructions
 
