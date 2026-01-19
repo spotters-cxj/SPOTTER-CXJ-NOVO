@@ -340,7 +340,10 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Visitor permissions - new users get 'visitante' tag"
+    - "Photo resubmit endpoint"
+    - "Gallery admin endpoint with status filtering"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
