@@ -366,8 +366,90 @@ backend:
           agent: "testing"
           comment: "GET /api/gallery/admin/all endpoint working correctly. Returns 401 Unauthorized without authentication as expected. Requires gestao+ level access for viewing all photos with status filtering (publicada/em_avaliacao/reenviada/rejeitada)."
 
+  - task: "Events System - Create/Update/Delete Events"
+    implemented: true
+    working: "NA"
+    file: "routes/events.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "EVENTS SYSTEM IMPLEMENTED: Created routes/events.py with full CRUD operations for events. Supports two event types (photo voting and polls). Events have configurable allowed_tags, allow_visitors flag, start/end dates, active/inactive status, and show_results_live option. Endpoints: POST /api/events, PUT /api/events/{id}, DELETE /api/events/{id}, GET /api/events/admin/all (gestao+ required), GET /api/events/photos/available."
+
+  - task: "Events System - Public Voting"
+    implemented: true
+    working: "NA"
+    file: "routes/events.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "VOTING SYSTEM IMPLEMENTED: Endpoints GET /api/events (list active), GET /api/events/{id} (details), GET /api/events/{id}/results (results based on show_results_live), POST /api/events/{id}/vote (vote with permission check), GET /api/events/{id}/check-permission (check vote eligibility). Voting permissions based on allowed_tags with special handling for 'visitante' tag (must be explicitly allowed)."
+
+  - task: "News System - Status and Scheduling"
+    implemented: true
+    working: "NA"
+    file: "routes/news.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NEWS STATUS/SCHEDULING IMPLEMENTED: Updated routes/news.py with status field (draft/published) and scheduled_at field. Public endpoint filters to show only published news that are not scheduled for future. New endpoints: GET /api/news/drafts, GET /api/news/scheduled, GET /api/news/all (admin view with display_status), POST /api/news/{id}/publish. Backward compatible with existing 'published' field."
+
+  - task: "News Scheduler - Auto-publish"
+    implemented: true
+    working: "NA"
+    file: "scheduler.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "AUTO-PUBLISH SCHEDULER IMPLEMENTED: Added news_scheduler() to scheduler.py that runs every 5 minutes. Checks for news with scheduled_at <= now and status=draft, then updates to status=published. Creates audit log for automatic publications. Scheduler starts automatically with backend."
+
 frontend:
-  # Frontend testing not performed by testing agent as per instructions
+  - task: "Events Tab in Ranking Page"
+    implemented: true
+    working: "NA"
+    file: "components/pages/RankingPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "EVENTS UI IMPLEMENTED: Added 'Eventos' tab to RankingPage with event list, event details panel, voting interface for photos and polls, results display with vote counts and percentages. Shows permission messages for users who cannot vote. Supports both photo voting (grid of photos with vote buttons) and poll voting (list of options)."
+
+  - task: "Events Management in Admin Page"
+    implemented: true
+    working: "NA"
+    file: "components/pages/AdminPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "ADMIN EVENTS UI IMPLEMENTED: Added 'Eventos' tab to AdminPage with event list showing status badges (active/upcoming/ended/inactive), type badges (photo/poll), vote counts, and allowed tags. Modal for creating/editing events with: title, description, event type selector, date pickers, tag selection (checkboxes), allow_visitors toggle, active/inactive toggle, show_results_live toggle, photo selector grid, and poll option editor."
+
+  - task: "News Status and Scheduling in Admin Page"
+    implemented: true
+    working: "NA"
+    file: "components/pages/AdminPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "NEWS ADMIN UI UPDATED: Updated news tab with status badges (Published/Draft/Scheduled), Publish button for drafts, updated modal with status dropdown (Published/Draft) and datetime picker for scheduling. Status legend added at top of list."
 
 metadata:
   created_by: "testing_agent"
@@ -377,27 +459,14 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Visitor permissions - new users get 'visitante' tag"
-    - "Photo resubmit endpoint"
-    - "Gallery admin endpoint with status filtering"
+    - "Events System - Create/Update/Delete Events"
+    - "Events System - Public Voting"
+    - "News System - Status and Scheduling"
+    - "News Scheduler - Auto-publish"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
-    - agent: "testing"
-      message: "Comprehensive backend API testing completed successfully. All 19 test cases passed including public endpoints, authentication flow, protected endpoints, and error handling. The Spotters CXJ backend API is fully functional and properly secured. All endpoints return correct HTTP status codes and data structures. Google OAuth integration with Emergent Auth is properly implemented. Database connectivity is working. Ready for production use."
-    - agent: "testing"
-      message: "Re-tested all endpoints from review request. Fixed missing admin router inclusion in server.py. All 26 test cases now pass including: GET /api/, /api/health, /api/news, /api/members, /api/members/hierarchy, /api/ranking, /api/ranking/users, /api/ranking/podium, /api/photos/queue, /api/pages/home. All public endpoints return 200 OK with proper JSON structure. Protected endpoints correctly return 401 Unauthorized. Backend API is fully functional and ready for production."
-    - agent: "testing"
-      message: "Audit logs system testing completed successfully. All 3 audit log endpoints tested: GET /api/logs (list logs), GET /api/logs/actions (action types), GET /api/logs/stats (statistics). All endpoints properly require gestao+ level authentication and return 401 Unauthorized for unauthenticated requests with proper error messages. Updated backend_test.py to include audit logs testing. Total test suite now includes 29 test cases, all passing."
-    - agent: "testing"
-      message: "Review request testing completed. All 4 specified endpoints working correctly: GET /api/gallery (returns photos from both collections), GET /api/members (lists members), GET /api/members/hierarchy (returns proper hierarchy structure), GET /api/photos/queue (returns queue status). Minor issue found: GET /api/settings missing payment fields (pix_key, vip_monthly_price, vip_permanent_price) in DEFAULT_SETTINGS - these are defined in SiteSettings model but not included in default response. All core functionality working as expected."
     - agent: "main"
-      message: "DEPLOYMENT PREPARATION COMPLETED: Fixed all 4 critical blockers identified by deployment_agent. (1) Fixed .gitignore to allow .env files in repository. (2) Fixed malformed -e flags in .gitignore. (3) Optimized ranking.py get_top3 endpoint - eliminated N+1 query using $lookup aggregation. (4) Optimized ranking.py get_user_ranking endpoint - eliminated N+1 query using $lookup in pipeline. (5) Bonus: Optimized evaluation.py query with projection. All services running. Need to test optimized endpoints before final deployment."
-    - agent: "testing"
-      message: "OPTIMIZATION TESTING COMPLETED: All optimized ranking and evaluation endpoints working correctly. Tested GET /api/ranking/top3 (MongoDB $lookup aggregation), GET /api/ranking/users (extended aggregation pipeline), GET /api/ranking (base endpoint), GET /api/ranking/podium (internal call), and GET /api/evaluation/queue (projection optimization). All return proper JSON structure, correct HTTP status codes, and no database errors in logs. N+1 query fixes verified successful. Performance optimizations working as intended. Ready for production deployment."
-    - agent: "main"
-      message: "USER/PERMISSIONS/GALLERY UPDATES IMPLEMENTED: (1) Added 'visitante' tag to UserRole enum and HIERARCHY_LEVELS. (2) New users now receive 'visitante' tag by default instead of 'spotter_cxj'. (3) Added can_interact() helper to block visitors from posting photos, commenting, and voting. (4) Added require_interactive_user() check in photos upload/rate/comment endpoints. (5) Created POST /api/gallery/{photo_id}/resubmit endpoint for sending photos back to evaluation queue. (6) Created GET /api/gallery/admin/all endpoint with status filtering (publicada/em_avaliacao/reenviada/rejeitada). (7) Frontend AdminPage updated with new gallery tab featuring status badges, filter dropdown, and resubmit button. (8) Added 'resubmit' action to audit logs."
-    - agent: "testing"
-      message: "NEW USER PERMISSIONS & GALLERY FEATURES TESTING COMPLETED: All 38 test cases passed successfully! Fixed critical auth function import issues across multiple route files (photos.py, evaluation.py, members.py, news.py, notifications.py, logs.py, admin.py, leaders.py, settings.py, gallery.py). Tested new features: (1) Gallery Admin Endpoint - GET /api/gallery/admin/all correctly returns 401 without auth. (2) Photo Resubmit Endpoint - POST /api/gallery/{photo_id}/resubmit correctly returns 401 without auth. (3) Visitor Restrictions - POST /api/photos, /api/photos/{id}/rate, /api/photos/{id}/comment all correctly return 401 for unauthenticated users. (4) All existing public endpoints (GET /api/, /api/health, /api/gallery, /api/gallery/types) continue working correctly. The new user permissions system and gallery features are fully functional and properly secured."
+      message: "EVENTS & NEWS SYSTEM IMPLEMENTED - Need Backend Testing. Implemented: (1) Full events system with photo voting and polls, (2) Configurable vote permissions by user tags, (3) Visitor vote control (must be explicitly allowed), (4) News status (draft/published) with scheduling, (5) Auto-publish scheduler every 5 minutes. Backend endpoints to test: GET/POST /api/events, GET/PUT/DELETE /api/events/{id}, POST /api/events/{id}/vote, GET /api/events/{id}/check-permission, GET /api/events/{id}/results, GET /api/events/admin/all, GET /api/events/photos/available, GET /api/news/drafts, GET /api/news/scheduled, GET /api/news/all, POST /api/news/{id}/publish"
