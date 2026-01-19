@@ -348,6 +348,18 @@ export const AdminPage = () => {
     }
   };
 
+  // ========== RESUBMIT PHOTO ==========
+  const handleResubmitPhoto = async (photoId) => {
+    if (!window.confirm('Reenviar esta foto para avaliação? Ela será removida da galeria pública.')) return;
+    try {
+      await galleryApi.resubmit(photoId);
+      toast.success('Foto reenviada para avaliação');
+      loadAllData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erro ao reenviar foto');
+    }
+  };
+
   // ========== MEMORIES ==========
   const handleSaveMemory = async () => {
     try {
