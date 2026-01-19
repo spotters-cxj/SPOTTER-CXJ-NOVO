@@ -284,7 +284,7 @@ async def rate_photo(request: Request, photo_id: str):
 @router.post("/{photo_id}/comment")
 async def add_comment(request: Request, photo_id: str):
     """Add comment to photo"""
-    user = await get_current_user(request)
+    user = await require_interactive_user(request)  # Verifica se não é visitante
     db = await get_db(request)
     body = await request.json()
     content = body.get("content")
