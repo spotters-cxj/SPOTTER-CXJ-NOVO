@@ -235,3 +235,186 @@ async def get_photos_by_registration(request: Request, registration: str):
             all_photos[p["photo_id"]] = p
     
     return list(all_photos.values())
+
+@router.post("/{photo_id}/resubmit")
+async def resubmit_photo_to_evaluation(request: Request, photo_id: str):
+    """
+    Reenviar foto para fila de avaliação.
+    - Apenas admin, lider ou gestor podem usar.
+    - Remove a foto da galeria pública.
+    - Devolve a foto para a fila de avaliação.
+    - Mantém autor, data e metadados originais.
+    """
+    user = await require_gestao(request)
+    db = await get_db(request)
+    
+    # Try to find in gallery collection first
+    photo = await db.gallery.find_one({"photo_id": photo_id}, {"_id": 0})
+    source_collection = "gallery"
+    
+    # If not found, try photos collection (approved status)
+    if not photo:
+        photo = await db.photos.find_one({"photo_id": photo_id, "status": "approved"}, {"_id": 0})
+        source_collection = "photos"
+    
+    if not photo:
+        raise HTTPException(status_code=404, detail="Foto não encontrada ou já está em avaliação")
+    
+    # Get pending count for queue position
+    pending_count = await db.photos.count_documents({"status": "pending"})
+    
+    # Prepare the photo data for resubmission
+    now = datetime.now(timezone.utc)
+    resubmit_data = {
+        "photo_id": photo.get("photo_id", f"photo_{uuid.uuid4().hex[:12]}"),
+        "url": photo.get("url"),
+        "title": photo.get("title", photo.get("description", "Sem título")),
+        "description": photo.get("description"),
+        "aircraft_model": photo.get("aircraft_model"),
+        "aircraft_type": photo.get("aircraft_type"),
+        "registration": photo.get("registration"),
+        "airline": photo.get("airline"),
+        "location": photo.get("location"),
+        "photo_date": photo.get("photo_date", photo.get("date")),
+        "author_id": photo.get("author_id"),
+        "author_name": photo.get("author_name"),
+        "status": "pending",  # Back to pending
+        "queue_position": pending_count + 1,
+        "priority": False,
+        "final_rating": None,
+        "rating_count": 0,
+        "public_rating": 0.0,
+        "public_rating_count": 0,
+        "comments_count": 0,
+        "views": photo.get("views", 0),
+        "created_at": photo.get("created_at", now),  # Keep original creation date
+        "resubmitted_at": now,
+        "resubmitted_by_id": user["user_id"],
+        "resubmitted_by_name": user["name"],
+        "original_status": "approved" if source_collection == "photos" else "gallery",
+        "approved_at": None,
+        "rejected_at": None
+    }
+    
+    # If photo was in gallery collection, we need to move it to photos collection
+    if source_collection == "gallery":
+        # Remove from gallery
+        await db.gallery.delete_one({"photo_id": photo_id})
+        # Insert into photos collection
+        await db.photos.insert_one(resubmit_data)
+    else:
+        # Update existing record in photos collection
+        await db.photos.update_one(
+            {"photo_id": photo_id},
+            {"$set": {
+                "status": "pending",
+                "queue_position": pending_count + 1,
+                "priority": False,
+                "final_rating": None,
+                "rating_count": 0,
+                "resubmitted_at": now,
+                "resubmitted_by_id": user["user_id"],
+                "resubmitted_by_name": user["name"],
+                "original_status": "approved",
+                "approved_at": None,
+                "rejected_at": None
+            }}
+        )
+    
+    # Delete existing evaluations for this photo
+    await db.evaluations.delete_many({"photo_id": photo_id})
+    
+    # Create notification for the author
+    notification = {
+        "notification_id": f"notif_{uuid.uuid4().hex[:8]}",
+        "user_id": photo.get("author_id"),
+        "type": "photo_resubmitted",
+        "message": f"📋 Sua foto '{resubmit_data.get('title')}' foi reenviada para avaliação por {user['name']}.",
+        "data": {"photo_id": photo_id, "resubmitted_by": user["name"]},
+        "read": False,
+        "created_at": now
+    }
+    await db.notifications.insert_one(notification)
+    
+    # Create audit log
+    await create_audit_log(
+        db,
+        admin_id=user["user_id"],
+        admin_name=user["name"],
+        admin_email=user.get("email"),
+        action="resubmit",
+        entity_type="photo",
+        entity_id=photo_id,
+        entity_name=resubmit_data.get("title"),
+        details=f"Foto reenviada para avaliação. Autor original: {photo.get('author_name')}",
+        old_value={"status": "approved", "source": source_collection},
+        new_value={"status": "pending", "queue_position": pending_count + 1},
+        ip_address=get_client_ip(request)
+    )
+    
+    return {
+        "message": "Foto reenviada para avaliação com sucesso",
+        "photo_id": photo_id,
+        "queue_position": pending_count + 1
+    }
+
+@router.get("/admin/all")
+async def list_all_photos_admin(request: Request, status: Optional[str] = None, limit: int = 100):
+    """
+    List all photos for admin panel with status information.
+    Includes: publicada, em avaliação, reenviada.
+    """
+    user = await require_gestao(request)
+    db = await get_db(request)
+    
+    # Build query
+    query = {}
+    if status:
+        if status == "publicada":
+            query["status"] = "approved"
+        elif status == "em_avaliacao":
+            query["status"] = "pending"
+        elif status == "reenviada":
+            query["resubmitted_at"] = {"$exists": True}
+            query["status"] = "pending"
+        elif status == "rejeitada":
+            query["status"] = "rejected"
+    
+    # Get photos from photos collection
+    photos_list = await db.photos.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    # Also get from gallery if no status filter or if looking for published
+    if not status or status == "publicada":
+        gallery_list = await db.gallery.find({"approved": True}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+        
+        # Mark gallery photos as published
+        for photo in gallery_list:
+            photo["display_status"] = "publicada"
+            photo["source"] = "gallery"
+        
+        # Merge (avoiding duplicates)
+        existing_ids = {p["photo_id"] for p in photos_list}
+        for photo in gallery_list:
+            if photo.get("photo_id") not in existing_ids:
+                photos_list.append(photo)
+    
+    # Add display_status for photos collection items
+    for photo in photos_list:
+        if "display_status" not in photo:
+            if photo.get("status") == "approved":
+                photo["display_status"] = "publicada"
+            elif photo.get("status") == "pending":
+                if photo.get("resubmitted_at"):
+                    photo["display_status"] = "reenviada"
+                else:
+                    photo["display_status"] = "em_avaliacao"
+            elif photo.get("status") == "rejected":
+                photo["display_status"] = "rejeitada"
+            else:
+                photo["display_status"] = photo.get("status", "unknown")
+            photo["source"] = "photos"
+    
+    # Sort by created_at
+    photos_list.sort(key=lambda x: x.get("created_at", datetime.min), reverse=True)
+    
+    return photos_list[:limit]
