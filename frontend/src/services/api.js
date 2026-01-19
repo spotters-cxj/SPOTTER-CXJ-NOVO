@@ -158,6 +158,9 @@ export const galleryApi = {
   list: (params) => api.get('/gallery', { params }),
   getById: (id) => api.get(`/gallery/${id}`),
   rate: (id, rating) => api.post(`/gallery/${id}/rate`, { rating }),
+  delete: (id) => api.delete(`/gallery/${id}`),
+  resubmit: (id) => api.post(`/gallery/${id}/resubmit`),
+  listAdmin: (params) => api.get('/gallery/admin/all', { params }),
 };
 
 // Timeline API
