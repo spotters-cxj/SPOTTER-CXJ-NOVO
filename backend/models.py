@@ -13,8 +13,11 @@ class UserRole(str, Enum):
     AVALIADOR = "avaliador"
     COLABORADOR = "colaborador"
     SPOTTER_CXJ = "spotter_cxj"
+    VIP = "vip"
+    PODIO = "podio"
     JORNALISTA = "jornalista"
     DIRETOR_AEROPORTO = "diretor_aeroporto"
+    VISITANTE = "visitante"
 
 class PhotoStatus(str, Enum):
     PENDING = "pending"
