@@ -1,29 +1,12 @@
 import axios from 'axios';
 
-// Get backend URL from VITE env or fallback to origin
-const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || window.location.origin;
+// ✅ Sempre usa a mesma origem do site (ex: https://spotterscxj.com.br/api)
+const API = `${window.location.origin}/api`;
 
-// Normalize URL - remove www, ensure https in production
-const normalizeBackendUrl = (url) => {
-  try {
-    const parsed = new URL(url);
-    // Remove www
-    parsed.hostname = parsed.hostname.replace(/^www\./, '');
-    return parsed.toString().replace(/\/$/, ''); // Remove trailing slash
-  } catch (e) {
-    return url;
-  }
-};
-
-const API = `${normalizeBackendUrl(BACKEND_URL)}/api`;
-
-// Debug log for troubleshooting
+// Debug
 if (typeof window !== 'undefined') {
-  console.log('API Configuration:', { 
-    BACKEND_URL: normalizeBackendUrl(BACKEND_URL), 
-    API, 
-   env: import.meta.env.VITE_BACKEND_URL,
+  console.log('API Configuration:', {
+    API,
     origin: window.location.origin
   });
 }
@@ -34,38 +17,24 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000, // 15 second timeout
+  timeout: 15000,
 });
 
-// Request interceptor - automatically attach auth token
+// Request interceptor - attach auth token if exists
 api.interceptors.request.use(
   (config) => {
-    // Try to get token from localStorage
     const token = localStorage.getItem('auth_token') || localStorage.getItem('session_token');
-    
     if (token && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    // Ensure HTTPS in production
-    if (config.url && !config.url.startsWith('http')) {
-      // Relative URL, will use baseURL
-    } else if (config.url && config.url.startsWith('http://') && !config.url.includes('localhost')) {
-      config.url = config.url.replace('http://', 'https://');
-    }
-    
     return config;
   },
-  (error) => {
-    console.error('Request interceptor error:', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle auth errors and token refresh
+// Response interceptor - auth errors
 api.interceptors.response.use(
   (response) => {
-    // Check for new session token in response headers
     const newToken = response.headers?.['x-session-token'];
     if (newToken) {
       localStorage.setItem('auth_token', newToken);
@@ -75,34 +44,23 @@ api.interceptors.response.use(
   (error) => {
     const status = error?.response?.status;
     const url = error?.config?.url || 'unknown';
-    
-    // Detailed error logging
+
     console.error('API Error:', {
       url,
       status,
       message: error?.message,
       data: error?.response?.data
     });
-    
-    // Handle auth errors
+
     if (status === 401) {
-      console.warn('Authentication error - session may have expired');
-      // Clear stored tokens on auth error
       localStorage.removeItem('auth_token');
       localStorage.removeItem('session_token');
-      
-      // Only redirect to login if not already on auth pages
+
       if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
-        // Dispatch custom event for auth error
         window.dispatchEvent(new CustomEvent('auth-error', { detail: { status, url } }));
       }
     }
-    
-    // Handle CORS/domain errors
-    if (status === 403 || (error?.message?.includes('CORS') || error?.message?.includes('Network'))) {
-      console.error('Possible CORS or domain authorization error');
-    }
-    
+
     return Promise.reject(error);
   }
 );
@@ -162,6 +120,12 @@ export const galleryApi = {
   delete: (id) => api.delete(`/gallery/${id}`),
   resubmit: (id) => api.post(`/gallery/${id}/resubmit`),
   listAdmin: (params) => api.get('/gallery/admin/all', { params }),
+  // ⚠️ Upload de foto normalmente é /photos (mantive abaixo também)
+  upload: (formData) =>
+    api.post('/photos', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    }),
 };
 
 // Timeline API
@@ -184,10 +148,11 @@ export const statsApi = {
 
 // Photos API
 export const photosApi = {
-  upload: (formData) => api.post('/photos', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-    timeout: 60000, // 60 second timeout for uploads
-  }),
+  upload: (formData) =>
+    api.post('/photos', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    }),
   getMy: () => api.get('/photos/my'),
   getQueue: () => api.get('/photos/queue'),
 };
@@ -204,13 +169,12 @@ export const rankingApi = {
 
 // Events API
 export const eventsApi = {
-  // Public endpoints
   list: (includeEnded = false) => api.get('/events', { params: { include_ended: includeEnded } }),
   getById: (id) => api.get(`/events/${id}`),
   getResults: (id) => api.get(`/events/${id}/results`),
   checkPermission: (id) => api.get(`/events/${id}/check-permission`),
   vote: (id, data) => api.post(`/events/${id}/vote`, data),
-  // Admin endpoints
+
   listAll: () => api.get('/events/admin/all'),
   create: (data) => api.post('/events', data),
   update: (id, data) => api.put(`/events/${id}`, data),
@@ -244,7 +208,6 @@ export const membersApi = {
   getHierarchy: () => api.get('/members/hierarchy'),
   search: (query) => api.get('/members/search', { params: { q: query } }),
   updateProfile: (data) => api.put('/members/profile', data),
-  updateTags: (userId, tags) => api.put(`/admin/users/${userId}/role`, { tags }),
 };
 
 // Notifications API
