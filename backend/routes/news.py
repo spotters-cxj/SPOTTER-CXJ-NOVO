@@ -218,7 +218,7 @@ async def update_news(request: Request, news_id: str):
                 try:
                     if isinstance(value, str):
                         value = datetime.fromisoformat(value.replace('Z', '+00:00'))
-                except:
+                except Exception:
                     value = None
             
             update_data[field] = value
@@ -246,7 +246,7 @@ async def update_news(request: Request, news_id: str):
             entity_type="news",
             entity_id=news_id,
             entity_name=old_news.get("title"),
-            details=f"Notícia atualizada",
+            details="Notícia atualizada",
             old_value={k: old_news.get(k) for k in update_data.keys() if k in old_news},
             new_value=update_data,
             ip_address=get_client_ip(request)
