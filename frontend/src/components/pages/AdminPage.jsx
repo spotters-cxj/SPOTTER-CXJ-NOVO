@@ -123,11 +123,13 @@ export const AdminPage = () => {
         timelineApi.getSpotters(),
         logsApi.list({ limit: 50 }),
         logsApi.getStats(),
-        newsApi.list(50),
+        newsApi.getAll(50),  // Changed to getAll for admin
         evaluationApi.getQueue(),
         backupApi.getStatus(),
         backupApi.getHistory(),
-        backupApi.listLocal()
+        backupApi.listLocal(),
+        eventsApi.listAll(),  // Events
+        eventsApi.getAvailablePhotos()  // Available photos for events
       ]);
 
       if (results[0].status === 'fulfilled') setUsers(results[0].value.data || []);
@@ -151,6 +153,8 @@ export const AdminPage = () => {
       if (results[12].status === 'fulfilled') setBackupStatus(results[12].value.data || {});
       if (results[13].status === 'fulfilled') setBackupHistory(results[13].value.data || []);
       if (results[14].status === 'fulfilled') setLocalBackups(results[14].value.data || []);
+      if (results[15].status === 'fulfilled') setEvents(results[15].value.data || []);
+      if (results[16].status === 'fulfilled') setAvailablePhotos(results[16].value.data || []);
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Erro ao carregar dados');
