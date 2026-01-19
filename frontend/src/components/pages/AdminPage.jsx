@@ -1093,28 +1093,131 @@ export const AdminPage = () => {
             {/* ==================== PHOTOS TAB ==================== */}
             <TabsContent value="photos">
               <div className="card-navy p-6">
-                <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                  <Camera size={20} className="text-sky-400" />
-                  Galeria de Fotos ({photos.length})
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {photos.slice(0, 20).map((photo) => (
-                    <div key={photo.photo_id} className="relative group">
-                      <img 
-                        src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url} 
-                        alt={photo.description} 
-                        className="w-full h-24 object-cover rounded-lg"
-                      />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                        <Button size="sm" variant="ghost" onClick={() => handleDeletePhoto(photo.photo_id)} className="text-red-400">
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                    <Camera size={20} className="text-sky-400" />
+                    Galeria de Fotos ({photos.length})
+                  </h2>
+                  <div className="flex gap-2">
+                    <select
+                      value={photoStatusFilter}
+                      onChange={(e) => setPhotoStatusFilter(e.target.value)}
+                      className="px-3 py-2 bg-[#102a43] border border-[#1a3a5c] rounded-lg text-white text-sm"
+                    >
+                      <option value="">Todos os status</option>
+                      <option value="publicada">📗 Publicada</option>
+                      <option value="em_avaliacao">📙 Em avaliação</option>
+                      <option value="reenviada">📘 Reenviada</option>
+                      <option value="rejeitada">📕 Rejeitada</option>
+                    </select>
+                  </div>
                 </div>
-                {photos.length > 20 && (
-                  <p className="text-gray-400 text-sm mt-4 text-center">Mostrando 20 de {photos.length} fotos</p>
+
+                {/* Status legend */}
+                <div className="flex flex-wrap gap-3 mb-6 text-xs">
+                  <span className="flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 rounded">
+                    <CheckCircle size={12} />Publicada
+                  </span>
+                  <span className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded">
+                    <Clock size={12} />Em avaliação
+                  </span>
+                  <span className="flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
+                    <RefreshCw size={12} />Reenviada
+                  </span>
+                  <span className="flex items-center gap-1 px-2 py-1 bg-red-500/20 text-red-400 rounded">
+                    <XCircle size={12} />Rejeitada
+                  </span>
+                </div>
+
+                {filteredPhotos.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <Camera size={48} className="mx-auto mb-4 opacity-50" />
+                    <p>Nenhuma foto encontrada</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredPhotos.slice(0, 30).map((photo) => (
+                      <div key={photo.photo_id} className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c] flex gap-4">
+                        <img 
+                          src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url} 
+                          alt={photo.title || photo.description} 
+                          className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <h3 className="text-white font-semibold line-clamp-1">{photo.title || photo.description || 'Sem título'}</h3>
+                              <p className="text-gray-400 text-sm">{photo.author_name}</p>
+                              <div className="flex flex-wrap items-center gap-3 mt-2 text-xs">
+                                <span className="text-gray-500">{photo.aircraft_model}</span>
+                                {photo.registration && <span className="text-sky-400">{photo.registration}</span>}
+                                <span className="text-gray-500">{new Date(photo.created_at).toLocaleDateString('pt-BR')}</span>
+                              </div>
+                              
+                              {/* Status badge */}
+                              <div className="flex items-center gap-2 mt-2">
+                                {photo.display_status === 'publicada' && (
+                                  <span className="flex items-center gap-1 px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs">
+                                    <CheckCircle size={10} />Publicada
+                                  </span>
+                                )}
+                                {photo.display_status === 'em_avaliacao' && (
+                                  <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs">
+                                    <Clock size={10} />Em avaliação
+                                  </span>
+                                )}
+                                {photo.display_status === 'reenviada' && (
+                                  <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">
+                                    <RefreshCw size={10} />Reenviada
+                                  </span>
+                                )}
+                                {photo.display_status === 'rejeitada' && (
+                                  <span className="flex items-center gap-1 px-2 py-0.5 bg-red-500/20 text-red-400 rounded text-xs">
+                                    <XCircle size={10} />Rejeitada
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Resubmit info */}
+                              {photo.resubmitted_at && (
+                                <p className="text-xs text-blue-400 mt-1">
+                                  Reenviada por {photo.resubmitted_by_name} em {new Date(photo.resubmitted_at).toLocaleDateString('pt-BR')}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex flex-col gap-2 flex-shrink-0">
+                              {/* Show resubmit button only for published photos */}
+                              {(photo.display_status === 'publicada' || photo.status === 'approved') && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleResubmitPhoto(photo.photo_id)}
+                                  className="text-blue-400 border-blue-400/50 hover:bg-blue-500/20 text-xs"
+                                  title="Reenviar para avaliação"
+                                >
+                                  <RefreshCw size={12} className="mr-1" />
+                                  Reenviar
+                                </Button>
+                              )}
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                onClick={() => handleDeletePhoto(photo.photo_id)} 
+                                className="text-red-400 hover:text-red-300"
+                              >
+                                <Trash2 size={14} />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {filteredPhotos.length > 30 && (
+                  <p className="text-gray-400 text-sm mt-4 text-center">Mostrando 30 de {filteredPhotos.length} fotos</p>
                 )}
               </div>
             </TabsContent>
