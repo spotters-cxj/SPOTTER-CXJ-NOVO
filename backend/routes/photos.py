@@ -108,7 +108,7 @@ async def upload_photo(
     file: UploadFile = File(...)
 ):
     """Upload a new photo"""
-    user = await get_current_user(request)
+    user = await require_interactive_user(request)  # Verifica se não é visitante
     db = await get_db(request)
     
     # Convert is_own_photo string to boolean
