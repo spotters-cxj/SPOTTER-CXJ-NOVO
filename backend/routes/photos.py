@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File, Form
 from typing import Optional
 from datetime import datetime, timezone, timedelta
-from models import Photo, PhotoStatus, PhotoCreate, HIERARCHY_LEVELS, get_highest_role_level
+from models import Photo, PhotoStatus, PhotoCreate, HIERARCHY_LEVELS, get_highest_role_level, can_interact
 import uuid
 import os
 
@@ -17,6 +17,16 @@ async def get_db(request: Request):
 async def get_current_user(request: Request):
     from routes.auth import get_current_user as auth_get_user
     return await auth_get_user(request)
+
+async def require_interactive_user(request: Request):
+    """Require user to have interactive tags (not just visitante)"""
+    user = await get_current_user(request)
+    if not can_interact(user.get("tags", [])):
+        raise HTTPException(
+            status_code=403, 
+            detail="Visitantes não podem realizar esta ação. Aguarde aprovação de um administrador."
+        )
+    return user
 
 async def create_notification(db, user_id: str, notif_type: str, message: str, data: dict = None):
     notification = {
