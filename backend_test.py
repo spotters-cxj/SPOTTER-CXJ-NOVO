@@ -481,6 +481,151 @@ def main():
         else:
             result.failure(f"RECHECK {method} {endpoint}", f"{description} failed: {response.get('status_code', 'Error')}")
     
+    # 8. EVENTS SYSTEM ENDPOINTS TESTS
+    print("\n🎯 TESTING EVENTS SYSTEM ENDPOINTS")
+    print("-" * 40)
+    
+    # Test public events list endpoint
+    response = test_endpoint("GET", "/events", description="List active events (public)")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, list):
+            result.success("GET /api/events", f"Returned {len(data)} active events")
+        else:
+            result.failure("GET /api/events", f"Expected array, got: {type(data)}")
+    else:
+        result.failure("GET /api/events", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test get event details with non-existent ID (should return 404)
+    response = test_endpoint("GET", "/events/nonexistent123", expected_status=404, description="Non-existent event details")
+    if response.get("success"):
+        result.success("GET /api/events/nonexistent123", "Correctly returned 404 for non-existent event")
+    else:
+        result.failure("GET /api/events/nonexistent123", f"Expected 404, got: {response.get('status_code', 'Error')}")
+    
+    # Test get event results with non-existent ID (should return 404)
+    response = test_endpoint("GET", "/events/nonexistent123/results", expected_status=404, description="Non-existent event results")
+    if response.get("success"):
+        result.success("GET /api/events/nonexistent123/results", "Correctly returned 404 for non-existent event results")
+    else:
+        result.failure("GET /api/events/nonexistent123/results", f"Expected 404, got: {response.get('status_code', 'Error')}")
+    
+    # Test check vote permission with non-existent ID (should return 404)
+    response = test_endpoint("GET", "/events/nonexistent123/check-permission", expected_status=404, description="Non-existent event permission check")
+    if response.get("success"):
+        result.success("GET /api/events/nonexistent123/check-permission", "Correctly returned 404 for non-existent event")
+    else:
+        result.failure("GET /api/events/nonexistent123/check-permission", f"Expected 404, got: {response.get('status_code', 'Error')}")
+    
+    # Test vote in event without auth (should return 401)
+    response = test_endpoint("POST", "/events/dummy_event_id/vote", expected_status=401, 
+                           data={"photo_id": "dummy_photo_id"}, description="Vote without auth")
+    if response.get("success"):
+        result.success("POST /api/events/{event_id}/vote (no auth)", "Correctly returned 401 Unauthorized")
+    else:
+        result.failure("POST /api/events/{event_id}/vote (no auth)", f"Expected 401, got: {response.get('status_code', 'Error')}")
+    
+    # Test protected admin events endpoints (should return 401/403)
+    events_admin_endpoints = [
+        ("POST", "/events", "Create event", {"title": "Test Event", "start_date": "2024-01-01T00:00:00Z", "end_date": "2024-01-02T00:00:00Z"}),
+        ("PUT", "/events/dummy_event_id", "Update event", {"title": "Updated Event"}),
+        ("DELETE", "/events/dummy_event_id", "Delete event"),
+        ("GET", "/events/admin/all", "List all events for admin"),
+        ("GET", "/events/photos/available", "List available photos for events")
+    ]
+    
+    for method, endpoint, description, *data in events_admin_endpoints:
+        payload = data[0] if data else None
+        response = test_endpoint(method, endpoint, expected_status=401, data=payload, description=description)
+        if response.get("success"):
+            result.success(f"{method} {endpoint} (no auth)", "Correctly returned 401 Unauthorized")
+        elif response.get("status_code") == 403:
+            result.success(f"{method} {endpoint} (no auth)", "Correctly returned 403 Forbidden (requires gestao+ level)")
+        else:
+            result.failure(f"{method} {endpoint} (no auth)", f"Expected 401/403, got: {response.get('status_code', 'Error')}")
+    
+    # 9. NEWS SYSTEM ENDPOINTS TESTS
+    print("\n📰 TESTING NEWS SYSTEM ENDPOINTS")
+    print("-" * 40)
+    
+    # Test public news list endpoint (should exclude drafts and scheduled)
+    response = test_endpoint("GET", "/news", description="List published news (public)")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, list):
+            result.success("GET /api/news", f"Returned {len(data)} published news articles")
+        else:
+            result.failure("GET /api/news", f"Expected array, got: {type(data)}")
+    else:
+        result.failure("GET /api/news", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test protected news admin endpoints (should return 401/403)
+    news_admin_endpoints = [
+        ("GET", "/news/drafts", "List draft news"),
+        ("GET", "/news/scheduled", "List scheduled news"),
+        ("GET", "/news/all", "List all news with status"),
+        ("POST", "/news/dummy_news_id/publish", "Publish a draft news")
+    ]
+    
+    for method, endpoint, description in news_admin_endpoints:
+        response = test_endpoint(method, endpoint, expected_status=401, description=description)
+        if response.get("success"):
+            result.success(f"{method} {endpoint} (no auth)", "Correctly returned 401 Unauthorized")
+        elif response.get("status_code") == 403:
+            result.success(f"{method} {endpoint} (no auth)", "Correctly returned 403 Forbidden (requires gestao+ level)")
+        else:
+            result.failure(f"{method} {endpoint} (no auth)", f"Expected 401/403, got: {response.get('status_code', 'Error')}")
+    
+    # Test get single news with non-existent ID (should return 404)
+    response = test_endpoint("GET", "/news/nonexistent123", expected_status=404, description="Non-existent news article")
+    if response.get("success"):
+        result.success("GET /api/news/nonexistent123", "Correctly returned 404 for non-existent news")
+    else:
+        result.failure("GET /api/news/nonexistent123", f"Expected 404, got: {response.get('status_code', 'Error')}")
+    
+    # Test news CRUD operations without auth (should return 401/403)
+    news_crud_endpoints = [
+        ("POST", "/news", "Create news", {"title": "Test News", "content": "Test content"}),
+        ("PUT", "/news/dummy_news_id", "Update news", {"title": "Updated News"}),
+        ("DELETE", "/news/dummy_news_id", "Delete news")
+    ]
+    
+    for method, endpoint, description, *data in news_crud_endpoints:
+        payload = data[0] if data else None
+        response = test_endpoint(method, endpoint, expected_status=401, data=payload, description=description)
+        if response.get("success"):
+            result.success(f"{method} {endpoint} (no auth)", "Correctly returned 401 Unauthorized")
+        elif response.get("status_code") == 403:
+            result.success(f"{method} {endpoint} (no auth)", "Correctly returned 403 Forbidden (requires gestao+ level)")
+        else:
+            result.failure(f"{method} {endpoint} (no auth)", f"Expected 401/403, got: {response.get('status_code', 'Error')}")
+    
+    # 10. EVENTS AND NEWS INTEGRATION TESTS
+    print("\n🔗 TESTING EVENTS & NEWS INTEGRATION")
+    print("-" * 40)
+    
+    # Test events with include_ended parameter
+    response = test_endpoint("GET", "/events?include_ended=true", description="List events including ended ones")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, list):
+            result.success("GET /api/events?include_ended=true", f"Returned {len(data)} events (including ended)")
+        else:
+            result.failure("GET /api/events?include_ended=true", f"Expected array, got: {type(data)}")
+    else:
+        result.failure("GET /api/events?include_ended=true", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
+    # Test news with limit parameter
+    response = test_endpoint("GET", "/news?limit=5", description="List news with limit")
+    if response.get("success"):
+        data = response["data"]
+        if isinstance(data, list):
+            result.success("GET /api/news?limit=5", f"Returned {len(data)} news articles (limited)")
+        else:
+            result.failure("GET /api/news?limit=5", f"Expected array, got: {type(data)}")
+    else:
+        result.failure("GET /api/news?limit=5", f"Status: {response.get('status_code', 'Error')}, Error: {response.get('error', 'Unknown')}")
+    
     # Final summary
     success = result.summary()
     return 0 if success else 1
