@@ -777,6 +777,9 @@ export const AdminPage = () => {
               <TabsTrigger value="news" className="data-[state=active]:bg-sky-600">
                 <Newspaper size={16} className="mr-2" />Notícias
               </TabsTrigger>
+              <TabsTrigger value="events" className="data-[state=active]:bg-sky-600">
+                <Vote size={16} className="mr-2" />Eventos
+              </TabsTrigger>
               <TabsTrigger value="evaluation" className="data-[state=active]:bg-sky-600">
                 <CheckCircle size={16} className="mr-2" />Avaliações
               </TabsTrigger>
