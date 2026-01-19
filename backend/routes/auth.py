@@ -110,7 +110,7 @@ async def create_session(request: Request, response: Response):
                 "last_login": datetime.now(timezone.utc)
             }}
         )
-        tags = existing_user.get("tags", ["spotter_cxj"])
+        tags = existing_user.get("tags", ["visitante"])
         approved = existing_user.get("approved", False)
         logger.info(f"Existing user logged in: {user_id}")
     else:
@@ -123,9 +123,10 @@ async def create_session(request: Request, response: Response):
             approved = True
             logger.info(f"First user created as admin: {user_id}")
         else:
-            tags = ["spotter_cxj"]
+            # Novos usuários começam como visitantes
+            tags = ["visitante"]
             approved = False
-            logger.info(f"New user created: {user_id}")
+            logger.info(f"New user created as visitante: {user_id}")
         
         new_user = {
             "user_id": user_id,
@@ -144,7 +145,7 @@ async def create_session(request: Request, response: Response):
         # Welcome notification
         await create_notification(
             db, user_id, "tag_assigned",
-            f"🎉 Bem-vindo ao Spotters CXJ! Você recebeu a tag: SPOTTER CXJ"
+            f"🎉 Bem-vindo ao Spotters CXJ! Você é um VISITANTE. Aguarde aprovação de um administrador para obter uma tag e poder interagir no site."
         )
     
     # Create session token
