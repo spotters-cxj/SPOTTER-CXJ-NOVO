@@ -236,7 +236,7 @@ async def get_photo(request: Request, photo_id: str):
 @router.post("/{photo_id}/rate")
 async def rate_photo(request: Request, photo_id: str):
     """Public rating (1-5 stars)"""
-    user = await get_current_user(request)
+    user = await require_interactive_user(request)  # Verifica se não é visitante
     db = await get_db(request)
     body = await request.json()
     rating = body.get("rating")
