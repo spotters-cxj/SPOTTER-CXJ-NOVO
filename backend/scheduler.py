@@ -363,17 +363,95 @@ async def weekly_report_scheduler():
         # Check every 6 hours
         await asyncio.sleep(REPORT_CHECK_INTERVAL_HOURS * 60 * 60)
 
+# ==================== NEWS SCHEDULER ====================
+
+NEWS_CHECK_INTERVAL_MINUTES = 5  # Check every 5 minutes
+
+async def publish_scheduled_news():
+    """Publish scheduled news that have reached their publication time"""
+    db = await get_db()
+    now = datetime.now(timezone.utc)
+    
+    try:
+        # Find news scheduled for publication
+        scheduled_news = await db.news.find({
+            "scheduled_at": {"$exists": True, "$ne": None, "$lte": now},
+            "$or": [
+                {"status": "draft"},
+                {"published": {"$ne": True}}
+            ]
+        }).to_list(100)
+        
+        published_count = 0
+        for news in scheduled_news:
+            try:
+                await db.news.update_one(
+                    {"news_id": news["news_id"]},
+                    {"$set": {
+                        "status": "published",
+                        "published": True,
+                        "published_at": now
+                    }}
+                )
+                published_count += 1
+                logger.info(f"Auto-published news: {news.get('title')} (ID: {news['news_id']})")
+                
+                # Log the action
+                await db.audit_logs.insert_one({
+                    "log_id": f"log_{uuid.uuid4().hex[:12]}",
+                    "admin_id": "system",
+                    "admin_name": "Publicação Automática",
+                    "action": "update",
+                    "entity_type": "news",
+                    "entity_id": news["news_id"],
+                    "entity_name": news.get("title"),
+                    "details": f"Notícia publicada automaticamente (agendamento): {news.get('title')}",
+                    "created_at": now
+                })
+            except Exception as e:
+                logger.error(f"Error publishing news {news.get('news_id')}: {e}")
+        
+        if published_count > 0:
+            logger.info(f"Auto-published {published_count} scheduled news")
+        
+        return published_count
+        
+    except Exception as e:
+        logger.error(f"Error in publish_scheduled_news: {e}")
+        return 0
+
+async def news_scheduler():
+    """Run news scheduler - check for scheduled publications every 5 minutes"""
+    logger.info(f"News scheduler started. Checking every {NEWS_CHECK_INTERVAL_MINUTES} minutes.")
+    
+    # Wait 30 seconds before first check
+    await asyncio.sleep(30)
+    
+    while True:
+        try:
+            await publish_scheduled_news()
+        except Exception as e:
+            logger.error(f"News scheduler error: {str(e)}")
+        
+        await asyncio.sleep(NEWS_CHECK_INTERVAL_MINUTES * 60)
+
 def start_backup_scheduler():
-    """Start the backup scheduler in background"""
+    """Start all schedulers in background"""
     loop = asyncio.get_event_loop()
     loop.create_task(backup_scheduler())
     loop.create_task(weekly_report_scheduler())
-    logger.info("Backup and weekly report schedulers created")
+    loop.create_task(news_scheduler())
+    logger.info("Backup, weekly report, and news schedulers created")
 
 # Function to manually trigger weekly report (for testing)
 async def trigger_weekly_report():
     """Manually trigger weekly report"""
     return await send_weekly_report_task()
+
+# Function to manually trigger news publication (for testing)
+async def trigger_news_publication():
+    """Manually trigger scheduled news publication"""
+    return await publish_scheduled_news()
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
