@@ -16,8 +16,8 @@ async def get_db(request: Request):
     return request.app.state.db
 
 async def require_approved_user(request: Request):
-    from routes.auth import get_current_user
-    user = await get_current_user(request)
+    from routes.auth import get_current_user_from_request
+    user = await get_current_user_from_request(request)
     if not user.get("approved"):
         raise HTTPException(status_code=403, detail="User not approved to upload photos")
     return user
