@@ -2031,7 +2031,7 @@ export const AdminPage = () => {
 
       {/* News Modal */}
       <Dialog open={showNewsModal} onOpenChange={setShowNewsModal}>
-        <DialogContent className="bg-[#0a1929] border-[#1a3a5c] text-white max-w-2xl">
+        <DialogContent className="bg-[#0a1929] border-[#1a3a5c] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingNews ? 'Editar Notícia' : 'Nova Notícia'}</DialogTitle>
           </DialogHeader>
@@ -2043,12 +2043,212 @@ export const AdminPage = () => {
               <Input value={newsForm.image || ''} onChange={(e) => setNewsForm({...newsForm, image: e.target.value})} placeholder="URL da Imagem" className="bg-[#102a43] border-[#1a3a5c] text-white" />
             </div>
             <Input value={newsForm.references || ''} onChange={(e) => setNewsForm({...newsForm, references: e.target.value})} placeholder="Referências" className="bg-[#102a43] border-[#1a3a5c] text-white" />
-            <label className="flex items-center gap-2 text-gray-300">
-              <input type="checkbox" checked={newsForm.published} onChange={(e) => setNewsForm({...newsForm, published: e.target.checked})} />
-              Publicar imediatamente
-            </label>
+            
+            {/* Status */}
+            <div>
+              <label className="block text-gray-300 text-sm mb-2">Status</label>
+              <select
+                value={newsForm.status}
+                onChange={(e) => setNewsForm({...newsForm, status: e.target.value})}
+                className="w-full px-4 py-2 bg-[#102a43] border border-[#1a3a5c] rounded-lg text-white"
+              >
+                <option value="published">📗 Publicada</option>
+                <option value="draft">📙 Rascunho</option>
+              </select>
+            </div>
+            
+            {/* Agendamento */}
+            <div>
+              <label className="block text-gray-300 text-sm mb-2">Agendar publicação (opcional)</label>
+              <Input 
+                type="datetime-local" 
+                value={newsForm.scheduled_at || ''} 
+                onChange={(e) => setNewsForm({...newsForm, scheduled_at: e.target.value, status: e.target.value ? 'draft' : newsForm.status})} 
+                className="bg-[#102a43] border-[#1a3a5c] text-white" 
+              />
+              <p className="text-xs text-gray-500 mt-1">Se definido, a notícia será publicada automaticamente na data/hora especificada.</p>
+            </div>
+            
             <Button onClick={handleSaveNews} className="w-full btn-accent">
               <Save size={16} className="mr-2" />Salvar Notícia
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Event Modal */}
+      <Dialog open={showEventModal} onOpenChange={setShowEventModal}>
+        <DialogContent className="bg-[#0a1929] border-[#1a3a5c] text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingEvent ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input value={eventForm.title} onChange={(e) => setEventForm({...eventForm, title: e.target.value})} placeholder="Título *" className="bg-[#102a43] border-[#1a3a5c] text-white" />
+            <Textarea value={eventForm.description} onChange={(e) => setEventForm({...eventForm, description: e.target.value})} placeholder="Descrição" className="bg-[#102a43] border-[#1a3a5c] text-white" rows={3} />
+            
+            {/* Tipo de evento */}
+            <div>
+              <label className="block text-gray-300 text-sm mb-2">Tipo de Evento</label>
+              <select
+                value={eventForm.event_type}
+                onChange={(e) => setEventForm({...eventForm, event_type: e.target.value})}
+                className="w-full px-4 py-2 bg-[#102a43] border border-[#1a3a5c] rounded-lg text-white"
+              >
+                <option value="photo">📷 Votação de Fotos</option>
+                <option value="poll">📊 Enquete</option>
+              </select>
+            </div>
+            
+            {/* Datas */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-300 text-sm mb-2">Início *</label>
+                <Input 
+                  type="datetime-local" 
+                  value={eventForm.start_date || ''} 
+                  onChange={(e) => setEventForm({...eventForm, start_date: e.target.value})} 
+                  className="bg-[#102a43] border-[#1a3a5c] text-white" 
+                />
+              </div>
+              <div>
+                <label className="block text-gray-300 text-sm mb-2">Fim *</label>
+                <Input 
+                  type="datetime-local" 
+                  value={eventForm.end_date || ''} 
+                  onChange={(e) => setEventForm({...eventForm, end_date: e.target.value})} 
+                  className="bg-[#102a43] border-[#1a3a5c] text-white" 
+                />
+              </div>
+            </div>
+            
+            {/* Tags autorizadas */}
+            <div>
+              <label className="block text-gray-300 text-sm mb-2">Tags autorizadas para votar</label>
+              <p className="text-xs text-gray-500 mb-2">Selecione quais tags de usuário poderão votar neste evento.</p>
+              <div className="flex flex-wrap gap-2 p-3 bg-[#102a43] rounded-lg border border-[#1a3a5c]">
+                {AVAILABLE_TAGS.filter(t => t.value !== 'visitante').map(tag => (
+                  <button
+                    key={tag.value}
+                    onClick={() => toggleEventTag(tag.value)}
+                    className={`px-3 py-1 rounded-full text-sm transition-all ${
+                      eventForm.allowed_tags?.includes(tag.value)
+                        ? `${tag.color} text-white`
+                        : 'bg-[#1a3a5c] text-gray-400 hover:bg-[#2a4a6c]'
+                    }`}
+                  >
+                    {tag.icon} {tag.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Permitir visitantes */}
+            <label className="flex items-center gap-2 text-gray-300 p-3 bg-[#102a43] rounded-lg border border-[#1a3a5c]">
+              <input 
+                type="checkbox" 
+                checked={eventForm.allow_visitors} 
+                onChange={(e) => setEventForm({...eventForm, allow_visitors: e.target.checked})}
+                className="w-4 h-4"
+              />
+              <span>👁️ Permitir visitantes votarem</span>
+              <span className="text-xs text-gray-500 ml-2">(Por padrão, visitantes NÃO podem votar)</span>
+            </label>
+            
+            {/* Configurações */}
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex items-center gap-2 text-gray-300 p-3 bg-[#102a43] rounded-lg border border-[#1a3a5c]">
+                <input 
+                  type="checkbox" 
+                  checked={eventForm.active} 
+                  onChange={(e) => setEventForm({...eventForm, active: e.target.checked})}
+                  className="w-4 h-4"
+                />
+                <span>Evento ativo</span>
+              </label>
+              <label className="flex items-center gap-2 text-gray-300 p-3 bg-[#102a43] rounded-lg border border-[#1a3a5c]">
+                <input 
+                  type="checkbox" 
+                  checked={eventForm.show_results_live} 
+                  onChange={(e) => setEventForm({...eventForm, show_results_live: e.target.checked})}
+                  className="w-4 h-4"
+                />
+                <span>Mostrar resultados em tempo real</span>
+              </label>
+            </div>
+            
+            {/* Fotos (para votação de fotos) */}
+            {eventForm.event_type === 'photo' && (
+              <div>
+                <label className="block text-gray-300 text-sm mb-2">Fotos participantes</label>
+                <p className="text-xs text-gray-500 mb-2">Selecione as fotos que participarão da votação.</p>
+                <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto p-3 bg-[#102a43] rounded-lg border border-[#1a3a5c]">
+                  {availablePhotos.map(photo => (
+                    <div
+                      key={photo.photo_id}
+                      onClick={() => toggleEventPhoto(photo.photo_id)}
+                      className={`relative cursor-pointer rounded overflow-hidden border-2 transition-all ${
+                        eventForm.photo_ids?.includes(photo.photo_id)
+                          ? 'border-sky-500'
+                          : 'border-transparent'
+                      }`}
+                    >
+                      <img
+                        src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url}
+                        alt={photo.title}
+                        className="w-full h-20 object-cover"
+                      />
+                      {eventForm.photo_ids?.includes(photo.photo_id) && (
+                        <div className="absolute top-1 right-1 w-5 h-5 bg-sky-500 rounded-full flex items-center justify-center">
+                          <Check size={12} className="text-white" />
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-1">
+                        <p className="text-white text-xs truncate">{photo.title}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{eventForm.photo_ids?.length || 0} foto(s) selecionada(s)</p>
+              </div>
+            )}
+            
+            {/* Opções da enquete */}
+            {eventForm.event_type === 'poll' && (
+              <div>
+                <label className="block text-gray-300 text-sm mb-2">Opções da enquete</label>
+                <div className="space-y-2">
+                  {eventForm.poll_options?.map((option, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={option.text}
+                        onChange={(e) => updatePollOption(index, e.target.value)}
+                        placeholder={`Opção ${index + 1}`}
+                        className="flex-1 bg-[#102a43] border-[#1a3a5c] text-white"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removePollOption(index)}
+                        className="text-red-400"
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addPollOption}
+                    className="w-full border-dashed"
+                  >
+                    <Plus size={16} className="mr-2" />Adicionar opção
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            <Button onClick={handleSaveEvent} className="w-full btn-accent">
+              <Save size={16} className="mr-2" />Salvar Evento
             </Button>
           </div>
         </DialogContent>
