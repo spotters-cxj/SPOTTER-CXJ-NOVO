@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File, Form
 from typing import Optional, List
 from datetime import datetime, timezone
-from models import Photo, PhotoCreate
+from models import Photo, PhotoCreate, HIERARCHY_LEVELS, get_highest_role_level
+from routes.logs import create_audit_log, get_client_ip
 import uuid
 import os
 import base64
@@ -28,6 +29,15 @@ async def require_admin(request: Request):
     user_level = get_highest_role_level(user.get("tags", []))
     if user_level < HIERARCHY_LEVELS["admin"]:
         raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+async def require_gestao(request: Request):
+    """Require gestao level or higher (admin, lider, gestao)"""
+    from routes.auth import get_current_user
+    user = await get_current_user(request)
+    user_level = get_highest_role_level(user.get("tags", []))
+    if user_level < HIERARCHY_LEVELS["gestao"]:
+        raise HTTPException(status_code=403, detail="Acesso restrito a gestão, admin ou líder")
     return user
 
 @router.get("")
