@@ -85,7 +85,7 @@ Aplicativo web completo para a comunidade de entusiastas da aviação Spotters C
 - Mensagens de erro detalhadas em português
 
 ## Domínios Autorizados (CORS)
-- `https://airphoto-moderation.preview.emergentagent.com`
+- `https://newsflow-events.preview.emergentagent.com`
 - `https://spotterscxj.com.br`
 - `https://www.spotterscxj.com.br`
 - `http://localhost:3000`
