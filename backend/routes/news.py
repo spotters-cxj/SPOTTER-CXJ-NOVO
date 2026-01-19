@@ -81,7 +81,7 @@ async def list_drafts(request: Request, limit: int = 50):
 @router.get("/scheduled")
 async def list_scheduled(request: Request, limit: int = 50):
     """List scheduled news (gestao+)"""
-    user = await require_gestao(request)
+    await require_gestao(request)
     db = await get_db(request)
     now = datetime.now(timezone.utc)
     
@@ -98,7 +98,7 @@ async def list_scheduled(request: Request, limit: int = 50):
 @router.get("/all")
 async def list_all_news(request: Request, limit: int = 50):
     """List all news including drafts (gestao+)"""
-    user = await require_gestao(request)
+    await require_gestao(request)
     db = await get_db(request)
     
     news = await db.news.find(
