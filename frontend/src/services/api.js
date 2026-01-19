@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Get backend URL from environment or use current origin
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+// Get backend URL from VITE env or fallback to origin
+const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
 // Normalize URL - remove www, ensure https in production
 const normalizeBackendUrl = (url) => {
@@ -22,7 +23,7 @@ if (typeof window !== 'undefined') {
   console.log('API Configuration:', { 
     BACKEND_URL: normalizeBackendUrl(BACKEND_URL), 
     API, 
-    env: process.env.REACT_APP_BACKEND_URL,
+   env: import.meta.env.VITE_BACKEND_URL,
     origin: window.location.origin
   });
 }
