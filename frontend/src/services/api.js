@@ -221,6 +221,7 @@ export const membersApi = {
   getHierarchy: () => api.get('/members/hierarchy'),
   search: (query) => api.get('/members/search', { params: { q: query } }),
   updateProfile: (data) => api.put('/members/profile', data),
+  updateTags: (userId, tags) => api.put(`/admin/users/${userId}/role`, { tags }),
 };
 
 // Notifications API
