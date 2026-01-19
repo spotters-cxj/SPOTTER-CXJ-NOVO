@@ -950,11 +950,24 @@ export const AdminPage = () => {
                   </Button>
                 </div>
 
+                {/* Status legend */}
+                <div className="flex flex-wrap gap-3 mb-6 text-xs">
+                  <span className="flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 rounded">
+                    <CheckCircle size={12} />Publicada
+                  </span>
+                  <span className="flex items-center gap-1 px-2 py-1 bg-amber-500/20 text-amber-400 rounded">
+                    <Edit size={12} />Rascunho
+                  </span>
+                  <span className="flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
+                    <CalendarClock size={12} />Agendada
+                  </span>
+                </div>
+
                 <div className="space-y-4">
                   {news.length === 0 ? (
                     <div className="text-center py-12 text-gray-400">
                       <Newspaper size={48} className="mx-auto mb-4 opacity-50" />
-                      <p>Nenhuma notícia publicada</p>
+                      <p>Nenhuma notícia</p>
                     </div>
                   ) : (
                     news.map((item) => (
@@ -971,15 +984,33 @@ export const AdminPage = () => {
                             <div>
                               <h3 className="text-white font-semibold">{item.title}</h3>
                               <p className="text-gray-400 text-sm mt-1 line-clamp-2">{item.content}</p>
-                              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                              <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-500">
                                 <span>{new Date(item.created_at).toLocaleDateString('pt-BR')}</span>
                                 {item.location && <span className="flex items-center gap-1"><MapPin size={12} />{item.location}</span>}
-                                <span className={item.published ? 'text-green-400' : 'text-amber-400'}>
-                                  {item.published ? '✓ Publicada' : '⏳ Rascunho'}
-                                </span>
+                                
+                                {/* Status badges */}
+                                {item.display_status === 'published' || item.status === 'published' || (item.published && !item.scheduled_at) ? (
+                                  <span className="flex items-center gap-1 px-2 py-0.5 bg-green-500/20 text-green-400 rounded">
+                                    <CheckCircle size={10} />Publicada
+                                  </span>
+                                ) : item.display_status === 'scheduled' || (item.scheduled_at && new Date(item.scheduled_at) > new Date()) ? (
+                                  <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded">
+                                    <CalendarClock size={10} />Agendada: {new Date(item.scheduled_at).toLocaleString('pt-BR')}
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded">
+                                    <Edit size={10} />Rascunho
+                                  </span>
+                                )}
                               </div>
                             </div>
                             <div className="flex gap-2 flex-shrink-0">
+                              {/* Show publish button for drafts */}
+                              {(item.status === 'draft' || item.display_status === 'draft' || (!item.published && !item.scheduled_at)) && (
+                                <Button size="sm" variant="outline" onClick={() => handlePublishNews(item.news_id)} className="text-green-400 border-green-400/50 hover:bg-green-500/20">
+                                  <CheckCircle size={14} className="mr-1" />Publicar
+                                </Button>
+                              )}
                               <Button size="sm" variant="ghost" onClick={() => handleEditNews(item)} className="text-sky-400">
                                 <Edit size={14} />
                               </Button>
@@ -987,6 +1018,116 @@ export const AdminPage = () => {
                                 <Trash2 size={14} />
                               </Button>
                             </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* ==================== EVENTS TAB ==================== */}
+            <TabsContent value="events" className="space-y-6">
+              <div className="card-navy p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                    <Vote className="text-sky-400" size={20} />
+                    Eventos ({events.length})
+                  </h2>
+                  <Button onClick={() => handleEditEvent(null)} className="btn-accent">
+                    <Plus size={16} className="mr-2" />Novo Evento
+                  </Button>
+                </div>
+
+                {/* Status legend */}
+                <div className="flex flex-wrap gap-3 mb-6 text-xs">
+                  <span className="flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 rounded">
+                    <CheckCircle size={12} />Ativo
+                  </span>
+                  <span className="flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
+                    <Clock size={12} />Em breve
+                  </span>
+                  <span className="flex items-center gap-1 px-2 py-1 bg-gray-500/20 text-gray-400 rounded">
+                    <XCircle size={12} />Encerrado
+                  </span>
+                  <span className="flex items-center gap-1 px-2 py-1 bg-amber-500/20 text-amber-400 rounded">
+                    <AlertCircle size={12} />Inativo
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {events.length === 0 ? (
+                    <div className="text-center py-12 text-gray-400">
+                      <Vote size={48} className="mx-auto mb-4 opacity-50" />
+                      <p>Nenhum evento criado</p>
+                    </div>
+                  ) : (
+                    events.map((event) => (
+                      <div key={event.event_id} className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-white font-semibold">{event.title}</h3>
+                              {/* Status badge */}
+                              {event.computed_status === 'active' ? (
+                                <span className="flex items-center gap-1 px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs">
+                                  <CheckCircle size={10} />Em votação
+                                </span>
+                              ) : event.computed_status === 'upcoming' ? (
+                                <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">
+                                  <Clock size={10} />Em breve
+                                </span>
+                              ) : event.computed_status === 'ended' ? (
+                                <span className="flex items-center gap-1 px-2 py-0.5 bg-gray-500/20 text-gray-400 rounded text-xs">
+                                  <XCircle size={10} />Encerrado
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded text-xs">
+                                  <AlertCircle size={10} />Inativo
+                                </span>
+                              )}
+                              {/* Type badge */}
+                              <span className={`px-2 py-0.5 rounded text-xs ${
+                                event.event_type === 'photo' ? 'bg-purple-500/20 text-purple-400' : 'bg-cyan-500/20 text-cyan-400'
+                              }`}>
+                                {event.event_type === 'photo' ? '📷 Votação de Fotos' : '📊 Enquete'}
+                              </span>
+                            </div>
+                            <p className="text-gray-400 text-sm mb-2">{event.description}</p>
+                            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                              <span>Início: {new Date(event.start_date).toLocaleString('pt-BR')}</span>
+                              <span>Fim: {new Date(event.end_date).toLocaleString('pt-BR')}</span>
+                              <span className="text-sky-400">{event.total_votes || 0} votos</span>
+                            </div>
+                            {/* Allowed tags */}
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {event.allowed_tags?.length > 0 ? (
+                                event.allowed_tags.map(tag => {
+                                  const tagConfig = AVAILABLE_TAGS.find(t => t.value === tag);
+                                  return (
+                                    <span key={tag} className={`px-2 py-0.5 rounded text-xs ${tagConfig?.color || 'bg-gray-500'} text-white`}>
+                                      {tagConfig?.icon} {tagConfig?.label || tag}
+                                    </span>
+                                  );
+                                })
+                              ) : (
+                                <span className="text-xs text-gray-500">Nenhuma tag permitida</span>
+                              )}
+                              {event.allow_visitors && (
+                                <span className="px-2 py-0.5 rounded text-xs bg-gray-500 text-white">
+                                  👁️ Visitante
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-2 flex-shrink-0">
+                            <Button size="sm" variant="ghost" onClick={() => handleEditEvent(event)} className="text-sky-400">
+                              <Edit size={14} />
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => handleDeleteEvent(event.event_id)} className="text-red-400">
+                              <Trash2 size={14} />
+                            </Button>
                           </div>
                         </div>
                       </div>
