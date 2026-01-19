@@ -195,6 +195,26 @@ export const photosApi = {
 export const rankingApi = {
   get: () => api.get('/ranking'),
   getWeekly: () => api.get('/ranking/weekly'),
+  getPhotos: (limit = 50) => api.get('/ranking', { params: { limit } }),
+  getUsers: (limit = 50) => api.get('/ranking/users', { params: { limit } }),
+  getPodium: () => api.get('/ranking/podium'),
+  getTop3: () => api.get('/ranking/top3'),
+};
+
+// Events API
+export const eventsApi = {
+  // Public endpoints
+  list: (includeEnded = false) => api.get('/events', { params: { include_ended: includeEnded } }),
+  getById: (id) => api.get(`/events/${id}`),
+  getResults: (id) => api.get(`/events/${id}/results`),
+  checkPermission: (id) => api.get(`/events/${id}/check-permission`),
+  vote: (id, data) => api.post(`/events/${id}/vote`, data),
+  // Admin endpoints
+  listAll: () => api.get('/events/admin/all'),
+  create: (data) => api.post('/events', data),
+  update: (id, data) => api.put(`/events/${id}`, data),
+  delete: (id) => api.delete(`/events/${id}`),
+  getAvailablePhotos: () => api.get('/events/photos/available'),
 };
 
 // Evaluation API
@@ -211,7 +231,9 @@ export const newsApi = {
   update: (id, data) => api.put(`/news/${id}`, data),
   delete: (id) => api.delete(`/news/${id}`),
   getDrafts: () => api.get('/news/drafts'),
+  getScheduled: () => api.get('/news/scheduled'),
   getAll: (limit = 50) => api.get('/news/all', { params: { limit } }),
+  publish: (id) => api.post(`/news/${id}/publish`),
 };
 
 // Members API
