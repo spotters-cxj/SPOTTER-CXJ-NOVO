@@ -44,8 +44,20 @@ HIERARCHY_LEVELS = {
     "jornalista": 2,
     "diretor_aeroporto": 2,
     "spotter_cxj": 1,
+    "vip": 1,
+    "podio": 1,
     "visitante": 0
 }
+
+# Tags que permitem interação (upload, comentários, votos)
+INTERACTIVE_TAGS = ["lider", "admin", "gestao", "produtor", "avaliador", "colaborador", 
+                     "spotter_cxj", "vip", "podio", "jornalista", "diretor_aeroporto"]
+
+def can_interact(tags: list) -> bool:
+    """Check if user has any interactive tag (not just visitante)"""
+    if not tags:
+        return False
+    return any(tag in INTERACTIVE_TAGS for tag in tags)
 
 def get_highest_role_level(tags: List[str]) -> int:
     """Get the highest hierarchy level from user tags"""
