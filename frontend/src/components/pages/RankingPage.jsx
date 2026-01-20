@@ -10,6 +10,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
 
+// ✅ Vite env -> fallback para domínio atual
+const ENV_BACKEND =
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL)
+    ? String(import.meta.env.VITE_BACKEND_URL).replace(/\/$/, '')
+    : '';
+
+const ORIGIN_BACKEND =
+  ENV_BACKEND || (typeof window !== 'undefined' ? window.location.origin : '');
+
+const getAssetUrl = (url) => {
+  if (!url) return url;
+  if (url.startsWith('/api')) return `${ORIGIN_BACKEND}${url}`;
+  return url;
+};
+
 export const RankingPage = () => {
   const { isAuthenticated } = useAuth();
   const [photoRanking, setPhotoRanking] = useState([]);
@@ -24,21 +39,11 @@ export const RankingPage = () => {
   const [votingLoading, setVotingLoading] = useState(false);
   const [votedEvents, setVotedEvents] = useState(new Set());
 
-  // ✅ Sempre usa o mesmo domínio do site
-  const backendOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-
-  const getAssetUrl = (url) => {
-    if (!url) return url;
-    if (url.startsWith('/api')) return `${backendOrigin}${url}`;
-    return url;
-  };
-
   useEffect(() => {
     loadRankings();
     loadEvents();
   }, []);
 
-  // Check vote status for all events when user is authenticated
   useEffect(() => {
     const checkVotedEvents = async () => {
       const voted = new Set();
@@ -83,6 +88,7 @@ export const RankingPage = () => {
       setEvents(res.data || []);
     } catch (error) {
       console.error('Error loading events:', error);
+      setEvents([]);
     }
   };
 
@@ -104,6 +110,7 @@ export const RankingPage = () => {
       setEventResults(resultsRes.data);
     } catch (error) {
       console.error('Error loading results:', error);
+      setEventResults(null);
     }
   };
 
@@ -115,7 +122,7 @@ export const RankingPage = () => {
       await eventsApi.vote(selectedEvent.event_id, voteData);
       toast.success('Voto registrado com sucesso!');
 
-      setVotedEvents(prev => new Set([...prev, selectedEvent.event_id]));
+      setVotedEvents((prev) => new Set([...prev, selectedEvent.event_id]));
 
       await handleSelectEvent(selectedEvent);
       await loadEvents();
@@ -219,12 +226,17 @@ export const RankingPage = () => {
                   {userRanking.map((u, index) => (
                     <tr key={u.user_id} className="hover:bg-white/5 transition-colors">
                       <td className="px-4 py-3">
-                        <span className={`font-bold ${
-                          index === 0 ? 'text-yellow-400' :
-                          index === 1 ? 'text-gray-400' :
-                          index === 2 ? 'text-amber-600' :
-                          'text-gray-500'
-                        }`}>
+                        <span
+                          className={`font-bold ${
+                            index === 0
+                              ? 'text-yellow-400'
+                              : index === 1
+                              ? 'text-gray-400'
+                              : index === 2
+                              ? 'text-amber-600'
+                              : 'text-gray-500'
+                          }`}
+                        >
                           {index + 1}
                         </span>
                       </td>
@@ -267,11 +279,15 @@ export const RankingPage = () => {
               <div className="grid md:grid-cols-3 gap-6 mb-8">
                 {top3Photos.map((photo, index) => (
                   <div key={photo.photo_id} className="glass-card overflow-hidden relative">
-                    <div className={`absolute top-3 left-3 z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
-                      index === 0 ? 'bg-yellow-500 text-black' :
-                      index === 1 ? 'bg-gray-400 text-black' :
-                      'bg-amber-700 text-white'
-                    }`}>
+                    <div
+                      className={`absolute top-3 left-3 z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                        index === 0
+                          ? 'bg-yellow-500 text-black'
+                          : index === 1
+                          ? 'bg-gray-400 text-black'
+                          : 'bg-amber-700 text-white'
+                      }`}
+                    >
                       {index + 1}
                     </div>
 
@@ -309,12 +325,17 @@ export const RankingPage = () => {
                   {photoRanking.map((photo, index) => (
                     <tr key={photo.photo_id} className="hover:bg-white/5 transition-colors">
                       <td className="px-4 py-3">
-                        <span className={`font-bold ${
-                          index === 0 ? 'text-yellow-400' :
-                          index === 1 ? 'text-gray-400' :
-                          index === 2 ? 'text-amber-600' :
-                          'text-gray-500'
-                        }`}>
+                        <span
+                          className={`font-bold ${
+                            index === 0
+                              ? 'text-yellow-400'
+                              : index === 1
+                              ? 'text-gray-400'
+                              : index === 2
+                              ? 'text-amber-600'
+                              : 'text-gray-500'
+                          }`}
+                        >
                           {index + 1}
                         </span>
                       </td>
@@ -328,8 +349,12 @@ export const RankingPage = () => {
                           <span className="text-white font-medium line-clamp-1">{photo.title}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 hidden md:table-cell text-gray-400">{photo.aircraft_model}</td>
-                      <td className="px-4 py-3 hidden sm:table-cell text-gray-400">{photo.author_name}</td>
+                      <td className="px-4 py-3 hidden md:table-cell text-gray-400">
+                        {photo.aircraft_model}
+                      </td>
+                      <td className="px-4 py-3 hidden sm:table-cell text-gray-400">
+                        {photo.author_name}
+                      </td>
                       <td className="px-4 py-3 text-center">
                         <span className="text-yellow-400">⭐ {photo.public_rating?.toFixed(1) || '0.0'}</span>
                         <span className="text-gray-500 text-xs ml-1">({photo.public_rating_count || 0})</span>
@@ -465,7 +490,9 @@ export const RankingPage = () => {
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="text-green-400 font-semibold">Você já votou neste evento</span>
-                              <span className="px-2 py-0.5 bg-green-500/30 text-green-300 text-xs rounded-full">Voto registrado</span>
+                              <span className="px-2 py-0.5 bg-green-500/30 text-green-300 text-xs rounded-full">
+                                Voto registrado
+                              </span>
                             </div>
                             <p className="text-green-200/70 text-sm mt-1">
                               Obrigado por participar! Seu voto foi contabilizado com sucesso.
@@ -538,14 +565,22 @@ export const RankingPage = () => {
                         {selectedEvent.event_type === 'photo' ? (
                           <div className="space-y-4">
                             {eventResults.results?.map((result, index) => (
-                              <div key={result.photo_id} className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]">
+                              <div
+                                key={result.photo_id}
+                                className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]"
+                              >
                                 <div className="flex items-center gap-4">
-                                  <span className={`text-2xl font-bold ${
-                                    index === 0 ? 'text-yellow-400' :
-                                    index === 1 ? 'text-gray-400' :
-                                    index === 2 ? 'text-amber-600' :
-                                    'text-gray-500'
-                                  }`}>
+                                  <span
+                                    className={`text-2xl font-bold ${
+                                      index === 0
+                                        ? 'text-yellow-400'
+                                        : index === 1
+                                        ? 'text-gray-400'
+                                        : index === 2
+                                        ? 'text-amber-600'
+                                        : 'text-gray-500'
+                                    }`}
+                                  >
                                     #{index + 1}
                                   </span>
                                   <img
@@ -568,15 +603,21 @@ export const RankingPage = () => {
                         ) : (
                           <div className="space-y-3">
                             {eventResults.results?.map((result) => {
-                              const percentage = eventResults.total_votes > 0
-                                ? Math.round((result.votes / eventResults.total_votes) * 100)
-                                : 0;
+                              const percentage =
+                                eventResults.total_votes > 0
+                                  ? Math.round((result.votes / eventResults.total_votes) * 100)
+                                  : 0;
 
                               return (
-                                <div key={result.option_id} className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]">
+                                <div
+                                  key={result.option_id}
+                                  className="bg-[#0a1929] rounded-lg p-4 border border-[#1a3a5c]"
+                                >
                                   <div className="flex justify-between items-center mb-2">
                                     <span className="text-white">{result.text}</span>
-                                    <span className="text-sky-400 font-semibold">{result.votes} votos ({percentage}%)</span>
+                                    <span className="text-sky-400 font-semibold">
+                                      {result.votes} votos ({percentage}%)
+                                    </span>
                                   </div>
                                   <div className="h-2 bg-[#1a3a5c] rounded-full overflow-hidden">
                                     <div
@@ -598,7 +639,6 @@ export const RankingPage = () => {
                         <p className="text-gray-400">{eventResults.message}</p>
                       </div>
                     )}
-
                   </div>
                 )}
               </div>
