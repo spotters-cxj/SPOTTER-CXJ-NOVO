@@ -21,19 +21,15 @@ const normalizeNoSlash = (url) => (url || "").replace(/\/+$/, "");
 // O backend está no mesmo domínio/host, só muda a rota (/api/...)
 const API_BASE_URL = ORIGIN ? `${normalizeNoSlash(ORIGIN)}/api` : "/api";
 
-// Debug no console (igual aparece no teu print)
+// Debug no console
 export const API_CONFIG = {
   API: API_BASE_URL,
-  BACKEND_URL,
-  env_api: ENV_API_URL,
-  env_backend: ENV_BACKEND_URL,
-  origin: ORIGIN,
-  isProdDomain,
+  ORIGIN,
 };
 
 if (isBrowser) {
   // eslint-disable-next-line no-console
-  console.log("API Configuration:", API_CONFIG);
+  console.log("API:", API_BASE_URL);
 }
 
 const api = axios.create({
