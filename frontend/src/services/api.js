@@ -2,44 +2,40 @@
 import axios from "axios";
 
 /**
- * Resolve BASE URL da API:
- * - Em produção (spotterscxj.com.br): usa o mesmo domínio do site (window.location.origin)
- * - Em dev: permite REACT_APP_BACKEND_URL / REACT_APP_API_URL
+ * ✅ Objetivo:
+ * - SEMPRE usar o mesmo domínio do site (window.location.origin) em produção
+ * - Evitar CORS chamando deploy-app-22.emergent.host
+ * - Permitir override opcional via VITE_BACKEND_URL (somente se você quiser)
+ *
+ * Resultado final:
+ * API_BASE = https://spotterscxj.com.br/api
  */
+
 const isBrowser = typeof window !== "undefined";
 
-const getOrigin = () => {
-  if (!isBrowser) return "";
-  return window.location.origin; // ex: https://spotterscxj.com.br
-};
-
 const normalizeNoSlash = (url) => (url || "").replace(/\/+$/, "");
-const normalizeApi = (url) => normalizeNoSlash(url) + "/api";
+const buildApiBase = (base) => `${normalizeNoSlash(base)}/api`;
+
+// Vite env (não quebra build)
+const VITE_BACKEND_URL =
+  (typeof import.meta !== "undefined" &&
+    import.meta.env &&
+    import.meta.env.VITE_BACKEND_URL) ||
+  "";
 
 // Prioridade:
-// 1) REACT_APP_API_URL (se você quiser setar direto .../api)
-// 2) REACT_APP_BACKEND_URL (sem /api)
-// 3) window.location.origin (em prod)
-// 4) fallback vazio
-const ENV_API_URL = normalizeNoSlash(process.env.REACT_APP_API_URL);
-const ENV_BACKEND_URL = normalizeNoSlash(process.env.REACT_APP_BACKEND_URL);
+// 1) VITE_BACKEND_URL (se você quiser forçar)
+// 2) window.location.origin (padrão absoluto em produção)
+// 3) fallback vazio (SSR)
+const ORIGIN = isBrowser ? window.location.origin : "";
+const BACKEND_URL = normalizeNoSlash(VITE_BACKEND_URL) || normalizeNoSlash(ORIGIN);
+const API_BASE_URL = buildApiBase(BACKEND_URL);
 
-const ORIGIN = getOrigin();
-const BACKEND_URL =
-  ENV_BACKEND_URL ||
-  (ORIGIN && !ORIGIN.includes("localhost") ? ORIGIN : "");
-
-const API_BASE_URL =
-  ENV_API_URL ||
-  (BACKEND_URL ? normalizeApi(BACKEND_URL) : "");
-
-// Debug (vai aparecer no console como no teu print)
 export const API_CONFIG = {
-  API: API_BASE_URL,
+  ORIGIN,
   BACKEND_URL,
-  env_api: ENV_API_URL,
-  env_backend: ENV_BACKEND_URL,
-  origin: ORIGIN,
+  API: API_BASE_URL,
+  VITE_BACKEND_URL: normalizeNoSlash(VITE_BACKEND_URL),
 };
 
 if (isBrowser) {
@@ -51,17 +47,21 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   timeout: 30000,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: { "Content-Type": "application/json" },
 });
 
-// Anexa token se existir
+// Token (se você usa)
 api.interceptors.request.use((config) => {
   try {
-    const token = localStorage.getItem("token");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-  } catch (e) {
+    const token =
+      localStorage.getItem("auth_token") ||
+      localStorage.getItem("session_token") ||
+      localStorage.getItem("token");
+
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch {
     // ignore
   }
   return config;
@@ -70,73 +70,90 @@ api.interceptors.request.use((config) => {
 // ====================== PAGES ======================
 export const pagesApi = {
   getPage: (slug) => api.get(`/pages/${encodeURIComponent(slug)}`),
+  updatePage: (slug, data) => api.put(`/pages/${encodeURIComponent(slug)}`, data),
+  listPages: () => api.get(`/pages`),
 };
 
 // ====================== SETTINGS ======================
 export const settingsApi = {
   get: () => api.get(`/settings`),
-  update: (payload) => api.put(`/settings`, payload),
+  update: (data) => api.put(`/settings`, data),
 };
 
 // ====================== GALLERY ======================
 export const galleryApi = {
   list: (params = {}) => api.get(`/gallery`, { params }),
-  getOne: (photoId) => api.get(`/gallery/${encodeURIComponent(photoId)}`),
+  getById: (id) => api.get(`/gallery/${encodeURIComponent(id)}`),
+  rate: (id, rating) => api.post(`/gallery/${encodeURIComponent(id)}/rate`, { rating }),
+  delete: (id) => api.delete(`/gallery/${encodeURIComponent(id)}`),
 };
 
 // ====================== STATS ======================
 export const statsApi = {
   get: () => api.get(`/stats`),
+  update: (data) => api.put(`/stats`, data),
 };
 
 // ====================== RANKING ======================
-// Corrige teu erro: "getPodium is not a function"
+// ✅ Corrige: getPodium/getPhotos/getUsers existem aqui
+// (mantém compatível com o backend que você já tinha)
 export const rankingApi = {
-  getPodium: () => api.get(`/ranking/podium`),
+  get: () => api.get(`/ranking`),
+  getWeekly: () => api.get(`/ranking/weekly`),
+  getPhotos: (limit = 50) => api.get(`/ranking`, { params: { limit } }),
   getUsers: (limit = 50) => api.get(`/ranking/users`, { params: { limit } }),
-  getPhotos: (limit = 50) => api.get(`/ranking/photos`, { params: { limit } }),
+  getPodium: () => api.get(`/ranking/podium`),
   getTop3: () => api.get(`/ranking/top3`),
 };
 
 // ====================== EVENTS ======================
+// (Front pronto; se /api/events der Not Found, é backend/rota não publicada -> ETAPA 2)
 export const eventsApi = {
   list: (includeEnded = false) =>
     api.get(`/events`, { params: { include_ended: includeEnded } }),
 
-  getOne: (eventId) => api.get(`/events/${encodeURIComponent(eventId)}`),
+  getById: (id) => api.get(`/events/${encodeURIComponent(id)}`),
 
-  getResults: (eventId) =>
-    api.get(`/events/${encodeURIComponent(eventId)}/results`),
+  getResults: (id) => api.get(`/events/${encodeURIComponent(id)}/results`),
 
-  checkPermission: (eventId) =>
-    api.get(`/events/${encodeURIComponent(eventId)}/check-permission`),
+  checkPermission: (id) => api.get(`/events/${encodeURIComponent(id)}/check-permission`),
 
-  vote: (eventId, voteData) =>
-    api.post(`/events/${encodeURIComponent(eventId)}/vote`, voteData),
+  vote: (id, data) => api.post(`/events/${encodeURIComponent(id)}/vote`, data),
+
+  // admin
+  listAll: () => api.get(`/events/admin/all`),
+  create: (data) => api.post(`/events`, data),
+  update: (id, data) => api.put(`/events/${encodeURIComponent(id)}`, data),
+  delete: (id) => api.delete(`/events/${encodeURIComponent(id)}`),
+  getAvailablePhotos: () => api.get(`/events/photos/available`),
 };
 
-// ====================== MEMBERS (se teu site usa) ======================
+// ====================== MEMBERS ======================
 export const membersApi = {
   list: () => api.get(`/members`),
-  getOne: (userId) => api.get(`/members/${encodeURIComponent(userId)}`),
+  getById: (id) => api.get(`/members/${encodeURIComponent(id)}`),
 };
 
-// ====================== NOTIFICATIONS (se teu site usa) ======================
+// ====================== NOTIFICATIONS ======================
 export const notificationsApi = {
   list: () => api.get(`/notifications`),
   count: () => api.get(`/notifications/count`),
+  markRead: (id) => api.put(`/notifications/${encodeURIComponent(id)}/read`),
+  markAllRead: () => api.put(`/notifications/read-all`),
 };
 
-// ====================== NEWS (se teu site usa) ======================
+// ====================== NEWS ======================
 export const newsApi = {
   list: (limit = 10) => api.get(`/news`, { params: { limit } }),
+  getById: (id) => api.get(`/news/${encodeURIComponent(id)}`),
 };
 
-// ====================== AUTH (se teu site usa) ======================
+// ====================== AUTH ======================
 export const authApi = {
-  me: () => api.get(`/auth/me`),
-  login: (payload) => api.post(`/auth/login`, payload),
+  getMe: () => api.get(`/auth/me`),
+  login: (data) => api.post(`/auth/login`, data),
   logout: () => api.post(`/auth/logout`),
+  register: (data) => api.post(`/auth/register`, data),
 };
 
 export default api;
