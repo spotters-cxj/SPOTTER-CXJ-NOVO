@@ -1,22 +1,38 @@
-// frontend/src/components/pages/HomePage.jsx
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Plane, Camera, Users, Calendar, Trophy, Star } from "lucide-react";
-
-import { siteConfig } from "../../data/mock";
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
+  Plane,
+  Camera,
+  Users,
+  Calendar,
+  Trophy,
+  Star
+} from 'lucide-react';
+
+import { siteConfig } from '../../data/mock';
+import {
+  API_CONFIG,
   pagesApi,
   settingsApi,
   galleryApi,
   statsApi,
-  rankingApi,
-  API_CONFIG,
-} from "../../services/api";
+  rankingApi
+} from '../../services/api';
 
-import { Button } from "../ui/button";
-import { NewsCarousel } from "../ui/NewsCarousel";
-import { CollaboratorCarousel } from "../ui/CollaboratorCarousel";
-import { Podium } from "../ui/Podium";
+import { Button } from '../ui/button';
+import { NewsCarousel } from '../ui/NewsCarousel';
+import { CollaboratorCarousel } from '../ui/CollaboratorCarousel';
+import { Podium } from '../ui/Podium';
+
+const getAssetUrl = (url) => {
+  if (!url) return '';
+  const origin =
+    (typeof window !== 'undefined' ? window.location.origin : '') ||
+    API_CONFIG?.BACKEND_URL ||
+    '';
+  if (url.startsWith('/api')) return `${origin}${url}`;
+  return url;
+};
 
 export const HomePage = () => {
   const [pageContent, setPageContent] = useState(null);
@@ -26,58 +42,48 @@ export const HomePage = () => {
     members: "50+",
     photos: "5.000+",
     events: "30+",
-    years: "8+",
+    years: "8+"
   });
   const [podium, setPodium] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const backendOrigin = API_CONFIG?.BACKEND_URL || (typeof window !== "undefined" ? window.location.origin : "");
-
-  const getAssetUrl = (url) => {
-    if (!url) return "";
-    if (url.startsWith("/api")) return `${backendOrigin}${url}`;
-    return url;
-  };
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
 
       try {
-        const pageRes = await pagesApi.getPage("home");
+        const pageRes = await pagesApi.getPage('home');
         if (pageRes?.data) setPageContent(pageRes.data);
       } catch (e) {
-        console.error("Erro page:", e);
+        console.error('Erro page:', e);
       }
 
       try {
         const settingsRes = await settingsApi.get();
         if (settingsRes?.data) setSettings(settingsRes.data);
       } catch (e) {
-        console.error("Erro settings:", e);
+        console.error('Erro settings:', e);
       }
 
       try {
         const photosRes = await galleryApi.list({});
-        if (photosRes?.data) {
-          setPhotos((photosRes.data || []).slice(0, 6));
-        }
+        if (photosRes?.data) setPhotos(photosRes.data.slice(0, 6));
       } catch (e) {
-        console.error("Erro photos:", e);
+        console.error('Erro photos:', e);
       }
 
       try {
         const statsRes = await statsApi.get();
         if (statsRes?.data) setStats(statsRes.data);
       } catch (e) {
-        console.error("Erro stats:", e);
+        console.error('Erro stats:', e);
       }
 
       try {
         const podiumRes = await rankingApi.getPodium();
         if (podiumRes?.data?.winners) setPodium(podiumRes.data.winners);
       } catch (e) {
-        console.error("Erro podium:", e);
+        console.error('Erro podium:', e);
       }
 
       setLoading(false);
@@ -89,7 +95,7 @@ export const HomePage = () => {
   const content = pageContent || {
     title: "Bem-vindo ao Spotters CXJ",
     subtitle: "A comunidade de entusiastas da aviação em Caxias do Sul",
-    content: "O Spotters CXJ é um grupo apaixonado por aviação...",
+    content: "O Spotters CXJ é um grupo apaixonado por aviação..."
   };
 
   return (
@@ -151,10 +157,10 @@ export const HomePage = () => {
       <section className="py-16 bg-[#0a1929]">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { value: stats.members, label: "Membros", icon: Users },
-            { value: stats.photos, label: "Fotos", icon: Camera },
-            { value: stats.events, label: "Eventos", icon: Calendar },
-            { value: stats.years, label: "Anos", icon: Plane },
+            { value: stats.members, label: 'Membros', icon: Users },
+            { value: stats.photos, label: 'Fotos', icon: Camera },
+            { value: stats.events, label: 'Eventos', icon: Calendar },
+            { value: stats.years, label: 'Anos', icon: Plane }
           ].map((s, i) => (
             <div key={i} className="glass-card p-6 text-center">
               <s.icon className="w-8 h-8 text-sky-400 mx-auto mb-2" />
@@ -170,11 +176,11 @@ export const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {photos.length > 0 ? (
-              photos.map((photo) => (
+              photos.map(photo => (
                 <div key={photo.photo_id} className="photo-card">
                   <img
                     src={getAssetUrl(photo.url)}
-                    alt={photo.description || "Foto"}
+                    alt={photo.description || 'Foto'}
                   />
                   <div className="photo-overlay">
                     <h3>{photo.aircraft_model}</h3>
@@ -209,5 +215,3 @@ export const HomePage = () => {
     </div>
   );
 };
-
-export default HomePage;
