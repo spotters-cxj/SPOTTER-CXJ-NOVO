@@ -1,43 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ChevronRight,
-  Plane,
-  Camera,
-  Users,
-  Calendar,
-  ArrowRight,
-  ExternalLink,
-  Trophy,
-  Star
-} from 'lucide-react';
+import { Plane, Camera, Users, Calendar, Trophy, Star } from 'lucide-react';
 
 import { siteConfig } from '../../data/mock';
-import {
-  pagesApi,
-  settingsApi,
-  galleryApi,
-  statsApi,
-  rankingApi
-} from '../../services/api';
+import { pagesApi, settingsApi, galleryApi, statsApi, rankingApi } from '../../services/api';
 
 import { Button } from '../ui/button';
 import { NewsCarousel } from '../ui/NewsCarousel';
 import { CollaboratorCarousel } from '../ui/CollaboratorCarousel';
 import { Podium } from '../ui/Podium';
 
-const BACKEND_URL =
-  process.env.REACT_APP_BACKEND_URL || '';
+// ✅ Vite env (preferencial) -> fallback para domínio atual
+const ENV_BACKEND =
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL)
+    ? String(import.meta.env.VITE_BACKEND_URL).replace(/\/$/, '')
+    : '';
+
+const ORIGIN_BACKEND =
+  ENV_BACKEND || (typeof window !== 'undefined' ? window.location.origin : '');
+
+const getAssetUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('/api')) return `${ORIGIN_BACKEND}${url}`;
+  return url;
+};
 
 export const HomePage = () => {
   const [pageContent, setPageContent] = useState(null);
-  const [settings, setSettings] = useState(null);
+  const [settings, setSettings] = useState(null); // (mantido caso use depois)
   const [photos, setPhotos] = useState([]);
   const [stats, setStats] = useState({
-    members: "50+",
-    photos: "5.000+",
-    events: "30+",
-    years: "8+"
+    members: '50+',
+    photos: '5.000+',
+    events: '30+',
+    years: '8+'
   });
   const [podium, setPodium] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,9 +58,7 @@ export const HomePage = () => {
 
       try {
         const photosRes = await galleryApi.list({});
-        if (photosRes?.data) {
-          setPhotos(photosRes.data.slice(0, 6));
-        }
+        if (photosRes?.data) setPhotos((photosRes.data || []).slice(0, 6));
       } catch (e) {
         console.error('Erro photos:', e);
       }
@@ -78,9 +72,7 @@ export const HomePage = () => {
 
       try {
         const podiumRes = await rankingApi.getPodium();
-        if (podiumRes?.data?.winners) {
-          setPodium(podiumRes.data.winners);
-        }
+        if (podiumRes?.data?.winners) setPodium(podiumRes.data.winners);
       } catch (e) {
         console.error('Erro podium:', e);
       }
@@ -92,9 +84,9 @@ export const HomePage = () => {
   }, []);
 
   const content = pageContent || {
-    title: "Bem-vindo ao Spotters CXJ",
-    subtitle: "A comunidade de entusiastas da aviação em Caxias do Sul",
-    content: "O Spotters CXJ é um grupo apaixonado por aviação..."
+    title: 'Bem-vindo ao Spotters CXJ',
+    subtitle: 'A comunidade de entusiastas da aviação em Caxias do Sul',
+    content: 'O Spotters CXJ é um grupo apaixonado por aviação...'
   };
 
   return (
@@ -175,12 +167,8 @@ export const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {photos.length > 0 ? (
-              photos.map(photo => {
-                const imgUrl = photo?.url
-                  ? photo.url.startsWith('/api')
-                    ? `${BACKEND_URL}${photo.url}`
-                    : photo.url
-                  : '';
+              photos.map((photo) => {
+                const imgUrl = getAssetUrl(photo?.url);
 
                 return (
                   <div key={photo.photo_id} className="photo-card">
@@ -188,10 +176,10 @@ export const HomePage = () => {
                     <div className="photo-overlay">
                       <h3>{photo.aircraft_model}</h3>
                       <p>{photo.description}</p>
-                      {photo.public_rating > 0 && (
+                      {photo?.public_rating > 0 && (
                         <span className="flex items-center gap-1 text-yellow-400 text-xs">
                           <Star size={12} fill="currentColor" />
-                          {photo.public_rating.toFixed(1)}
+                          {Number(photo.public_rating).toFixed(1)}
                         </span>
                       )}
                     </div>
@@ -219,3 +207,5 @@ export const HomePage = () => {
     </div>
   );
 };
+
+export default HomePage;
