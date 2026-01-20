@@ -65,8 +65,8 @@ async def lifespan(app: FastAPI):
         await client.admin.command("ping")
         logger.info(f"Connected to MongoDB: {DB_NAME}")
         
-        # Start scheduler
-        start_backup_scheduler(app.state.db)
+        # Start scheduler (without db argument - it creates its own connection)
+        start_backup_scheduler()
         logger.info("Background scheduler started")
         
     except Exception as e:
