@@ -3,38 +3,23 @@ import axios from "axios";
 
 /**
  * REGRAS DE URL (IMPORTANTÍSSIMO):
- * - Em PRODUÇÃO (spotterscxj.com.br / www): SEMPRE usa o MESMO domínio do site (window.location.origin)
- *   => evita CORS e evita Cloudflare 520 no host de deploy
- * - Em DEV/local: permite VITE_BACKEND_URL ou VITE_API_URL
- *
- * VITE_API_URL: ex "http://localhost:8001/api"
- * VITE_BACKEND_URL: ex "http://localhost:8001" (sem /api)
+ * - Em PRODUÇÃO e PREVIEW: SEMPRE usa window.location.origin + /api
+ *   => evita CORS e problemas com Cloudflare
+ * - Isso funciona para:
+ *   - spotterscxj.com.br (produção final)
+ *   - *.emergent.host (preview)
+ *   - *.emergentagent.com (preview)
+ *   - localhost (desenvolvimento)
  */
 
 const isBrowser = typeof window !== "undefined";
 const ORIGIN = isBrowser ? window.location.origin : "";
 
 const normalizeNoSlash = (url) => (url || "").replace(/\/+$/, "");
-const normalizeApi = (url) => normalizeNoSlash(url) + "/api";
 
-// Vite env (não use process.env no Vite)
-const ENV_API_URL = normalizeNoSlash(import.meta?.env?.VITE_API_URL);
-const ENV_BACKEND_URL = normalizeNoSlash(import.meta?.env?.VITE_BACKEND_URL);
-
-// Detecta produção no teu domínio real
-const isProdDomain =
-  ORIGIN.includes("spotterscxj.com.br") || ORIGIN.includes("www.spotterscxj.com.br");
-
-// BACKEND_URL final:
-// - se estiver no spotterscxj.com.br => FORÇA o ORIGIN
-// - senão (dev) => usa ENV_BACKEND_URL ou vazio
-const BACKEND_URL = isProdDomain ? ORIGIN : (ENV_BACKEND_URL || "");
-
-// API_BASE_URL final:
-// - se ENV_API_URL existir, usa ela (dev)
-// - senão, se BACKEND_URL existir => BACKEND_URL + /api
-// - fallback: "" (vai quebrar, mas evita apontar pro deploy)
-const API_BASE_URL = ENV_API_URL || (BACKEND_URL ? normalizeApi(BACKEND_URL) : "");
+// Em TODOS os ambientes (produção, preview, localhost) usa o MESMO domínio
+// O backend está no mesmo domínio/host, só muda a rota (/api/...)
+const API_BASE_URL = ORIGIN ? `${normalizeNoSlash(ORIGIN)}/api` : "/api";
 
 // Debug no console (igual aparece no teu print)
 export const API_CONFIG = {
