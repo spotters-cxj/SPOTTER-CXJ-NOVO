@@ -23,6 +23,7 @@ import { Button } from '../ui/button';
 import { NewsCarousel } from '../ui/NewsCarousel';
 import { CollaboratorCarousel } from '../ui/CollaboratorCarousel';
 import { Podium } from '../ui/Podium';
+import { PlaneAnimation } from '../ui/PlaneAnimation';
 
 const getAssetUrl = (url) => {
   if (!url) return '';
