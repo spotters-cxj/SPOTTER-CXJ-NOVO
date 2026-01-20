@@ -1,4 +1,5 @@
 /* PlaneAnimation.css - Animação do avião cortando CXJ */
+/* Design: Jato comercial moderno estilo outline/linework branco */
 
 /* Container principal - posiciona a animação */
 .plane-animation-container {
@@ -6,7 +7,7 @@
   top: 50%;
   left: 0;
   width: 100%;
-  height: 60px;
+  height: 80px;
   transform: translateY(-50%);
   pointer-events: none;
   overflow: visible;
@@ -16,91 +17,86 @@
 /* Wrapper do avião com a animação principal */
 .plane-wrapper {
   position: absolute;
-  left: -80px;
+  left: -120px;
   top: 50%;
   transform: translateY(-50%);
   animation: flyAcross 8s ease-in-out infinite;
   animation-delay: 1s;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
 }
 
 /* SVG do avião */
 .plane-svg {
-  width: 48px;
-  height: 48px;
-  color: #e2e8f0;
+  width: 80px;
+  height: 35px;
   transition: transform 0.3s ease;
 }
 
-/* Cores do avião */
-.plane-body {
-  fill: #94a3b8;
-}
-
-.plane-fuselage {
-  fill: #e2e8f0;
-}
-
-.plane-wing-top,
-.plane-wing-bottom {
-  fill: #cbd5e1;
-}
-
-.plane-engine {
-  fill: #1e3a5f;
-}
-
+/* Efeito de brilho nas janelas */
 .plane-window {
-  fill: #0ea5e9;
-  filter: drop-shadow(0 0 4px rgba(14, 165, 233, 0.5));
+  animation: windowGlow 2s ease-in-out infinite;
+}
+
+.plane-window-cockpit {
+  animation: windowGlow 2s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+@keyframes windowGlow {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* Rastro de fumaça */
 .plane-trail {
   position: absolute;
-  left: -80px;
+  left: -120px;
   top: 50%;
   transform: translateY(-50%);
   animation: flyAcross 8s ease-in-out infinite;
   animation-delay: 1s;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-right: 60px;
+  gap: 6px;
+  padding-right: 90px;
 }
 
 /* Partículas individuais do rastro */
 .trail-particle {
-  width: 12px;
-  height: 12px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 70%);
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 70%);
   border-radius: 50%;
   animation: fadeTrail 0.8s ease-out infinite;
-  filter: blur(2px);
+  filter: blur(3px);
 }
 
 .trail-1 {
   animation-delay: 0s;
   transform: scale(1);
-  margin-right: -20px;
+  margin-right: -16px;
 }
 
 .trail-2 {
   animation-delay: 0.1s;
-  transform: scale(0.9);
-  margin-right: -18px;
+  transform: scale(0.85);
+  margin-right: -14px;
 }
 
 .trail-3 {
   animation-delay: 0.2s;
   transform: scale(0.7);
-  margin-right: -16px;
+  margin-right: -12px;
 }
 
 .trail-4 {
   animation-delay: 0.3s;
   transform: scale(0.5);
-  margin-right: -14px;
+  margin-right: -10px;
 }
 
 .trail-5 {
@@ -111,7 +107,7 @@
 /* Animação principal - voo através da tela */
 @keyframes flyAcross {
   0% {
-    left: -100px;
+    left: -140px;
     opacity: 0;
   }
   5% {
@@ -119,7 +115,7 @@
   }
   /* Levemente para cima ao aproximar do CXJ */
   40% {
-    transform: translateY(-50%) translateY(-8px);
+    transform: translateY(-50%) translateY(-6px);
   }
   /* Passa pelo centro (corta o CXJ) */
   50% {
@@ -127,13 +123,13 @@
   }
   /* Levemente para baixo após o CXJ */
   60% {
-    transform: translateY(-50%) translateY(8px);
+    transform: translateY(-50%) translateY(6px);
   }
   95% {
     opacity: 1;
   }
   100% {
-    left: calc(100% + 100px);
+    left: calc(100% + 140px);
     opacity: 0;
     transform: translateY(-50%);
   }
@@ -142,22 +138,22 @@
 /* Animação do rastro de fumaça */
 @keyframes fadeTrail {
   0% {
-    opacity: 0.8;
+    opacity: 0.6;
     transform: scale(1);
   }
   100% {
     opacity: 0;
-    transform: scale(1.5);
+    transform: scale(1.8);
   }
 }
 
 /* Efeito de brilho pulsante no avião */
 @keyframes planePulse {
   0%, 100% {
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
   }
   50% {
-    filter: drop-shadow(0 4px 12px rgba(14, 165, 233, 0.4));
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 5px rgba(14, 165, 233, 0.3));
   }
 }
 
@@ -171,8 +167,25 @@
 /* Tablet */
 @media (max-width: 1024px) {
   .plane-svg {
-    width: 40px;
-    height: 40px;
+    width: 65px;
+    height: 28px;
+  }
+  
+  .plane-animation-container {
+    height: 60px;
+  }
+  
+  .plane-wrapper,
+  .plane-trail {
+    animation-duration: 10s;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .plane-svg {
+    width: 50px;
+    height: 22px;
   }
   
   .plane-animation-container {
@@ -181,24 +194,8 @@
   
   .plane-wrapper,
   .plane-trail {
-    animation-duration: 10s; /* Mais lento em tablet */
-  }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .plane-svg {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .plane-animation-container {
-    height: 40px;
-  }
-  
-  .plane-wrapper,
-  .plane-trail {
-    animation-duration: 12s; /* Ainda mais lento em mobile */
+    animation-duration: 12s;
+    left: -80px;
   }
   
   .trail-particle {
@@ -209,7 +206,7 @@
   /* Reduz movimento vertical em mobile */
   @keyframes flyAcross {
     0% {
-      left: -80px;
+      left: -100px;
       opacity: 0;
     }
     5% {
@@ -228,7 +225,7 @@
       opacity: 1;
     }
     100% {
-      left: calc(100% + 80px);
+      left: calc(100% + 100px);
       opacity: 0;
       transform: translateY(-50%);
     }
@@ -238,12 +235,12 @@
 /* Mobile pequeno */
 @media (max-width: 480px) {
   .plane-svg {
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 18px;
   }
   
   .plane-animation-container {
-    height: 36px;
+    height: 40px;
   }
   
   .plane-wrapper,
@@ -266,6 +263,11 @@
   }
   
   .trail-particle {
+    animation: none;
+  }
+  
+  .plane-window,
+  .plane-window-cockpit {
     animation: none;
   }
 }
