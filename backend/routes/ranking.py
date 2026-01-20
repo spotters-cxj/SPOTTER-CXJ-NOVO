@@ -63,6 +63,23 @@ async def get_top3(request: Request):
     photos = await db.photos.aggregate(pipeline).to_list(3)
     return photos
 
+@router.get("/photos")
+async def get_photo_ranking(request: Request, limit: int = 50):
+    """Get photo ranking by rating"""
+    db = await get_db(request)
+    
+    # Get approved photos sorted by rating
+    photos = await db.photos.find(
+        {"status": "approved"},
+        {"_id": 0}
+    ).sort("public_rating", -1).limit(limit).to_list(limit)
+    
+    # Add position
+    for i, photo in enumerate(photos):
+        photo["position"] = i + 1
+    
+    return photos
+
 @router.get("/users")
 async def get_user_ranking(request: Request, limit: int = 20):
     """Get user ranking by total approved photos and average rating"""
