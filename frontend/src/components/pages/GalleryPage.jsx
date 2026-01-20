@@ -144,9 +144,7 @@ export const GalleryPage = () => {
   };
 
   const getBackendBase = () => {
-    // Vite env
-    const v = (import.meta?.env?.VITE_BACKEND_URL || '').trim();
-    if (v) return v.replace(/\/$/, '');
+    // CRA: usar sempre window.location.origin para evitar CORS
     return window.location.origin;
   };
 
