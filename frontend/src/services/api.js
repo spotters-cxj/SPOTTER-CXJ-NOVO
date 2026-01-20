@@ -65,6 +65,25 @@ export const settingsApi = {
 export const galleryApi = {
   list: (params = {}) => api.get(`/gallery`, { params }),
   getOne: (photoId) => api.get(`/gallery/${encodeURIComponent(photoId)}`),
+  delete: (photoId) => api.delete(`/gallery/${encodeURIComponent(photoId)}`),
+  // Upload via photos endpoint
+  upload: (formData) => api.post(`/photos`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 60000, // 60s for uploads
+  }),
+};
+
+// ====================== PHOTOS ======================
+export const photosApi = {
+  list: (params = {}) => api.get(`/photos`, { params }),
+  getOne: (photoId) => api.get(`/photos/${encodeURIComponent(photoId)}`),
+  upload: (formData) => api.post(`/photos`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 60000,
+  }),
+  delete: (photoId) => api.delete(`/photos/${encodeURIComponent(photoId)}`),
+  rate: (photoId, rating) => api.post(`/photos/${encodeURIComponent(photoId)}/rate`, { rating }),
+  comment: (photoId, text) => api.post(`/photos/${encodeURIComponent(photoId)}/comment`, { text }),
 };
 
 // ====================== STATS ======================
