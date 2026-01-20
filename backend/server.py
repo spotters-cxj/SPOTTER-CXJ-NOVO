@@ -1,179 +1,430 @@
-from fastapi import FastAPI, APIRouter, Request, Response
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
-import logging
-from pathlib import Path
+import React, { useState, useEffect, useMemo } from 'react';
+import { Camera, Calendar, User, Plane, Search, Filter, X, Upload } from 'lucide-react';
+import { galleryApi, photosApi } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { toast } from 'sonner';
 
-# Import routes
-from routes import auth, photos, evaluation, members, news, notifications, ranking, admin, logs
-from routes import pages, leaders, settings, timeline, stats, gallery, memories, upload, backup, aircraft
-from routes import events
+export const GalleryPage = () => {
+  const { user } = useAuth();
+  const [photos, setPhotos] = useState([]);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterAircraft, setFilterAircraft] = useState('');
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+  // Upload form state
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadData, setUploadData] = useState({
+    description: '',
+    aircraft_model: '',
+    aircraft_type: '',
+    registration: '',
+    airline: '',
+    date: ''
+  });
 
-app = FastAPI(title="Spotters CXJ API")
+  useEffect(() => {
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterAircraft]);
 
-os.makedirs("/app/backend/uploads", exist_ok=True)
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      console.log('Loading gallery data...');
 
-# Get allowed origins from environment or use defaults
-CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*')
+      const photosRes = await galleryApi
+        .list({ aircraft_type: filterAircraft || undefined })
+        .catch((err) => {
+          console.error('Error fetching photos:', err);
+          return { data: [] };
+        });
 
-# IMPORTANT:
-# - If allow_credentials=True, we MUST NOT use allow_origins=["*"]
-# - Therefore we always build an explicit allowlist.
-if CORS_ORIGINS == '*':
-    ALLOWED_ORIGINS = [
-        "https://newsflow-events.preview.emergentagent.com",
-        "https://spotterscxj.com.br",
-        "https://www.spotterscxj.com.br",
-        # Emergent deployment host (your API is on this domain in production)
-        "https://deploy-app-22.emergent.host",
-        "http://localhost:3000",
-        "http://localhost:8001",
-    ]
-else:
-    ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ORIGINS.split(',') if origin.strip()]
+      console.log('Gallery loaded:', { photos: photosRes.data?.length });
+      setPhotos(Array.isArray(photosRes.data) ? photosRes.data : []);
+    } catch (error) {
+      console.error('Error loading gallery:', error);
+      toast.error('Erro ao carregar galeria');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-# Custom middleware for cache control
-class CacheControlMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
+  // Aircraft types derived from photos (no extra API needed)
+  const aircraftTypes = useMemo(() => {
+    const set = new Set();
+    for (const p of photos) {
+      if (p?.aircraft_type) set.add(p.aircraft_type);
+    }
+    return Array.from(set).sort((a, b) => String(a).localeCompare(String(b)));
+  }, [photos]);
 
-        path = request.url.path
+  const filteredPhotos = photos.filter((photo) => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      photo.description?.toLowerCase().includes(term) ||
+      photo.aircraft_model?.toLowerCase().includes(term) ||
+      photo.author_name?.toLowerCase().includes(term) ||
+      photo.registration?.toLowerCase().includes(term)
+    );
+  });
 
-        # No cache for HTML files and API responses
-        if path.endswith('.html') or path == '/' or not '.' in path.split('/')[-1]:
-            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            response.headers["Pragma"] = "no-cache"
-            response.headers["Expires"] = "0"
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
 
-        # Long cache for hashed static files (JS, CSS with hash in filename)
-        elif any(ext in path for ext in ['.js', '.css']) and any(c.isdigit() for c in path):
-            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+  const handleUpload = async (e) => {
+    e.preventDefault();
 
-        # Short cache for images
-        elif any(path.endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico']):
-            response.headers["Cache-Control"] = "public, max-age=86400"
+    if (!uploadFile || !uploadData.description || !uploadData.aircraft_model || !uploadData.aircraft_type || !uploadData.date) {
+      toast.error('Preencha todos os campos obrigatórios');
+      return;
+    }
 
-        # No cache for API routes
-        elif path.startswith('/api/'):
-            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            response.headers["Pragma"] = "no-cache"
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', uploadFile);
+      formData.append('description', uploadData.description);
+      formData.append('aircraft_model', uploadData.aircraft_model);
+      formData.append('aircraft_type', uploadData.aircraft_type);
+      formData.append('registration', uploadData.registration || '');
+      formData.append('airline', uploadData.airline || '');
+      formData.append('date', uploadData.date);
 
-        return response
+      // ✅ use Photos API upload (exists in services/api.js)
+      await photosApi.upload(formData);
 
-# Add cache control middleware
-app.add_middleware(CacheControlMiddleware)
+      toast.success('Foto enviada com sucesso!');
+      setShowUploadModal(false);
+      setUploadFile(null);
+      setUploadData({ description: '', aircraft_model: '', aircraft_type: '', registration: '', airline: '', date: '' });
+      loadData();
+    } catch (error) {
+      const msg = error?.response?.data?.detail || 'Erro ao enviar foto';
+      toast.error(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
 
-# Configure CORS with explicit settings for authentication
-# NOTE: We always use explicit origins (no "*") because credentials are enabled.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=[
-        "Content-Type",
-        "Authorization",
-        "X-Requested-With",
-        "X-Session-ID",
-        "Accept",
-        "Origin",
-        "Access-Control-Request-Method",
-        "Access-Control-Request-Headers",
-    ],
-    expose_headers=[
-        "X-Session-Token",
-        "Content-Disposition",
-    ],
-    max_age=600,  # Cache preflight requests for 10 minutes
-)
+  const handleDeletePhoto = async (photoId) => {
+    if (!window.confirm('Tem certeza que deseja excluir esta foto?')) return;
+    try {
+      await galleryApi.delete(photoId);
+      toast.success('Foto excluída');
+      setSelectedPhoto(null);
+      loadData();
+    } catch (error) {
+      toast.error('Erro ao excluir foto');
+    }
+  };
 
-api_router = APIRouter(prefix="/api")
+  const getPhotoUrl = (photo) => {
+    const backend = import.meta.env.VITE_BACKEND_URL || window.location.origin;
+    if (photo.url?.startsWith('/api')) {
+      return `${backend}${photo.url}`;
+    }
+    return photo.url;
+  };
 
-# Include all routes
-api_router.include_router(auth.router)
-api_router.include_router(photos.router)
-api_router.include_router(evaluation.router)
-api_router.include_router(members.router)
-api_router.include_router(news.router)
-api_router.include_router(notifications.router)
-api_router.include_router(ranking.router)
-api_router.include_router(admin.router)
-api_router.include_router(pages.router)
-api_router.include_router(leaders.router)
-api_router.include_router(settings.router)
-api_router.include_router(timeline.router)
-api_router.include_router(stats.router)
-api_router.include_router(gallery.router)
-api_router.include_router(memories.router)
-api_router.include_router(upload.router)
-api_router.include_router(logs.router)
-api_router.include_router(backup.router)
-api_router.include_router(aircraft.router)
-api_router.include_router(events.router)
+  return (
+    <div className="min-h-screen pt-20">
+      {/* Hero Section */}
+      <section className="hero-bg py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-sky-500/10 border border-sky-500/20 rounded-full px-4 py-2 mb-6">
+                <Camera size={16} className="text-sky-400" />
+                <span className="text-sky-300 text-sm font-medium">Registros Aéreos</span>
+              </div>
+              <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">Galeria de Fotos</h1>
+              <p className="text-gray-300 text-lg">Os melhores registros da nossa comunidade de spotters</p>
+            </div>
 
-@api_router.get("/")
-async def root():
-    return {"message": "Spotters CXJ API", "version": "2.0.0"}
+            {user?.approved && (
+              <Button onClick={() => setShowUploadModal(true)} className="btn-accent">
+                <Upload size={18} className="mr-2" />
+                Enviar Foto
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
 
-@api_router.get("/health")
-async def health_check():
-    return {"status": "healthy"}
+      {/* Filters */}
+      <section className="py-8 bg-[#102a43] sticky top-20 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Input
+                type="text"
+                placeholder="Buscar por aeronave, descrição ou autor..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-[#0a1929] border-[#1a3a5c] text-white placeholder-gray-500"
+              />
+            </div>
 
-app.include_router(api_router)
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <select
+                value={filterAircraft}
+                onChange={(e) => setFilterAircraft(e.target.value)}
+                className="pl-10 pr-8 py-2 bg-[#0a1929] border border-[#1a3a5c] rounded-lg text-white appearance-none cursor-pointer min-w-[200px]"
+              >
+                <option value="">Todas as aeronaves</option>
+                {aircraftTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-# Custom static files class with cache control
-class CachedStaticFiles(StaticFiles):
-    async def get_response(self, path: str, scope) -> Response:
-        response = await super().get_response(path, scope)
+            {(searchTerm || filterAircraft) && (
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterAircraft('');
+                }}
+                className="text-gray-400 hover:text-white"
+              >
+                <X size={18} className="mr-2" />
+                Limpar
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
 
-        if path.endswith(('.js', '.css')):
-            if any(c.isdigit() for c in path):
-                response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
-            else:
-                response.headers["Cache-Control"] = "public, max-age=3600"
-        elif path.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg')):
-            response.headers["Cache-Control"] = "public, max-age=86400"
-        else:
-            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+      {/* Gallery Grid */}
+      <section className="py-12 bg-[#0a1929]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-gray-400 mb-8">
+            Mostrando {filteredPhotos.length} {filteredPhotos.length === 1 ? 'foto' : 'fotos'}
+          </p>
 
-        return response
+          {loading ? (
+            <div className="text-center py-20">
+              <div className="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-gray-400">Carregando galeria...</p>
+            </div>
+          ) : filteredPhotos.length === 0 ? (
+            <div className="text-center py-20">
+              <Camera className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl text-gray-400">Nenhuma foto encontrada</h3>
+              <p className="text-gray-500 mt-2">Tente ajustar os filtros de busca</p>
+            </div>
+          ) : (
+            <div className="photo-grid">
+              {filteredPhotos.map((photo) => (
+                <div
+                  key={photo.photo_id}
+                  className="photo-card cursor-pointer group"
+                  onClick={() => setSelectedPhoto(photo)}
+                >
+                  <img src={getPhotoUrl(photo)} alt={photo.description} loading="lazy" />
+                  <div className="photo-overlay">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Plane size={16} className="text-sky-400" />
+                      <span className="text-white font-semibold">{photo.aircraft_model}</span>
+                    </div>
+                    <p className="text-gray-300 text-sm line-clamp-2">{photo.description}</p>
+                    <div className="flex items-center justify-between mt-3 text-xs text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <User size={12} />
+                        {photo.author_name}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Calendar size={12} />
+                        {formatDate(photo.date)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
-app.mount("/api/uploads", CachedStaticFiles(directory="/app/backend/uploads"), name="uploads")
+      {/* Photo Detail Modal */}
+      <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+        <DialogContent className="max-w-4xl bg-[#0a1929] border-[#1a3a5c] text-white">
+          {selectedPhoto && (
+            <>
+              <div className="relative aspect-video rounded-lg overflow-hidden mb-6">
+                <img src={getPhotoUrl(selectedPhoto)} alt={selectedPhoto.description} className="w-full h-full object-cover" />
+              </div>
+              <DialogHeader>
+                <DialogTitle className="text-2xl text-white flex items-center gap-2">
+                  <Plane className="text-sky-400" />
+                  {selectedPhoto.aircraft_model}
+                </DialogTitle>
+                <DialogDescription className="text-gray-300 text-base">{selectedPhoto.description}</DialogDescription>
+              </DialogHeader>
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-[#102a43] rounded-lg p-4">
+                  <p className="text-xs text-gray-400 mb-1">Matrícula</p>
+                  <p className="text-white font-medium">{selectedPhoto.registration || '-'}</p>
+                </div>
+                <div className="bg-[#102a43] rounded-lg p-4">
+                  <p className="text-xs text-gray-400 mb-1">Companhia</p>
+                  <p className="text-white font-medium">{selectedPhoto.airline || '-'}</p>
+                </div>
+                <div className="bg-[#102a43] rounded-lg p-4">
+                  <p className="text-xs text-gray-400 mb-1">Data</p>
+                  <p className="text-white font-medium">{formatDate(selectedPhoto.date)}</p>
+                </div>
+                <div className="bg-[#102a43] rounded-lg p-4">
+                  <p className="text-xs text-gray-400 mb-1">Autor</p>
+                  <p className="text-white font-medium">{selectedPhoto.author_name}</p>
+                </div>
+              </div>
 
-@app.on_event("startup")
-async def startup_db_client():
-    mongo_url = os.environ['MONGO_URL']
-    db_name = os.environ['DB_NAME']
-    client = AsyncIOMotorClient(mongo_url)
-    app.state.db = client[db_name]
-    app.state.mongo_client = client
-    logger.info("Connected to MongoDB")
-    logger.info(f"CORS Origins (explicit): {ALLOWED_ORIGINS}")
+              {(user?.role === 'admin_principal' || user?.role === 'admin_authorized' || user?.user_id === selectedPhoto.author_id) && (
+                <div className="mt-4 flex justify-end">
+                  <Button variant="destructive" onClick={() => handleDeletePhoto(selectedPhoto.photo_id)}>
+                    Excluir Foto
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
-    # Start backup scheduler
-    try:
-        from scheduler import start_backup_scheduler
-        start_backup_scheduler()
-        logger.info("Backup scheduler started (every 12 hours)")
-    except Exception as e:
-        logger.warning(f"Could not start backup scheduler: {e}")
+      {/* Upload Modal */}
+      <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
+        <DialogContent className="bg-[#0a1929] border-[#1a3a5c] text-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-white">Enviar Nova Foto</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Preencha todos os campos obrigatórios (*) para enviar sua foto.
+            </DialogDescription>
+          </DialogHeader>
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    if hasattr(app.state, 'mongo_client'):
-        app.state.mongo_client.close()
-        logger.info("Disconnected from MongoDB")
+          <form onSubmit={handleUpload} className="space-y-4 mt-4">
+            <div
+              className="border-2 border-dashed border-[#1a3a5c] rounded-lg p-6 text-center cursor-pointer hover:border-sky-500/50 transition-colors"
+              onClick={() => document.getElementById('photo-upload').click()}
+            >
+              <input
+                id="photo-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+              />
+              {uploadFile ? (
+                <div>
+                  <Camera className="w-10 h-10 text-sky-400 mx-auto mb-2" />
+                  <p className="text-white">{uploadFile.name}</p>
+                  <p className="text-gray-500 text-sm">Clique para trocar</p>
+                </div>
+              ) : (
+                <div>
+                  <Upload className="w-10 h-10 text-gray-500 mx-auto mb-2" />
+                  <p className="text-gray-400">Clique para selecionar uma imagem</p>
+                  <p className="text-gray-500 text-sm">PNG, JPG até 10MB</p>
+                </div>
+              )}
+            </div>
+
+            <Input
+              placeholder="Descrição da foto *"
+              value={uploadData.description}
+              onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
+              className="bg-[#102a43] border-[#1a3a5c] text-white"
+              required
+            />
+
+            <Input
+              placeholder="Modelo da aeronave * (ex: Boeing 737-800)"
+              value={uploadData.aircraft_model}
+              onChange={(e) => setUploadData({ ...uploadData, aircraft_model: e.target.value })}
+              className="bg-[#102a43] border-[#1a3a5c] text-white"
+              required
+            />
+
+            <select
+              value={uploadData.aircraft_type}
+              onChange={(e) => setUploadData({ ...uploadData, aircraft_type: e.target.value })}
+              className="w-full px-3 py-2 bg-[#102a43] border border-[#1a3a5c] rounded-lg text-white"
+              required
+            >
+              <option value="">Selecione o tipo de aeronave *</option>
+              {aircraftTypes.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+
+            <Input
+              placeholder="Matrícula (ex: PR-GXJ)"
+              value={uploadData.registration}
+              onChange={(e) => setUploadData({ ...uploadData, registration: e.target.value })}
+              className="bg-[#102a43] border-[#1a3a5c] text-white"
+            />
+
+            <Input
+              placeholder="Companhia aérea"
+              value={uploadData.airline}
+              onChange={(e) => setUploadData({ ...uploadData, airline: e.target.value })}
+              className="bg-[#102a43] border-[#1a3a5c] text-white"
+            />
+
+            <Input
+              type="date"
+              value={uploadData.date}
+              onChange={(e) => setUploadData({ ...uploadData, date: e.target.value })}
+              className="bg-[#102a43] border-[#1a3a5c] text-white"
+              required
+            />
+
+            <Button type="submit" className="w-full btn-accent" disabled={uploading}>
+              {uploading ? 'Enviando...' : 'Enviar Foto'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Info messages */}
+      {user && !user.approved && (
+        <section className="py-8 bg-[#102a43]">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-6">
+              <p className="text-amber-300">
+                Sua conta está aguardando aprovação. Após aprovado, você poderá enviar fotos para a galeria.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {!user && (
+        <section className="py-8 bg-[#102a43]">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <div className="card-navy p-8">
+              <h3 className="text-xl font-semibold text-white mb-3">Quer compartilhar suas fotos?</h3>
+              <p className="text-gray-400">
+                Faça login com sua conta Google para solicitar acesso e enviar suas melhores fotos.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+};
