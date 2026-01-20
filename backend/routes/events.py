@@ -44,6 +44,7 @@ async def require_gestao(request: Request):
 
 # ==================== PUBLIC ENDPOINTS ====================
 
+@router.get("")
 @router.get("/")
 async def list_events(request: Request, include_ended: bool = False):
     """Listar eventos ativos (público)"""
