@@ -146,8 +146,10 @@ def main():
         # Check OPTIONS request
         if cors_result["options_status"] == 200:
             options_headers = cors_result["options_headers"]
-            if "Access-Control-Allow-Origin" in options_headers:
-                result.success(f"OPTIONS {endpoint}", f"CORS headers present: {options_headers.get('Access-Control-Allow-Origin')}")
+            # Check for lowercase header names (requests normalizes them)
+            allow_origin = options_headers.get("access-control-allow-origin", options_headers.get("Access-Control-Allow-Origin", ""))
+            if allow_origin:
+                result.success(f"OPTIONS {endpoint}", f"CORS headers present: {allow_origin}")
             else:
                 result.failure(f"OPTIONS {endpoint}", "Missing Access-Control-Allow-Origin header")
         else:
@@ -156,8 +158,10 @@ def main():
         # Check GET request CORS headers
         if cors_result["get_status"] == 200:
             get_headers = cors_result["get_headers"]
-            if "Access-Control-Allow-Origin" in get_headers:
-                result.success(f"GET {endpoint} CORS", f"CORS headers present: {get_headers.get('Access-Control-Allow-Origin')}")
+            # Check for lowercase header names (requests normalizes them)
+            allow_origin = get_headers.get("access-control-allow-origin", get_headers.get("Access-Control-Allow-Origin", ""))
+            if allow_origin:
+                result.success(f"GET {endpoint} CORS", f"CORS headers present: {allow_origin}")
             else:
                 result.failure(f"GET {endpoint} CORS", "Missing Access-Control-Allow-Origin header")
         else:
