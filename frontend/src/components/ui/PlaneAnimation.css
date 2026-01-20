@@ -1,0 +1,271 @@
+/* PlaneAnimation.css - Animação do avião cortando CXJ */
+
+/* Container principal - posiciona a animação */
+.plane-animation-container {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  overflow: visible;
+  z-index: 5;
+}
+
+/* Wrapper do avião com a animação principal */
+.plane-wrapper {
+  position: absolute;
+  left: -80px;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: flyAcross 8s ease-in-out infinite;
+  animation-delay: 1s;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* SVG do avião */
+.plane-svg {
+  width: 48px;
+  height: 48px;
+  color: #e2e8f0;
+  transition: transform 0.3s ease;
+}
+
+/* Cores do avião */
+.plane-body {
+  fill: #94a3b8;
+}
+
+.plane-fuselage {
+  fill: #e2e8f0;
+}
+
+.plane-wing-top,
+.plane-wing-bottom {
+  fill: #cbd5e1;
+}
+
+.plane-engine {
+  fill: #1e3a5f;
+}
+
+.plane-window {
+  fill: #0ea5e9;
+  filter: drop-shadow(0 0 4px rgba(14, 165, 233, 0.5));
+}
+
+/* Rastro de fumaça */
+.plane-trail {
+  position: absolute;
+  left: -80px;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: flyAcross 8s ease-in-out infinite;
+  animation-delay: 1s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 60px;
+}
+
+/* Partículas individuais do rastro */
+.trail-particle {
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 70%);
+  border-radius: 50%;
+  animation: fadeTrail 0.8s ease-out infinite;
+  filter: blur(2px);
+}
+
+.trail-1 {
+  animation-delay: 0s;
+  transform: scale(1);
+  margin-right: -20px;
+}
+
+.trail-2 {
+  animation-delay: 0.1s;
+  transform: scale(0.9);
+  margin-right: -18px;
+}
+
+.trail-3 {
+  animation-delay: 0.2s;
+  transform: scale(0.7);
+  margin-right: -16px;
+}
+
+.trail-4 {
+  animation-delay: 0.3s;
+  transform: scale(0.5);
+  margin-right: -14px;
+}
+
+.trail-5 {
+  animation-delay: 0.4s;
+  transform: scale(0.3);
+}
+
+/* Animação principal - voo através da tela */
+@keyframes flyAcross {
+  0% {
+    left: -100px;
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  /* Levemente para cima ao aproximar do CXJ */
+  40% {
+    transform: translateY(-50%) translateY(-8px);
+  }
+  /* Passa pelo centro (corta o CXJ) */
+  50% {
+    transform: translateY(-50%);
+  }
+  /* Levemente para baixo após o CXJ */
+  60% {
+    transform: translateY(-50%) translateY(8px);
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    left: calc(100% + 100px);
+    opacity: 0;
+    transform: translateY(-50%);
+  }
+}
+
+/* Animação do rastro de fumaça */
+@keyframes fadeTrail {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+/* Efeito de brilho pulsante no avião */
+@keyframes planePulse {
+  0%, 100% {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 4px 12px rgba(14, 165, 233, 0.4));
+  }
+}
+
+.plane-wrapper {
+  animation: flyAcross 8s ease-in-out infinite, planePulse 2s ease-in-out infinite;
+  animation-delay: 1s, 0s;
+}
+
+/* ==================== RESPONSIVIDADE ==================== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .plane-svg {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .plane-animation-container {
+    height: 50px;
+  }
+  
+  .plane-wrapper,
+  .plane-trail {
+    animation-duration: 10s; /* Mais lento em tablet */
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .plane-svg {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .plane-animation-container {
+    height: 40px;
+  }
+  
+  .plane-wrapper,
+  .plane-trail {
+    animation-duration: 12s; /* Ainda mais lento em mobile */
+  }
+  
+  .trail-particle {
+    width: 8px;
+    height: 8px;
+  }
+  
+  /* Reduz movimento vertical em mobile */
+  @keyframes flyAcross {
+    0% {
+      left: -80px;
+      opacity: 0;
+    }
+    5% {
+      opacity: 1;
+    }
+    40% {
+      transform: translateY(-50%) translateY(-4px);
+    }
+    50% {
+      transform: translateY(-50%);
+    }
+    60% {
+      transform: translateY(-50%) translateY(4px);
+    }
+    95% {
+      opacity: 1;
+    }
+    100% {
+      left: calc(100% + 80px);
+      opacity: 0;
+      transform: translateY(-50%);
+    }
+  }
+}
+
+/* Mobile pequeno */
+@media (max-width: 480px) {
+  .plane-svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .plane-animation-container {
+    height: 36px;
+  }
+  
+  .plane-wrapper,
+  .plane-trail {
+    animation-duration: 14s;
+  }
+  
+  .trail-particle {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+/* Reduz animações para usuários que preferem menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  .plane-wrapper,
+  .plane-trail {
+    animation: none;
+    opacity: 0;
+  }
+  
+  .trail-particle {
+    animation: none;
+  }
+}
