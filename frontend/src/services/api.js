@@ -140,4 +140,64 @@ export const authApi = {
   logout: () => api.post(`/auth/logout`),
 };
 
+// ====================== ADMIN ======================
+export const adminApi = {
+  getUsers: (params = {}) => api.get(`/admin/users`, { params }),
+  getUser: (userId) => api.get(`/admin/users/${encodeURIComponent(userId)}`),
+  updateUser: (userId, data) => api.put(`/admin/users/${encodeURIComponent(userId)}`, data),
+  deleteUser: (userId) => api.delete(`/admin/users/${encodeURIComponent(userId)}`),
+  updateRole: (userId, role) => api.put(`/admin/users/${encodeURIComponent(userId)}/role`, { role }),
+  getPendingApprovals: () => api.get(`/admin/pending`),
+  approveUser: (userId) => api.post(`/admin/users/${encodeURIComponent(userId)}/approve`),
+  rejectUser: (userId) => api.post(`/admin/users/${encodeURIComponent(userId)}/reject`),
+};
+
+// ====================== LEADERS ======================
+export const leadersApi = {
+  list: () => api.get(`/leaders`),
+  create: (data) => api.post(`/leaders`, data),
+  update: (leaderId, data) => api.put(`/leaders/${encodeURIComponent(leaderId)}`, data),
+  delete: (leaderId) => api.delete(`/leaders/${encodeURIComponent(leaderId)}`),
+};
+
+// ====================== MEMORIES ======================
+export const memoriesApi = {
+  list: () => api.get(`/memories`),
+  create: (data) => api.post(`/memories`, data),
+  update: (memoryId, data) => api.put(`/memories/${encodeURIComponent(memoryId)}`, data),
+  delete: (memoryId) => api.delete(`/memories/${encodeURIComponent(memoryId)}`),
+};
+
+// ====================== TIMELINE ======================
+export const timelineApi = {
+  list: () => api.get(`/timeline`),
+  create: (data) => api.post(`/timeline`, data),
+  update: (eventId, data) => api.put(`/timeline/${encodeURIComponent(eventId)}`, data),
+  delete: (eventId) => api.delete(`/timeline/${encodeURIComponent(eventId)}`),
+};
+
+// ====================== LOGS ======================
+export const logsApi = {
+  list: (params = {}) => api.get(`/logs`, { params }),
+  getActions: () => api.get(`/logs/actions`),
+  getStats: () => api.get(`/logs/stats`),
+};
+
+// ====================== EVALUATION ======================
+export const evaluationApi = {
+  getQueue: () => api.get(`/evaluation/queue`),
+  getPhoto: (photoId) => api.get(`/evaluation/${encodeURIComponent(photoId)}`),
+  submitEvaluation: (photoId, data) => api.post(`/evaluation/${encodeURIComponent(photoId)}`, data),
+  skip: (photoId) => api.post(`/evaluation/${encodeURIComponent(photoId)}/skip`),
+};
+
+// ====================== BACKUP ======================
+export const backupApi = {
+  list: () => api.get(`/backup`),
+  create: () => api.post(`/backup`),
+  download: (backupId) => api.get(`/backup/${encodeURIComponent(backupId)}/download`, { responseType: 'blob' }),
+  delete: (backupId) => api.delete(`/backup/${encodeURIComponent(backupId)}`),
+  restore: (backupId) => api.post(`/backup/${encodeURIComponent(backupId)}/restore`),
+};
+
 export default api;
