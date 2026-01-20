@@ -116,8 +116,12 @@ export const HomePage = () => {
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
               Bem-vindo ao <br />
-              <span className="text-spotters-hero text-outlined-wine">
-                Spotters CXJ
+              <span className="relative inline-block">
+                <span className="text-spotters-hero text-outlined-wine">
+                  Spotters CXJ
+                </span>
+                {/* Animação do avião cortando CXJ */}
+                <PlaneAnimation />
               </span>
             </h1>
 
