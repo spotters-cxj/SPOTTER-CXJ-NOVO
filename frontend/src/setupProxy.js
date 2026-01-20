@@ -8,6 +8,8 @@ module.exports = function(app) {
       changeOrigin: true,
       secure: false,
       logLevel: 'debug',
+      // Keep the /api prefix when forwarding
+      pathRewrite: (path) => path, // don't rewrite, keep as-is
     })
   );
 };
