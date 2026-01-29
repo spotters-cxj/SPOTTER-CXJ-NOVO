@@ -62,7 +62,7 @@ def can_interact(tags: list) -> bool:
 def get_highest_role_level(tags: List[str]) -> int:
     """Get the highest hierarchy level from user tags"""
     if not tags:
-        return 1
+        return 0
     return max(HIERARCHY_LEVELS.get(tag, 0) for tag in tags)
 
 def can_access_level(user_tags: List[str], required_level: str) -> bool:

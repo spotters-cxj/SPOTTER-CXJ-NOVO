@@ -168,9 +168,16 @@ app.include_router(upload.router, prefix="/api")
 # ========== SERVE UPLOADED FILES ==========
 @app.get("/api/uploads/{filename:path}")
 async def serve_upload(filename: str):
-    """Serve uploaded files"""
-    file_path = os.path.join(UPLOAD_DIR, filename)
-    if os.path.exists(file_path):
+    """Serve uploaded files with path traversal protection"""
+    from pathlib import Path
+    
+    upload_path = Path(UPLOAD_DIR).resolve()
+    file_path = (upload_path / filename).resolve()
+    
+    if not str(file_path).startswith(str(upload_path)):
+        return JSONResponse({"detail": "Invalid path"}, status_code=400)
+    
+    if file_path.exists() and file_path.is_file():
         return FileResponse(file_path)
     return JSONResponse({"detail": "File not found"}, status_code=404)
 
