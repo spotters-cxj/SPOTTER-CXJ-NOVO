@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Upload, Camera, AlertTriangle, Check, CreditCard, X, Info, Search, Loader2, Star, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { photosApi } from '../../services/api';
+import { photosApi, resolveImageUrl } from '../../services/api';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -503,7 +503,7 @@ export const UploadPage = () => {
                   <div key={photo.photo_id} className="glass-card overflow-hidden">
                     <div className="relative">
                       <img
-                        src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url}
+                        src={resolveImageUrl(photo.url)}
                         alt={photo.title}
                         className="w-full h-48 object-cover"
                       />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Camera, Calendar, User, Plane, Search, Filter, X, Upload } from 'lucide-react';
-import { galleryApi } from '../../services/api';
+import { galleryApi, resolveImageUrl } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from 'sonner';
 
 export const GalleryPage = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [photos, setPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -143,18 +143,8 @@ export const GalleryPage = () => {
     }
   };
 
-  const getBackendBase = () => {
-    // CRA: usar sempre window.location.origin para evitar CORS
-    return window.location.origin;
-  };
-
   const getPhotoUrl = (photo) => {
-    const url = photo?.url || '';
-    if (!url) return '';
-    if (url.startsWith('/api')) {
-      return `${getBackendBase()}${url}`;
-    }
-    return url;
+    return resolveImageUrl(photo?.url);
   };
 
   return (
@@ -317,7 +307,7 @@ export const GalleryPage = () => {
                 </div>
               </div>
 
-              {(user?.role === 'admin_principal' || user?.role === 'admin_authorized' || user?.user_id === selectedPhoto.author_id) && (
+              {(isAdmin || user?.user_id === selectedPhoto.author_id) && (
                 <div className="mt-4 flex justify-end">
                   <Button variant="destructive" onClick={() => handleDeletePhoto(selectedPhoto.photo_id)}>
                     Excluir Foto

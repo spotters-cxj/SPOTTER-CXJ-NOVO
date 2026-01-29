@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Trophy, Camera, Calendar, Vote, CheckCircle, Clock, AlertCircle, BarChart2, Image
 } from 'lucide-react';
-import { rankingApi, eventsApi, API_CONFIG } from '../../services/api';
+import { rankingApi, eventsApi, API_CONFIG, resolveImageUrl } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { Podium } from '../ui/Podium';
 import { TagBadgeList } from '../ui/TagBadge';
@@ -24,16 +24,7 @@ export const RankingPage = () => {
   const [votingLoading, setVotingLoading] = useState(false);
   const [votedEvents, setVotedEvents] = useState(new Set());
 
-  const backendOrigin =
-    (typeof window !== 'undefined' ? window.location.origin : '') ||
-    API_CONFIG?.BACKEND_URL ||
-    '';
-
-  const getAssetUrl = (url) => {
-    if (!url) return url;
-    if (url.startsWith('/api')) return `${backendOrigin}${url}`;
-    return url;
-  };
+  const getAssetUrl = (url) => resolveImageUrl(url);
 
   useEffect(() => {
     loadRankings();

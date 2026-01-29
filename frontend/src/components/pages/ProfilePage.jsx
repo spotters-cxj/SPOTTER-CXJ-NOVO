@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Instagram, ExternalLink, Camera, Star, Calendar, ArrowLeft, MapPin, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { membersApi, photosApi, evaluationApi } from '../../services/api';
+import { membersApi, photosApi, evaluationApi, resolveImageUrl } from '../../services/api';
 import { TagBadge, TagBadgeList } from '../ui/TagBadge';
 import { Button } from '../ui/button';
 import { useAuth } from '../../contexts/AuthContext';
@@ -238,7 +238,7 @@ export const ProfilePage = () => {
                 {photos.map((photo) => (
                   <div key={photo.photo_id} className="group relative overflow-hidden rounded-lg">
                     <img
-                      src={photo.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${photo.url}` : photo.url}
+                      src={resolveImageUrl(photo.url)}
                       alt={photo.title}
                       className="w-full h-32 object-cover transition-transform group-hover:scale-110"
                     />
@@ -286,7 +286,7 @@ export const ProfilePage = () => {
                       {/* Photo thumbnail */}
                       {evaluation.photo_url && (
                         <img
-                          src={evaluation.photo_url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${evaluation.photo_url}` : evaluation.photo_url}
+                          src={resolveImageUrl(evaluation.photo_url)}
                           alt={evaluation.photo_title}
                           className="w-20 h-16 object-cover rounded"
                         />

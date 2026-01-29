@@ -16,7 +16,8 @@ import {
   settingsApi,
   galleryApi,
   statsApi,
-  rankingApi
+  rankingApi,
+  resolveImageUrl
 } from '../../services/api';
 
 import { Button } from '../ui/button';
@@ -25,15 +26,7 @@ import { CollaboratorCarousel } from '../ui/CollaboratorCarousel';
 import { Podium } from '../ui/Podium';
 import { PlaneAnimation } from '../ui/PlaneAnimation';
 
-const getAssetUrl = (url) => {
-  if (!url) return '';
-  const origin =
-    (typeof window !== 'undefined' ? window.location.origin : '') ||
-    API_CONFIG?.BACKEND_URL ||
-    '';
-  if (url.startsWith('/api')) return `${origin}${url}`;
-  return url;
-};
+const getAssetUrl = (url) => resolveImageUrl(url);
 
 export const HomePage = () => {
   const [pageContent, setPageContent] = useState(null);

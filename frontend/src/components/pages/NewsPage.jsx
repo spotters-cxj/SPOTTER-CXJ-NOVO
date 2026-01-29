@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, User, ChevronRight, ArrowLeft } from 'lucide-react';
-import { newsApi } from '../../services/api';
+import { newsApi, resolveImageUrl } from '../../services/api';
 import { Button } from '../ui/button';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 
@@ -55,7 +55,7 @@ export const NewsPage = () => {
 
           {article.image && (
             <img
-              src={article.image.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${article.image}` : article.image}
+              src={resolveImageUrl(article.image)}
               alt={article.title}
               className="w-full h-64 md:h-96 object-cover rounded-xl mb-6"
             />
@@ -137,7 +137,7 @@ export const NewsPage = () => {
                 <div className="grid md:grid-cols-2 gap-0">
                   {news[0].image && (
                     <img
-                      src={news[0].image.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${news[0].image}` : news[0].image}
+                      src={resolveImageUrl(news[0].image)}
                       alt={news[0].title}
                       className="w-full h-64 md:h-80 object-cover"
                     />
@@ -177,7 +177,7 @@ export const NewsPage = () => {
                 >
                   {article.image && (
                     <img
-                      src={article.image.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${article.image}` : article.image}
+                      src={resolveImageUrl(article.image)}
                       alt={article.title}
                       className="w-full h-48 object-cover"
                     />

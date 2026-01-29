@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Camera, Check, X, ChevronRight, AlertCircle, Info } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { evaluationApi } from '../../services/api';
+import { evaluationApi, resolveImageUrl } from '../../services/api';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { toast } from 'sonner';
@@ -192,7 +192,7 @@ export const EvaluationPage = () => {
             {/* Photo Display */}
             <div className="glass-card overflow-hidden">
               <img
-                src={currentPhoto.url?.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${currentPhoto.url}` : currentPhoto.url}
+                src={resolveImageUrl(currentPhoto.url)}
                 alt={currentPhoto.title}
                 className="w-full h-96 object-contain bg-black"
               />
