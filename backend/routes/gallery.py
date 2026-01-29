@@ -202,8 +202,8 @@ async def delete_photo(request: Request, photo_id: str):
         file_path = f"/app/backend{photo['url'].replace('/api', '')}"
         if os.path.exists(file_path):
             os.remove(file_path)
-    except:
-        pass  # File might not exist
+    except OSError as e:
+        print(f"Warning: Failed to delete file {file_path}: {e}")
     
     if collection == "gallery":
         await db.gallery.delete_one({"photo_id": photo_id})

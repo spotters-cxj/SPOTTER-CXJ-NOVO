@@ -2,8 +2,10 @@ from fastapi import APIRouter, HTTPException, Request, UploadFile, File, Form
 from typing import Optional
 from datetime import datetime, timezone, timedelta
 from models import Photo, PhotoStatus, PhotoCreate, HIERARCHY_LEVELS, get_highest_role_level, can_interact
+from PIL import Image
 import uuid
 import os
+import io
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 
@@ -333,8 +335,8 @@ async def delete_photo(request: Request, photo_id: str):
         file_path = f"/app/backend{photo['url'].replace('/api', '')}"
         if os.path.exists(file_path):
             os.remove(file_path)
-    except:
-        pass
+    except OSError as e:
+        print(f"Warning: Failed to delete file {file_path}: {e}")
     
     await db.photos.delete_one({"photo_id": photo_id})
     await db.comments.delete_many({"photo_id": photo_id})

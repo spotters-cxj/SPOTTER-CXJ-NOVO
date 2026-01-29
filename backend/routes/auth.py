@@ -193,7 +193,7 @@ async def register_email(request: Request):
     
     try:
         body = await request.json()
-    except:
+    except (ValueError, TypeError):
         raise HTTPException(status_code=400, detail="Invalid request body")
     
     email = body.get("email")
@@ -253,7 +253,7 @@ async def login_email(request: Request, response: Response):
     
     try:
         body = await request.json()
-    except:
+    except (ValueError, TypeError):
         raise HTTPException(status_code=400, detail="Invalid request body")
     
     email = body.get("email")
