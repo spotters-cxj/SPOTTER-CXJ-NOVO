@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, MapPin } from 'lucide-react';
-import { newsApi } from '../../services/api';
+import { newsApi, resolveImageUrl } from '../../services/api';
 
 export const NewsCarousel = () => {
   const [news, setNews] = useState([]);
@@ -46,7 +46,7 @@ export const NewsCarousel = () => {
             >
               {item.image && (
                 <img
-                  src={item.image.startsWith('/api') ? `${process.env.REACT_APP_BACKEND_URL}${item.image}` : item.image}
+                  src={resolveImageUrl(item.image)}
                   alt={item.title}
                   className="w-24 h-20 object-cover flex-shrink-0"
                 />
